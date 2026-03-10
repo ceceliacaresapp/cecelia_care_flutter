@@ -1,0 +1,2001 @@
+{
+    "@@locale": "en",
+    "appTitle": "Cecelia Care",
+    "loginButton": "Login",
+    "settingsTitle": "Settings",
+    "languageSetting": "Language",
+    "manageElderProfilesTitle": "Manage Elder Profiles",
+    "createProfileButton": "Create Profile",
+    "pleaseLogInToManageProfiles": "Please log in to manage elder profiles.",
+    "calendarScreenTitle": "Calendar for {elderName}",
+    "@calendarScreenTitle": {
+        "description": "Title for the calendar screen, includes elder's name",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Jane Doe"
+            }
+        }
+    },
+
+    "formOptionOther": "Other",
+    "formLabelNotesOptional": "Notes (Optional)",
+    "cancelButton": "Cancel",
+    "updateButton": "Update",
+    "saveButton": "Save",
+    "okButton": "OK",
+    "deleteButton": "Delete",
+    "removeButton": "Remove",
+    "inviteButton": "Invite",
+    "activeButton": "Active",
+    "setActiveButton": "Set Active",
+    "sendInviteButton": "Send Invite",
+    "formUnknownUser": "Unknown User",
+    "timePickerHelpText": "SELECT TIME",
+
+    "expenseFormTitleEdit": "Edit Expense",
+    "expenseFormTitleNew": "New Expense",
+    "expenseFormLabelDescription": "Description",
+    "expenseFormHintDescription": "e.g., Prescription refill",
+    "expenseFormValidationDescription": "Please enter a description.",
+    "expenseFormLabelAmount": "Amount",
+    "expenseFormHintAmount": "e.g., 25.50",
+    "expenseFormValidationAmountEmpty": "Please enter an amount.",
+    "expenseFormValidationAmountInvalid": "Please enter a valid positive amount.",
+    "expenseFormLabelCategory": "Category",
+    "expenseCategoryMedical": "Medical",
+    "expenseCategoryGroceries": "Groceries",
+    "expenseCategorySupplies": "Supplies",
+    "expenseCategoryHousehold": "Household",
+    "expenseCategoryPersonalCare": "Personal Care",
+    "expenseFormValidationCategory": "Please select a category.",
+    "expenseFormHintNotes": "Add any relevant notes here...",
+    "formErrorFailedToUpdateExpense": "Failed to update expense. Please try again.",
+    "formErrorFailedToSaveExpense": "Failed to save expense. Please try again.",
+
+    "mealFormTitleEdit": "Edit Meal / Water Intake",
+    "mealFormTitleNew": "Log Meal / Water Intake",
+    "mealFormLabelIntakeType": "Intake Type",
+    "mealFormIntakeCategoryFood": "Food",
+    "mealFormIntakeCategoryWater": "Water",
+    "mealFormLabelMealType": "Meal Type",
+    "mealFormMealTypeBreakfast": "Breakfast",
+    "mealFormMealTypeLunch": "Lunch",
+    "mealFormMealTypeSnack": "Snack",
+    "mealFormMealTypeDinner": "Dinner",
+    "mealFormLabelDescription": "Description",
+    "mealFormHintFoodDescription": "e.g., Chicken soup, toast",
+    "mealFormValidationFoodDescription": "Please describe the food.",
+    "mealFormLabelWaterContext": "Water Context (Optional)",
+    "mealFormHintWaterContext": "e.g., With medication, Thirsty",
+    "mealFormLabelWaterAmount": "Amount",
+    "mealFormHintWaterAmount": "e.g., 1 glass, 200ml",
+    "mealFormValidationWaterAmount": "Please specify the amount of water.",
+    "mealFormHintFoodNotes": "e.g., Ate well, disliked carrots",
+    "mealFormHintWaterNotes": "e.g., Drank slowly",
+    "formErrorFailedToUpdateMeal": "Failed to update meal. Please try again.",
+    "formErrorFailedToSaveMeal": "Failed to save meal. Please try again.",
+    "eventFormHintSelectTime": "Select Time",
+    "mealFormLabelCalories": "Calories",
+    "mealFormHintCalories": "e.g., 500",
+    "sleepFormHintQuality": "Rate quality (1-10)",
+    "sleepFormValidationQualityRange": "Please enter a number between 1 and 10",
+    "medFormTitleEdit": "Edit Medication",
+    "medFormTitleNew": "Log Medication",
+    "medFormTimePickerHelpText": "SELECT MEDICATION TIME",
+    "medFormLabelName": "Medication Name",
+    "medFormHintNameCustom": "Or type custom medication name",
+    "medFormHintName": "Enter medication name",
+    "medFormValidationName": "Please enter medication name.",
+    "medFormLabelDose": "Dose (Optional)",
+    "medFormHintDose": "e.g., 1 tablet, 10mg",
+    "medFormLabelTime": "Time (Optional)",
+    "medFormHintTime": "Select time",
+    "medFormLabelMarkAsTaken": "Mark as Taken",
+    "formErrorFailedToUpdateMed": "Failed to update medication. Please try again.",
+    "formErrorFailedToSaveMed": "Failed to save medication. Please try again.",
+
+    "moodFormTitleEdit": "Edit Mood",
+    "moodFormTitleNew": "Log Mood",
+    "moodHappy": "😊 Happy",
+    "moodContent": "🙂 Content",
+    "moodSad": "😟 Sad",
+    "moodAnxious": "😬 Anxious",
+    "moodCalm": "😌 Calm",
+    "moodIrritable": "😠 Irritable",
+    "moodAgitated": "😫 Agitated",
+    "moodPlayful": "🥳 Playful",
+    "moodTired": "😴 Tired",
+    "moodOptionOther": "📝 Other",
+    "moodFormLabelSelectMood": "Select Mood",
+    "moodFormValidationSelectOrSpecifyMood": "Please select or specify a mood.",
+    "moodFormValidationSpecifyOtherMood": "Please specify the mood.",
+    "moodFormHintSpecifyOtherMood": "Describe the mood...",
+    "moodFormLabelIntensity": "Intensity (1-5, Optional)",
+    "moodFormHintIntensity": "1 (Mild) - 5 (Severe)",
+    "moodFormValidationIntensityRange": "Intensity must be between 1 and 5.",
+    "moodFormHintNotes": "e.g., Feeling good after a walk",
+    "moodFormButtonUpdate": "Update Mood",
+    "moodFormButtonSave": "Save Mood",
+    "formErrorFailedToUpdateMood": "Failed to update mood. Please try again.",
+    "formErrorFailedToSaveMood": "Failed to save mood. Please try again.",
+
+    "painFormTitleEdit": "Edit Pain Log",
+    "painFormTitleNew": "Log Pain",
+    "painTypeAching": "Aching",
+    "painTypeBurning": "Burning",
+    "painTypeDull": "Dull",
+    "painTypeSharp": "Sharp",
+    "painTypeShooting": "Shooting",
+    "painTypeStabbing": "Stabbing",
+    "painTypeThrobbing": "Throbbing",
+    "painTypeTender": "Tender",
+    "painFormLabelLocation": "Location",
+    "painFormHintLocation": "e.g., Left knee, Lower back",
+    "painFormValidationLocation": "Please specify the location of pain.",
+    "painFormLabelIntensity": "Intensity (0-10)",
+    "painFormHintIntensity": "0 (No pain) - 10 (Worst pain)",
+    "painFormValidationIntensityEmpty": "Please enter pain intensity.",
+    "painFormValidationIntensityRange": "Intensity must be between 0 and 10.",
+    "painFormLabelDescription": "Description",
+    "painFormValidationSelectOrSpecifyDescription": "Please select or specify a pain description.",
+    "painFormValidationSpecifyOtherDescription": "Please specify the pain description.",
+    "painFormHintSpecifyOtherDescription": "Describe the pain...",
+    "painFormHintNotes": "e.g., Worse after activity, relieved by rest",
+    "formErrorFailedToUpdatePain": "Failed to update pain log. Please try again.",
+    "formErrorFailedToSavePain": "Failed to save pain log. Please try again.",
+
+    "sleepFormTitleEdit": "Edit Sleep Log",
+    "sleepFormTitleNew": "Log Sleep",
+    "sleepQualityGood": "Good",
+    "sleepQualityFair": "Fair",
+    "sleepQualityPoor": "Poor",
+    "sleepQualityRestless": "Restless",
+    "sleepQualityInterrupted": "Interrupted",
+    "sleepFormLabelWentToBed": "Went to Bed",
+    "sleepFormHintTimeWentToBed": "Select time",
+    "sleepFormValidationTimeWentToBed": "Please select time went to bed.",
+    "sleepFormLabelWokeUp": "Woke Up (Optional)",
+    "sleepFormHintTimeWokeUp": "Select time",
+    "sleepFormLabelTotalDuration": "Total Duration (Optional)",
+    "sleepFormHintTotalDuration": "e.g., 7 hours, 7h 30m",
+    "sleepFormLabelQuality": "Quality",
+    "sleepFormValidationSelectQuality": "Please select sleep quality.",
+    "sleepFormLabelDescribeOtherQuality": "Describe Other Quality",
+    "sleepFormHintDescribeOtherQuality": "Describe the sleep quality...",
+    "sleepFormValidationDescribeOtherQuality": "Please describe the sleep quality.",
+    "sleepFormLabelNaps": "Naps (Optional)",
+    "sleepFormHintNaps": "e.g., 1 nap, 30 mins",
+    "sleepFormLabelGeneralNotes": "General Notes (Optional)",
+    "sleepFormHintGeneralNotes": "e.g., Woke up feeling refreshed",
+    "sleepFormButtonUpdate": "Update Sleep",
+    "sleepFormButtonSave": "Save Sleep",
+    "formErrorFailedToUpdateSleep": "Failed to update sleep log. Please try again.",
+    "formErrorFailedToSaveSleep": "Failed to save sleep log. Please try again.",
+
+    "vitalFormTitleEdit": "Edit Vital Sign",
+    "vitalFormTitleNew": "Log Vital Sign",
+    "vitalTypeBPLabel": "Blood Pressure",
+    "vitalTypeBPUnit": "mmHg",
+    "vitalTypeBPPlaceholder": "e.g., 120/80",
+    "vitalTypeHRLabel": "Heart Rate",
+    "vitalTypeHRUnit": "bpm",
+    "vitalTypeHRPlaceholder": "e.g., 70",
+    "vitalTypeWTLabel": "Weight",
+    "vitalTypeWTUnit": "kg/lbs",
+    "vitalTypeWTPlaceholder": "e.g., 65 kg or 143 lbs",
+    "vitalTypeBGLabel": "Blood Glucose",
+    "vitalTypeBGUnit": "mg/dL or mmol/L",
+    "vitalTypeBGPlaceholder": "e.g., 90 mg/dL",
+    "vitalTypeTempLabel": "Temperature",
+    "vitalTypeTempUnit": "°C/°F",
+    "vitalTypeTempPlaceholder": "e.g., 36.5°C or 97.7°F",
+    "vitalTypeO2Label": "Oxygen Saturation",
+    "vitalTypeO2Unit": "%",
+    "vitalTypeO2Placeholder": "e.g., 98",
+    "vitalFormLabelType": "Type",
+    "vitalFormLabelValue": "Value",
+    "vitalFormValidationValueEmpty": "Please enter a value.",
+    "vitalFormValidationBPFormat": "Enter BP as 'SYS/DIA', e.g., 120/80.",
+    "vitalFormValidationValueNumeric": "Please enter a numeric value.",
+    "vitalFormHintNotes": "e.g., Taken after meal",
+    "vitalFormButtonUpdate": "Update Vital",
+    "vitalFormButtonSave": "Save Vital",
+    "formErrorFailedToUpdateVital": "Failed to update vital. Please try again.",
+    "formErrorFailedToSaveVital": "Failed to save vital. Please try again.",
+
+    "settingsUserProfileNotLoaded": "User profile not loaded.",
+    "settingsDisplayNameCannotBeEmpty": "Display name cannot be empty.",
+    "settingsProfileUpdatedSuccess": "Profile updated successfully.",
+    "settingsErrorUpdatingProfile": "Error updating profile: {errorMessage}",
+    "@settingsErrorUpdatingProfile": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsSelectElderFirstMedDef": "Please select an elder profile first to manage medication definitions.",
+    "settingsMedNameRequired": "Medication name is required.",
+    "settingsMedDefaultTimeFormatError": "Invalid time format. Please use HH:mm (e.g., 09:00).",
+    "settingsMedDefAddedSuccess": "Medication definition added successfully.",
+    "settingsClearDataErrorElderOrUserMissing": "Cannot clear data: Active elder or user is missing.",
+    "settingsClearDataErrorNotAdmin": "You are not the primary admin for this elder's profile. Data can only be cleared by the primary admin.",
+    "settingsClearDataDialogTitle": "Clear All Data for {elderName}?",
+    "@settingsClearDataDialogTitle": {
+        "placeholders": {
+            "elderName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsClearDataDialogContent": "This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this elder. Are you sure you want to proceed?",
+    "settingsClearDataDialogConfirmButton": "Yes, Clear All Data",
+    "settingsClearDataSuccess": "All data for {elderName} has been cleared.",
+    "@settingsClearDataSuccess": {
+        "placeholders": {
+            "elderName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsClearDataErrorGeneric": "Error clearing data: {errorMessage}",
+    "@settingsClearDataErrorGeneric": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "languageNameEn": "English",
+    "languageNameEs": "Español (Spanish)",
+    "languageNameJa": "日本語 (Japanese)",
+    "languageNameKo": "한국어 (Korean)",
+    "languageNameZh": "中文 (Chinese)",
+    "settingsTitleMyAccount": "My Account",
+    "settingsLabelDisplayName": "Display Name",
+    "settingsHintDisplayName": "Enter your display name",
+    "settingsLabelDOB": "Date of Birth",
+    "settingsHintDOB": "Select your date of birth",
+    "settingsButtonSaveProfile": "Save Profile",
+    "settingsButtonSignOut": "Sign Out",
+    "settingsErrorLoadingProfile": "Error loading profile.",
+    "settingsTitleLanguage": "Language Settings",
+    "settingsLabelSelectLanguage": "Select App Language",
+    "settingsLanguageChangedConfirmation": "Language changed to {languageTag}.",
+    "@settingsLanguageChangedConfirmation": {
+        "placeholders": {
+            "languageTag": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsTitleElderProfileManagement": "Elder Profile Management",
+    "settingsCurrentElder": "Current Active Elder: {elderName}",
+    "@settingsCurrentElder": {
+        "placeholders": {
+            "elderName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsNoActiveElderSelected": "No active elder selected. Please select or create one.",
+    "settingsErrorNavToManageElderProfiles": "Could not navigate to manage elder profiles. User not logged in.",
+    "settingsButtonManageElderProfiles": "Manage Elder Profiles",
+    "settingsTitleAdminActions": "Admin Actions for {elderName}",
+    "@settingsTitleAdminActions": {
+        "placeholders": {
+            "elderName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsButtonClearAllData": "Clear All Data for This Elder",
+    "settingsTitleMedicationDefinitions": "Medication Definitions",
+    "settingsSubtitleAddNewMedDef": "Add New Medication Definition:",
+    "settingsLabelMedName": "Medication Name",
+    "settingsHintMedName": "e.g., Lisinopril",
+    "settingsLabelMedDose": "Default Dose (Optional)",
+    "settingsHintMedDose": "e.g., 10mg, 1 tablet",
+    "settingsLabelMedDefaultTime": "Default Time (HH:mm, Optional)",
+    "settingsHintMedDefaultTime": "e.g., 08:00",
+    "settingsButtonAddMedDef": "Add Medication Definition",
+    "settingsSelectElderToAddMedDefs": "Select an elder profile to add medication definitions.",
+    "settingsSelectElderToViewMedDefs": "Select an elder profile to view medication definitions.",
+    "settingsNoMedDefsForElder": "No medication definitions found for {elderName}.",
+    "@settingsNoMedDefsForElder": {
+        "placeholders": {
+            "elderName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsExistingMedDefsForElder": "Existing Definitions for {elderNameOrFallback}:",
+    "@settingsExistingMedDefsForElder": {
+        "placeholders": {
+            "elderNameOrFallback": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsSelectedElderFallback": "Selected Elder",
+    "settingsMedDefDosePrefix": "Dose: {dose}",
+    "@settingsMedDefDosePrefix": {
+        "placeholders": {
+            "dose": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsMedDefDefaultTimePrefix": "Time: {time}",
+    "@settingsMedDefDefaultTimePrefix": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsTooltipDeleteMedDef": "Delete this medication definition",
+    "settingsDeleteMedDefDialogTitle": "Delete '{medName}' Definition?",
+    "@settingsDeleteMedDefDialogTitle": {
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsDeleteMedDefDialogContent": "Are you sure you want to delete this medication definition? This will not affect past medication logs but will remove it as an option for future logs.",
+    "settingsMedDefDeletedSuccess": "Medication definition '{medName}' deleted.",
+    "@settingsMedDefDeletedSuccess": {
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            }
+        }
+    },
+
+    "errorNotLoggedIn": "Error: User not logged in.",
+    "errorElderIdMissing": "Error: Elder ID is missing.",
+    "profileUpdatedSnackbar": "Profile for {profileName} updated.",
+    "@profileUpdatedSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "profileCreatedSnackbar": "Profile for {profileName} created.",
+    "@profileCreatedSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSavingProfile": "Error saving profile: {errorMessage}",
+    "@errorSavingProfile": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSelectElderAndEmail": "Please select an elder profile and enter a valid email address.",
+    "invitationSentSnackbar": "Invitation sent to {email}.",
+    "@invitationSentSnackbar": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSendingInvitation": "Error sending invitation: {errorMessage}",
+    "@errorSendingInvitation": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "removeCaregiverDialogTitle": "Remove Caregiver?",
+    "removeCaregiverDialogContent": "Are you sure you want to remove {caregiverIdentifier} as a caregiver for this elder?",
+    "@removeCaregiverDialogContent": {
+        "placeholders": {
+            "caregiverIdentifier": {
+                "type": "String"
+            }
+        }
+    },
+    "caregiverRemovedSnackbar": "Caregiver {caregiverIdentifier} removed.",
+    "@caregiverRemovedSnackbar": {
+        "placeholders": {
+            "caregiverIdentifier": {
+                "type": "String"
+            }
+        }
+    },
+    "errorRemovingCaregiver": "Error removing caregiver: {errorMessage}",
+    "@errorRemovingCaregiver": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "tooltipEditProfile": "Edit Profile",
+    "dobLabelPrefix": "DOB:",
+    "allergiesLabelPrefix": "Allergies:",
+    "dietLabelPrefix": "Diet:",
+    "primaryAdminLabel": "Primary Admin:",
+    "adminNotAssigned": "Not assigned",
+    "loadingAdminInfo": "Loading admin info...",
+    "caregiversLabel": "Caregivers ({count}):",
+    "@caregiversLabel": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "noCaregiversYet": "No caregivers yet.",
+    "errorLoadingCaregiverNames": "Error loading caregiver names.",
+    "caregiverAdminSuffix": "(Admin)",
+    "tooltipRemoveCaregiver": "Remove {identifier}",
+    "@tooltipRemoveCaregiver": {
+        "placeholders": {
+            "identifier": {
+                "type": "String"
+            }
+        }
+    },
+    "profileSetActiveSnackbar": "{profileName} is now the active profile.",
+    "@profileSetActiveSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteDialogTitle": "Invite Caregiver to {profileName}'s Profile",
+    "@inviteDialogTitle": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "caregiversEmailLabel": "Caregiver's Email",
+    "enterEmailHint": "Enter email address",
+    "createElderProfileTitle": "Create New Elder Profile",
+    "editProfileTitle": "Edit {profileNameOrFallback}",
+    "@editProfileTitle": {
+        "placeholders": {
+            "profileNameOrFallback": {
+                "type": "String"
+            }
+        }
+    },
+    "profileNameLabel": "Profile Name",
+    "validatorPleaseEnterName": "Please enter a name.",
+    "dateOfBirthLabel": "Date of Birth",
+    "allergiesLabel": "Allergies (comma-separated)",
+    "dietaryRestrictionsLabel": "Dietary Restrictions (comma-separated)",
+    "createNewProfileButton": "Create New Profile",
+    "saveChangesButton": "Save Changes",
+    "errorPrefix": "Error: ",
+    "noElderProfilesFound": "No elder profiles found.",
+    "createNewProfileOrWait": "Create a new profile or wait for an invitation.",
+    "fabNewProfile": "New Profile",
+
+    "activityTypeWalk": "Walk",
+    "activityTypeExercise": "Exercise",
+    "activityTypePhysicalTherapy": "Physical Therapy",
+    "activityTypeOccupationalTherapy": "Occupational Therapy",
+    "activityTypeOuting": "Outing",
+    "activityTypeSocialVisit": "Social Visit",
+    "activityTypeReading": "Reading",
+    "activityTypeTV": "Watching TV/Movies",
+    "activityTypeGardening": "Gardening",
+    "assistanceLevelIndependent": "Independent",
+    "assistanceLevelStandbyAssist": "Standby Assist",
+    "assistanceLevelWithWalker": "With Walker",
+    "assistanceLevelWithCane": "With Cane",
+    "assistanceLevelWheelchair": "Wheelchair",
+    "assistanceLevelMinAssist": "Minimal Assist (Min A)",
+    "assistanceLevelModAssist": "Moderate Assist (Mod A)",
+    "assistanceLevelMaxAssist": "Maximum Assist (Max A)",
+    "formErrorFailedToUpdateActivity": "Failed to update activity. Please try again.",
+    "formErrorFailedToSaveActivity": "Failed to save activity. Please try again.",
+    "activityFormTitleEdit": "Edit Activity",
+    "activityFormTitleNew": "Log New Activity",
+    "activityFormLabelActivityType": "Activity Type",
+    "activityFormHintActivityType": "Select or type activity",
+    "activityFormValidationActivityType": "Please select or specify an activity type.",
+    "activityFormLabelDuration": "Duration (Optional)",
+    "activityFormHintDuration": "e.g., 30 minutes, 1 hour",
+    "activityFormLabelAssistance": "Level of Assistance (Optional)",
+    "activityFormHintAssistance": "Select level of assistance",
+    "activityFormHintNotes": "e.g., Enjoyed the sunshine, walked to the park",
+
+    "notApplicable": "N/A",
+
+    "careScreenWaterLog": "Water: {description}",
+    "@careScreenWaterLog": {
+        "description": "Log entry for water intake, showing description or amount.",
+        "placeholders": {
+            "description": {
+                "type": "String",
+                "example": "2 glasses"
+            }
+        }
+    },
+    "careScreenMealLog": "{mealType}: {description}",
+    "@careScreenMealLog": {
+        "description": "Log entry for a meal, showing meal type and description.",
+        "placeholders": {
+            "mealType": {
+                "type": "String",
+                "example": "Lunch"
+            },
+            "description": {
+                "type": "String",
+                "example": "Chicken sandwich"
+            }
+        }
+    },
+    "careScreenMealGeneric": "Meal",
+    "careScreenWaterContext": "Context: {contextDetails}",
+    "@careScreenWaterContext": {
+        "description": "Context for water intake.",
+        "placeholders": {
+            "contextDetails": {
+                "type": "String",
+                "example": "With medication"
+            }
+        }
+    },
+    "careScreenNotes": "Notes: {noteContent}",
+    "@careScreenNotes": {
+        "description": "Displays notes for an entry.",
+        "placeholders": {
+            "noteContent": {
+                "type": "String",
+                "example": "Feeling well today."
+            }
+        }
+    },
+    "careScreenLoggedBy": "Logged by: {userName}",
+    "@careScreenLoggedBy": {
+        "description": "Indicates who logged the entry.",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "John Doe"
+            }
+        }
+    },
+    "careScreenTooltipEditFoodWater": "Edit Food/Water Entry",
+    "careScreenTooltipDeleteFoodWater": "Delete Food/Water Entry",
+    "careScreenErrorMissingIdDelete": "Error: Cannot delete entry, ID is missing.",
+    "careScreenErrorFailedToLoad": "Failed to load records for this day. Please try again.",
+    "careScreenButtonAddFoodWater": "Add Food / Water",
+    "careScreenSectionTitleMoodBehavior": "Mood & Behavior",
+    "careScreenNoMoodBehaviorLogged": "No mood or behavior logged for this day.",
+    "careScreenMood": "Mood: {mood}",
+    "@careScreenMood": {
+        "description": "Displays the logged mood.",
+        "placeholders": {
+            "mood": {
+                "type": "String",
+                "example": "Happy"
+            }
+        }
+    },
+    "careScreenMoodIntensity": "Intensity: {intensityLevel}",
+    "@careScreenMoodIntensity": {
+        "description": "Displays the intensity of the mood.",
+        "placeholders": {
+            "intensityLevel": {
+                "type": "String",
+                "example": "3/5"
+            }
+        }
+    },
+    "careScreenTooltipEditMood": "Edit Mood Entry",
+    "careScreenTooltipDeleteMood": "Delete Mood Entry",
+    "careScreenButtonAddMood": "Add Mood / Behavior",
+    "careScreenSectionTitlePain": "Pain",
+    "careScreenNoPainLogged": "No pain logged for this day.",
+    "careScreenPainLog": "Pain: {location} - {description}{intensityDetails}",
+    "@careScreenPainLog": {
+        "description": "Log entry for pain.",
+        "placeholders": {
+            "location": {
+                "type": "String",
+                "example": "Left knee"
+            },
+            "description": {
+                "type": "String",
+                "example": "Aching"
+            },
+            "intensityDetails": {
+                "type": "String",
+                "example": " (Intensity: 5/10)"
+            }
+        }
+    },
+    "careScreenPainIntensity": "Intensity: {intensityValue}",
+    "@careScreenPainIntensity": {
+        "description": "Displays pain intensity.",
+        "placeholders": {
+            "intensityValue": {
+                "type": "String",
+                "example": "7/10"
+            }
+        }
+    },
+    "careScreenTooltipEditPain": "Edit Pain Entry",
+    "careScreenTooltipDeletePain": "Delete Pain Entry",
+    "careScreenButtonAddPain": "Add Pain Log",
+    "careScreenSectionTitleActivity": "Activities",
+    "careScreenNoActivitiesLogged": "No activities logged for this day.",
+    "careScreenUnknownActivity": "Unknown Activity",
+    "careScreenActivityDuration": "Duration: {duration}",
+    "@careScreenActivityDuration": {
+        "description": "Displays activity duration.",
+        "placeholders": {
+            "duration": {
+                "type": "String",
+                "example": "30 minutes"
+            }
+        }
+    },
+    "careScreenActivityAssistance": "Assistance: {assistanceLevel}",
+    "@careScreenActivityAssistance": {
+        "description": "Displays level of assistance for an activity.",
+        "placeholders": {
+            "assistanceLevel": {
+                "type": "String",
+                "example": "With Walker"
+            }
+        }
+    },
+    "careScreenTooltipEditActivity": "Edit Activity Entry",
+    "careScreenTooltipDeleteActivity": "Delete Activity Entry",
+    "careScreenButtonAddActivity": "Add Activity",
+    "careScreenSectionTitleVitals": "Vital Signs",
+    "careScreenNoVitalsLogged": "No vital signs logged for this day.",
+    "careScreenVitalLog": "{vitalType}: {value} {unit}",
+    "@careScreenVitalLog": {
+        "description": "Log entry for a vital sign.",
+        "placeholders": {
+            "vitalType": {
+                "type": "String",
+                "example": "Blood Pressure"
+            },
+            "value": {
+                "type": "String",
+                "example": "120/80"
+            },
+            "unit": {
+                "type": "String",
+                "example": "mmHg"
+            }
+        }
+    },
+    "careScreenTooltipEditVital": "Edit Vital Sign Entry",
+    "careScreenTooltipDeleteVital": "Delete Vital Sign Entry",
+    "careScreenButtonAddVital": "Add Vital Sign",
+    "careScreenSectionTitleExpenses": "Expenses",
+    "careScreenNoExpensesLogged": "No expenses logged for this day.",
+    "careScreenExpenseLog": "{description}: ${amount}",
+    "@careScreenExpenseLog": {
+        "description": "Log entry for an expense.",
+        "placeholders": {
+            "description": {
+                "type": "String",
+                "example": "Groceries"
+            },
+            "amount": {
+                "type": "String",
+                "example": "45.50"
+            }
+        }
+    },
+    "careScreenExpenseCategory": "Category: {category}{noteDetails}",
+    "@careScreenExpenseCategory": {
+        "description": "Displays expense category and optional notes.",
+        "placeholders": {
+            "category": {
+                "type": "String",
+                "example": "Medical"
+            },
+            "noteDetails": {
+                "type": "String",
+                "example": " (Refill)"
+            }
+        }
+    },
+    "careScreenTooltipEditExpense": "Edit Expense Entry",
+    "careScreenTooltipDeleteExpense": "Delete Expense Entry",
+    "careScreenButtonAddExpense": "Add Expense",
+
+    "calendarErrorLoadEvents": "Error loading calendar events. Please try again.",
+    "calendarErrorUserNotLoggedIn": "Error: User not logged in. Cannot load calendar events.",
+    "calendarErrorEditMissingId": "Error: Cannot edit event, ID is missing.",
+    "calendarErrorEditPermission": "Error: You do not have permission to edit this event.",
+    "calendarErrorUpdateOriginalMissing": "Error: Original event data missing for update.",
+    "calendarErrorUpdatePermission": "Error: You do not have permission to update this event.",
+    "calendarEventAddedSuccess": "Event added successfully.",
+    "calendarEventUpdatedSuccess": "Event updated successfully.",
+    "calendarErrorSaveEvent": "Error saving event: {errorMessage}",
+    "@calendarErrorSaveEvent": {
+        "description": "Error message when saving a calendar event fails.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Network timeout"
+            }
+        }
+    },
+    "calendarErrorDeleteMissingId": "Error: Cannot delete event, ID is missing.",
+    "calendarErrorDeletePermission": "Error: You do not have permission to delete this event.",
+    "calendarConfirmDeleteTitle": "Confirm Delete",
+    "calendarConfirmDeleteContent": "Are you sure you want to delete the event '{eventTitle}'?",
+    "@calendarConfirmDeleteContent": {
+        "description": "Confirmation message for deleting a calendar event.",
+        "placeholders": {
+            "eventTitle": {
+                "type": "String",
+                "example": "Doctor's Appointment"
+            }
+        }
+    },
+    "calendarUntitledEvent": "Untitled Event",
+    "eventDeletedSuccess": "Event deleted successfully.",
+    "errorCouldNotDeleteEvent": "Error: Could not delete event.",
+    "calendarNoElderSelected": "No elder selected. Please select an elder to view their calendar.",
+    "calendarAddNewEventButton": "Add New Event",
+    "calendarEventsOnDate": "Events on {formattedDate}:",
+    "@calendarEventsOnDate": {
+        "description": "Header for the list of events on a specific date.",
+        "placeholders": {
+            "formattedDate": {
+                "type": "String",
+                "example": "June 3, 2024"
+            }
+        }
+    },
+    "calendarNoEventsScheduled": "No events scheduled for this day.",
+    "calendarTooltipEditEvent": "Edit Event",
+    "calendarEventTypePrefix": "Type:",
+    "calendarEventTimePrefix": "Time:",
+    "calendarEventNotesPrefix": "Notes:",
+
+    "expenseUncategorized": "Uncategorized",
+    "expenseErrorProcessingData": "Error processing expense data: {errorMessage}",
+    "@expenseErrorProcessingData": {
+        "description": "Error message when processing expense data fails.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Invalid format"
+            }
+        }
+    },
+    "expenseErrorFetching": "Error fetching expenses: {errorMessage}",
+    "@expenseErrorFetching": {
+        "description": "Error message when fetching expenses fails.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Server not responding"
+            }
+        }
+    },
+    "expenseUnknownUser": "Unknown User",
+    "expenseSelectElderPrompt": "Please select an elder profile to view expenses.",
+    "expenseLoading": "Loading expenses...",
+    "expenseScreenTitle": "Expenses",
+    "expenseForElder": "Expenses for {elderName}",
+    "@expenseForElder": {
+        "description": "Title indicating expenses for a specific elder.",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Jane Doe"
+            }
+        }
+    },
+    "expensePrevWeekButton": "Previous Week",
+    "expenseNextWeekButton": "Next Week",
+    "expenseNoExpensesThisWeek": "No expenses logged for this week.",
+    "expenseSummaryByCategoryTitle": "Summary by Category (This Week)",
+    "expenseNoExpensesInCategoryThisWeek": "No expenses in this category for the selected week.",
+    "expenseWeekTotalLabel": "Week Total:",
+    "expenseDetailedByUserTitle": "Detailed Expenses (This Week - By User)",
+    "expenseCategoryLabel": "Category: {categoryName}",
+    "@expenseCategoryLabel": {
+        "description": "Label for expense category.",
+        "placeholders": {
+            "categoryName": {
+                "type": "String",
+                "example": "Groceries"
+            }
+        }
+    },
+
+    "errorEnterEmailPassword": "Please enter both email and password.",
+    "errorLoginFailedDefault": "Login failed. Please check your credentials or network connection.",
+    "loginScreenTitle": "Cecelia Care",
+    "settingsLabelRelationshipToElder": "Relationship to Elder",
+    "@settingsLabelRelationshipToElder": {
+        "description": "Label for the relationship to elder field in user account settings"
+    },
+    "settingsHintRelationshipToElder": "e.g., Son, Daughter, Friend",
+    "@settingsHintRelationshipToElder": {
+        "description": "Hint text for the relationship to elder field"
+    },
+    "emailLabel": "Email",
+    "emailHint": "Enter your email",
+    "passwordLabel": "Password",
+    "dontHaveAccountSignUp": "Don't have an account? Sign Up",
+    "signUpNotImplemented": "Sign up functionality is not yet implemented.",
+    "homeScreenBaseTitleTimeline": "Timeline",
+    "homeScreenBaseTitleCareLog": "{term} Care Log",
+    "@homeScreenBaseTitleCareLog": {
+        "description": "Title for the care log screen, term is dynamic.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Loved One"
+            }
+        }
+    },
+    "homeScreenBaseTitleCalendar": "{term} Calendar",
+    "@homeScreenBaseTitleCalendar": {
+        "description": "Title for the calendar screen, term is dynamic.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Loved One"
+            }
+        }
+    },
+    "homeScreenBaseTitleExpenses": "Expenses",
+    "homeScreenBaseTitleSettings": "Settings",
+    "mustBeLoggedInToAddData": "You must be logged in to add data.",
+    "mustBeLoggedInToUpdateData": "You must be logged in to update data.",
+    "selectTermToViewCareLog": "Please select a {term} from Settings to view the Care Log.",
+    "@selectTermToViewCareLog": {
+        "description": "Message shown when no term is selected for the care log.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Loved One"
+            }
+        }
+    },
+    "selectElderToViewCareLog": "Please select an Elder from Settings to view the Care Log.",
+    "@selectElderToViewCareLog": {
+        "description": "Message shown when no Elder is selected for the care log, using the fixed term 'Elder'."
+    },
+    "goToSettingsButton": "Go to Settings",
+    "selectTermToViewCalendar": "Please select a {term} from Settings to view the Calendar.",
+    "@selectTermToViewCalendar": {
+        "description": "Message shown when no term is selected for the calendar.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Loved One"
+            }
+        }
+    },
+    "bottomNavTimeline": "Timeline",
+    "bottomNavCareLog": "Care Log",
+    "@bottomNavCareLog": {
+        "description": "Bottom navigation label for care log."
+    },
+    "bottomNavCalendar": "Calendar",
+    "@bottomNavCalendar": {
+        "description": "Bottom navigation label for calendar."
+    },
+    "bottomNavExpenses": "Expenses",
+    "bottomNavSettings": "Settings",
+    "timelineUnknownTime": "Unknown time",
+    "timelineInvalidTime": "Invalid time",
+    "timelineMustBeLoggedInToPost": "You must be logged in to post a message.",
+    "timelineSelectElderToPost": "Please select an active elder profile to post to their timeline.",
+    "timelineAnonymousUser": "Anonymous",
+    "timelineCouldNotPostMessage": "Could not post message: {errorMessage}",
+    "@timelineCouldNotPostMessage": {
+        "description": "Error message when posting a timeline message fails.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "timelinePleaseLogInToView": "Please log in to view the timeline.",
+    "timelineSelectElderToView": "Please select an elder profile to view their timeline.",
+    "timelineWriteMessageHint": "Write a message for {elderName}'s timeline...",
+    "@timelineWriteMessageHint": {
+        "description": "Hint text for the timeline message input field.",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Jane"
+            }
+        }
+    },
+    "timelineUnknownUser": "Unknown User",
+    "timelinePostButton": "Post",
+    "timelineCancelButton": "Cancel",
+    "timelinePostMessageToTimelineButton": "Post Message to Timeline",
+    "timelineLoading": "Loading timeline...",
+    "timelineErrorLoading": "Error loading timeline: {errorMessage}",
+    "@timelineErrorLoading": {
+        "description": "Error message when loading timeline entries fails.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Database unavailable"
+            }
+        }
+    },
+    "timelineNoEntriesYet": "No entries yet for {elderName}. Be the first to post!",
+    "@timelineNoEntriesYet": {
+        "description": "Message shown when there are no timeline entries for an elder.",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Jane"
+            }
+        }
+    },
+    "timelineItemTitleMessage": "Message",
+    "timelineEmptyMessage": "[Empty Message]",
+    "timelineItemTitleMedication": "Medication",
+    "timelineItemTitleSleep": "Sleep",
+    "timelineItemTitleMeal": "Meal",
+    "timelineItemTitleMood": "Mood",
+    "timelineItemTitlePain": "Pain",
+    "timelineItemTitleActivity": "Activity",
+    "timelineItemTitleVital": "Vital Sign",
+    "timelineItemTitleExpense": "Expense",
+    "timelineItemTitleEntry": "Entry",
+    "timelineNoDetailsProvided": "No details provided.",
+    "timelineLoggedBy": "Logged by {userName}",
+    "@timelineLoggedBy": {
+        "description": "Indicates who logged a timeline entry.",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "John D."
+            }
+        }
+    },
+    "timelineErrorRenderingItem": "Error rendering item at index {index}: {errorDetails}",
+    "@timelineErrorRenderingItem": {
+        "description": "Error message for a specific timeline item rendering issue.",
+        "placeholders": {
+            "index": {
+                "type": "String"
+            },
+            "errorDetails": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryDetailsUnavailable": "Details unavailable",
+    "timelineSummaryNotApplicable": "N/A",
+    "timelineSummaryMedicationStatusFormat": "({status})",
+    "@timelineSummaryMedicationStatusFormat": {
+        "description": "Format for medication status in timeline summary.",
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "Taken"
+            }
+        }
+    },
+    "timelineSummaryMedicationFormat": "{medName} {dose} {status}",
+    "@timelineSummaryMedicationFormat": {
+        "description": "Format for medication summary in timeline.",
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            },
+            "dose": {
+                "type": "String"
+            },
+            "status": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMedicationStatusTaken": "Taken",
+    "@timelineSummaryMedicationStatusTaken": {
+        "description": "Status text for medication taken in timeline summary."
+    },
+    "timelineSummaryMedicationStatusNotTaken": "Not Taken",
+    "@timelineSummaryMedicationStatusNotTaken": {
+        "description": "Status text for medication not taken in timeline summary."
+    },
+    "timelineSummaryMealTypeGeneric": "Meal",
+    "@timelineSummaryMealTypeGeneric": {
+        "description": "Generic term for a meal type in timeline summary if specific type is missing."
+    },
+    "timelineSummarySleepQualityFormat": "Quality: {quality}",
+    "@timelineSummarySleepQualityFormat": {
+        "description": "Format for sleep quality in timeline summary.",
+        "placeholders": {
+            "quality": {
+                "type": "String",
+                "example": "Good"
+            }
+        }
+    },
+    "timelineSummarySleepFormat": "Bed: {wentToBed}, Up: {wokeUp}. {quality}",
+    "@timelineSummarySleepFormat": {
+        "description": "Format for sleep summary in timeline.",
+        "placeholders": {
+            "wentToBed": {
+                "type": "String"
+            },
+            "wokeUp": {
+                "type": "String"
+            },
+            "quality": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMealFormat": "{mealType}: {description}",
+    "@timelineSummaryMealFormat": {
+        "description": "Format for meal summary in timeline.",
+        "placeholders": {
+            "mealType": {
+                "type": "String"
+            },
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMoodNotesFormat": "(Notes: {notes})",
+    "@timelineSummaryMoodNotesFormat": {
+        "description": "Format for mood notes in timeline summary.",
+        "placeholders": {
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMoodFormat": "Mood: {mood} {notes}",
+    "@timelineSummaryMoodFormat": {
+        "description": "Format for mood summary in timeline.",
+        "placeholders": {
+            "mood": {
+                "type": "String"
+            },
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryPainLocationFormat": "at {location}",
+    "@timelineSummaryPainLocationFormat": {
+        "description": "Format for pain location in timeline summary.",
+        "placeholders": {
+            "location": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryPainFormat": "Pain Level: {level}/10 {location}",
+    "@timelineSummaryPainFormat": {
+        "description": "Format for pain summary in timeline.",
+        "placeholders": {
+            "level": {
+                "type": "String"
+            },
+            "location": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryActivityDurationFormat": "for {duration}",
+    "@timelineSummaryActivityDurationFormat": {
+        "description": "Format for activity duration in timeline summary.",
+        "placeholders": {
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryActivityFormat": "{activityType} {duration}",
+    "@timelineSummaryActivityFormat": {
+        "description": "Format for activity summary in timeline.",
+        "placeholders": {
+            "activityType": {
+                "type": "String"
+            },
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatGeneric": "{vitalType}: {value} {unit}",
+    "@timelineSummaryVitalFormatGeneric": {
+        "description": "Generic format for a vital sign in timeline summary.",
+        "placeholders": {
+            "vitalType": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatBP": "BP: {systolic}/{diastolic} mmHg",
+    "@timelineSummaryVitalFormatBP": {
+        "description": "Format for blood pressure in timeline summary.",
+        "placeholders": {
+            "systolic": {
+                "type": "String"
+            },
+            "diastolic": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatHR": "HR: {heartRate} bpm",
+    "@timelineSummaryVitalFormatHR": {
+        "description": "Format for heart rate in timeline summary.",
+        "placeholders": {
+            "heartRate": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatTemp": "Temp: {temperature}°",
+    "@timelineSummaryVitalFormatTemp": {
+        "description": "Format for temperature in timeline summary.",
+        "placeholders": {
+            "temperature": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalNote": "Note: {note}",
+    "@timelineSummaryVitalNote": {
+        "description": "Format for vital sign notes in timeline summary.",
+        "placeholders": {
+            "note": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalsRecorded": "Vitals Recorded",
+    "timelineSummaryExpenseDescriptionFormat": "({description})",
+    "@timelineSummaryExpenseDescriptionFormat": {
+        "description": "Format for expense description in timeline summary.",
+        "placeholders": {
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryExpenseFormat": "{category}: ${amount} {description}",
+    "@timelineSummaryExpenseFormat": {
+        "description": "Format for expense summary in timeline.",
+        "placeholders": {
+            "category": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            },
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryErrorProcessing": "Error processing details for timeline.",
+    "@timelineSummaryErrorProcessing": {},
+
+    "timelineItemTitleImage": "Image Uploaded",
+    "@timelineItemTitleImage": {
+        "description": "Title for a timeline entry that is an image upload."
+    },
+    "timelineSummaryImageFormat": "Image: {title}",
+    "@timelineSummaryImageFormat": {
+        "description": "Format for image summary in timeline.",
+        "placeholders": {
+            "title": {}
+        }
+    },    
+    "careScreenErrorMissingIdGeneral": "Error: Item ID is missing. Cannot proceed.",
+    "careScreenErrorEditPermission": "Error: You do not have permission to edit this item.",
+    "careScreenErrorUpdateMedStatus": "Error updating medication status. Please try again.",
+    "careScreenLoadingRecords": "Loading records for today...",
+    "careScreenErrorNoRecords": "No records found for this day or an error occurred.",
+    "careScreenSectionTitleMeds": "Medications",
+    "careScreenNoMedsLogged": "No medications logged for this day.",
+    "careScreenUnknownMedication": "Unknown Medication",
+    "careScreenTooltipEditMed": "Edit Medication Entry",
+    "careScreenTooltipDeleteMed": "Delete Medication Entry",
+    "careScreenButtonAddMed": "Add Medication",
+    "careScreenSectionTitleSleep": "Sleep",
+    "careScreenNoSleepLogged": "No sleep logged for this day.",
+    "careScreenSleepTimeRange": "{wentToBed} - {wokeUp}",
+    "@careScreenSleepTimeRange": {
+        "description": "Displays the sleep time range.",
+        "placeholders": {
+            "wentToBed": {
+                "type": "String",
+                "example": "10:00 PM"
+            },
+            "wokeUp": {
+                "type": "String",
+                "example": "6:00 AM"
+            }
+        }
+    },
+    "careScreenSleepQuality": "Quality: {quality} {duration}",
+    "@careScreenSleepQuality": {
+        "description": "Displays sleep quality and optional duration.",
+        "placeholders": {
+            "quality": {
+                "type": "String",
+                "example": "Good"
+            },
+            "duration": {
+                "type": "String",
+                "example": "(7h 30m)"
+            }
+        }
+    },
+    "careScreenSleepNaps": "Naps: {naps}",
+    "@careScreenSleepNaps": {
+        "description": "Displays nap information.",
+        "placeholders": {
+            "naps": {
+                "type": "String",
+                "example": "1 nap, 30m"
+            }
+        }
+    },
+    "careScreenTooltipEditSleep": "Edit Sleep Entry",
+    "careScreenTooltipDeleteSleep": "Delete Sleep Entry",
+    "careScreenButtonAddSleep": "Add Sleep",
+    "careScreenSectionTitleFoodWater": "Food & Water Intake",
+    "careScreenNoFoodWaterLogged": "No food or water intake logged for this day.",
+
+    "errorEnterValidEmailPasswordMinLength": "Please enter a valid email and a password with at least {minLength} characters.",
+    "@errorEnterValidEmailPasswordMinLength": {
+        "description": "Error message when email is invalid or password is too short during sign up.",
+        "placeholders": {
+            "minLength": {
+                "type": "int",
+                "example": "6"
+            }
+        }
+    },
+    "errorSignUpFailedDefault": "Sign up failed. Please try again.",
+    "@errorSignUpFailedDefault": {
+        "description": "Default error message if sign up fails for an unknown reason."
+    },
+    "signUpScreenTitle": "Sign Up",
+    "@signUpScreenTitle": {
+        "description": "Title for the Sign Up screen."
+    },
+    "createAccountTitle": "Create Account",
+    "@createAccountTitle": {
+        "description": "Header text on the sign up form."
+    },
+    "signUpButton": "Sign Up",
+    "@signUpButton": {
+        "description": "Label for the sign up button."
+    },
+    "termElderDefault": "Care Recipient",
+    "@termElderDefault": {
+        "description": "The default term used if the user has not specified one."
+    },
+    "formErrorGenericSaveUpdate": "An error occurred while saving or updating. Please try again.",
+    "formSuccessActivitySaved": "Activity saved successfully.",
+    "formSuccessActivityUpdated": "Activity updated successfully.",
+    "formSuccessExpenseSaved": "Expense saved successfully.",
+    "formSuccessExpenseUpdated": "Expense updated successfully.",
+    "formSuccessMealSaved": "Meal saved successfully.",
+    "formSuccessMealUpdated": "Meal updated successfully.",
+    "formSuccessMedSaved": "Medication saved successfully.",
+    "formSuccessMedUpdated": "Medication updated successfully.",
+    "formSuccessMoodSaved": "Mood saved successfully.",
+    "formSuccessMoodUpdated": "Mood updated successfully.",
+    "formSuccessPainSaved": "Pain log saved successfully.",
+    "formSuccessPainUpdated": "Pain log updated successfully.",
+    "formSuccessSleepSaved": "Sleep log saved successfully.",
+    "formSuccessSleepUpdated": "Sleep log updated successfully.",
+    "formSuccessVitalSaved": "Vital sign saved successfully.",
+    "formSuccessVitalUpdated": "Vital sign updated successfully.",
+    "settingsHintRelationshipToElder": "e.g., Son/Daughter, Spouse, Caregiver",
+    "formErrorNoItemToDelete": "No item selected for deletion.",
+    "formConfirmDeleteTitle": "Confirm Delete",
+    "formConfirmDeleteVitalMessage": "Are you sure you want to delete this vital entry?",
+    "formSuccessVitalDeleted": "Vital entry deleted.",
+    "formErrorFailedToDeleteVital": "Failed to delete vital entry.",
+    "formTooltipDeleteVital": "Delete vital entry",
+    "formConfirmDeleteMealMessage": "Are you sure you want to delete this meal entry?",
+    "formSuccessMealDeleted": "Meal entry deleted.",
+    "formErrorFailedToDeleteMeal": "Failed to delete meal entry.",
+    "formTooltipDeleteMeal": "Delete meal entry",
+    "goToTodayButtonLabel": "Go to Today",
+    "@goToTodayButtonLabel": {
+        "description": "Label for the button that navigates the Care Screen to the current day."
+    },
+    "formConfirmDeleteMedMessage": "Are you sure you want to delete this medication entry?",
+    "@formConfirmDeleteMedMessage": {
+        "description": "Confirmation message before deleting a medication entry."
+    },
+    "formSuccessMedDeleted": "Medication entry deleted.",
+    "@formSuccessMedDeleted": {
+        "description": "Snackbar message shown after successfully deleting a medication entry."
+    },
+    "formErrorFailedToDeleteMed": "Failed to delete medication entry.",
+    "@formErrorFailedToDeleteMed": {
+        "description": "Snackbar message shown if deleting a medication entry fails."
+    },
+    "formTooltipDeleteMed": "Delete medication entry",
+    "@formTooltipDeleteMed": {
+        "description": "Tooltip for the delete button on a medication entry form."
+    },    
+    "formConfirmDeleteMoodMessage": "Are you sure you want to delete this mood entry?",
+"formSuccessMoodDeleted": "Mood entry deleted.",
+"formErrorFailedToDeleteMood": "Failed to delete mood entry.",
+"formTooltipDeleteMood": "Delete mood entry",
+
+"formConfirmDeletePainMessage": "Are you sure you want to delete this pain log?",
+"formSuccessPainDeleted": "Pain log deleted.",
+"formErrorFailedToDeletePain": "Failed to delete pain log.",
+"formTooltipDeletePain": "Delete pain log",
+
+"formConfirmDeleteActivityMessage": "Are you sure you want to delete this activity entry?",
+"formSuccessActivityDeleted": "Activity entry deleted.",
+"formErrorFailedToDeleteActivity": "Failed to delete activity entry.",
+"formTooltipDeleteActivity": "Delete activity entry",
+
+"formConfirmDeleteSleepMessage": "Are you sure you want to delete this sleep log?",
+"formSuccessSleepDeleted": "Sleep log deleted.",
+"formErrorFailedToDeleteSleep": "Failed to delete sleep log.",
+"formTooltipDeleteSleep": "Delete sleep log",
+
+"formConfirmDeleteExpenseMessage": "Are you sure you want to delete this expense entry?",
+"formSuccessExpenseDeleted": "Expense entry deleted.",
+"formErrorFailedToDeleteExpense": "Failed to delete expense entry.",
+"formTooltipDeleteExpense": "Delete expense entry",
+"userSelectorSendToLabel": "Send to:",
+"userSelectorAudienceAll": "All Users",
+"userSelectorAudienceSpecific": "Specific Users",
+"userSelectorNoUsersAvailable": "No other users available for selection.",
+"timelinePostingToAll": "Posting to: All Users",
+"timelinePostingToCount": "Posting to: {count} specific users",
+"@timelinePostingToCount": {
+    "description": "Message indicating the number of users a timeline post is being sent to.",
+    "placeholders": {
+        "count": {
+            "type": "String"
+        }
+    }
+    },
+"timelinePrivateMessageIndicator": "Private Message",
+"timelineEditMessage": "Edit Message",
+"timelineDeleteMessage": "Delete Message",
+"timelineConfirmDeleteMessageTitle": "Delete Message?",
+"timelineConfirmDeleteMessageContent": "Are you sure you want to delete this message?",
+"timelineMessageDeletedSuccess": "Message deleted.",
+"timelineErrorDeletingMessage": "Error deleting message: {errorMessage}",
+"@timelineErrorDeletingMessage": {
+    "placeholders": {
+        "errorMessage": {"type": "String"}
+    }
+},
+"timelineMessageUpdatedSuccess": "Message updated.",
+"timelineErrorUpdatingMessage": "Error updating message: {errorMessage}",
+"@timelineErrorUpdatingMessage": {
+    "placeholders": {
+        "errorMessage": {"type": "String"}
+    }
+  },
+"timelineUpdateButton": "Update",
+"timelineHideMessage": "Hide Message",
+"timelineMessageHiddenSuccess": "Message hidden from your view.",
+"timelineShowHiddenMessagesButton": "Show Hidden",
+"timelineHideHiddenMessagesButton": "Show All",
+"timelineUnhideMessage": "Unhide Message",
+"timelineMessageUnhiddenSuccess": "Message unhidden.",
+"timelineNoHiddenMessages": "You have no hidden messages for this timeline.",
+ "selfCareScreenTitle": "Self Care",
+  "@selfCareScreenTitle": {
+    "description": "Title for the Self Care screen"
+  },
+  "settingsTitleNotificationPreferences": "Notification Settings",
+  "settingsItemNotificationPreferences": "Notification Preferences",
+  "landingPageAlreadyLoggedIn": "You’re already logged in!",
+
+  "manageMedications": "Manage Medications",
+  "medicationsScreenTitleGeneric": "Medications",
+  "medicationsScreenTitleForElder": "{name}’s Medications",
+  "@medicationsScreenTitleForElder": {
+    "description": "Title for the medications screen, specific to an elder.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Jane"
+      }
+    }
+  },
+  "medicationsSearchHint": "Search drug name",
+  "medicationsDoseHint": "e.g. 10 mg",
+  "medicationsScheduleHint": "e.g. AM / PM",
+  "medicationsListEmpty": "No medications added yet",
+  "medicationsDoseNotSet": "Dose not set",
+  "medicationsScheduleNotSet": "Schedule not set",
+  "medicationsTooltipDelete": "Delete medication",
+  "medicationsConfirmDeleteTitle": "Delete '{medName}'?",
+  "@medicationsConfirmDeleteTitle": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicationsConfirmDeleteContent": "This cannot be undone.",
+  "medicationsDeletedSuccess": "Medication '{medName}' removed.",
+  "@medicationsDeletedSuccess": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "rxNavGenericSearchError": "Could not fetch drug list. Try again.",
+  "medicationsValidationNameRequired": "Name required",
+  "medicationsValidationDoseRequired": "Dose required",
+  "medicationsInteractionsFoundTitle": "Possible interactions found",
+  "medicationsNoInteractionsFound": "No interactions found",
+  "medicationsInteractionsSaveAnyway": "Save anyway",
+  "medicationsAddDialogTitle": "Add medication",
+  "medicationsAddedSuccess": "Medication '{medName}' added.",
+  "@medicationsAddedSuccess": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "routeErrorGenericMessage": "Something went wrong. Please try again.",
+  "goHomeButton": "Go Home",
+
+  "settingsTitleHelpfulResources": "Helpful Resources",
+  "settingsItemHelpfulResources": "View Helpful Resources",
+
+  "timelineFilterOnlyMyLogs": "Only My Logs:",
+  "timelineFilterFromDate": "From",
+  "timelineFilterToDate": "To",
+
+  "medicationsInteractionsSectionTitle": "Interactions",
+  "@medicationsInteractionsSectionTitle": {
+    "description": "Title for the medication interactions section in a form."
+  },
+  "inclusiveLanguageGuideTitle": "Inclusive Language Guidance",
+  "inclusiveLanguageTip1Title": "Respect Preferred Names",
+  "inclusiveLanguageTip1Content": "Always use a person's preferred name. If you're unsure, ask respectfully: 'What name do you prefer to be called?'",
+  "inclusiveLanguageTip2Title": "Use Correct Pronouns",
+  "inclusiveLanguageTip2Content": "If you know someone's preferred pronouns, use them consistently. If you don't know, use gender-neutral language (they/them) or ask: 'What are your preferred pronouns?'",
+  "settingsLabelSexualOrientation": "Sexual Orientation",
+  "@settingsLabelSexualOrientation": {
+    "description": "Label for the sexual orientation field in user account settings"
+  },
+  "settingsHintSexualOrientation": "Enter your sexual orientation (optional)",
+  "settingsLabelGenderIdentity": "Gender Identity",
+  "@settingsLabelGenderIdentity": {
+    "description": "Label for the gender identity field in user account settings"
+  },
+  "settingsHintGenderIdentity": "Enter your gender identity (optional)",
+  "settingsLabelPreferredPronouns": "Preferred Pronouns",
+  "@settingsLabelPreferredPronouns": {
+    "description": "Label for the preferred pronouns field in user account settings"
+  },
+  "settingsHintPreferredPronouns": "e.g., she/her, he/him, they/them (optional)",
+  "couldNotLaunchUrl": "Could not launch {urlString}",
+  "@couldNotLaunchUrl": {
+    "description": "Error message when a URL cannot be launched.",
+    "placeholders": { "urlString": { "type": "String" } }
+  },
+  "helpfulResourcesTitle": "Helpful Resources",
+  "@helpfulResourcesTitle": {
+    "description": "Title for the Helpful Resources screen"
+  },
+  "homeScreenWelcomeGreeting": "Welcome, {userName}! Thank you for trusting Cecelia Care to help you support {elderName}'s well-being.",
+  "@homeScreenWelcomeGreeting": {
+        "description": "Greeting message for the home screen.",
+        "placeholders": {
+            "userName": {
+                "type": "String"
+            },
+            "elderName": {
+                "type": "String"
+            }
+        }
+    },
+  "settingsLabelUserGoals": "My Caregiving Goals/Challenges",
+  "@settingsLabelUserGoals": {
+        "description": "Label for the user goals/challenges field in My Account settings."
+    },
+  "settingsHintUserGoals": "What support are you looking for? (e.g., managing medications, tracking mood changes, coordinating with other caregivers)",
+  "@settingsHintUserGoals": {
+        "description": "Hint text for the user goals/challenges field in My Account settings."    
+    },
+  "badgeLabelFirstMoodLog": "Mood Monitor",
+  "badgeDescriptionFirstMoodLog": "Congratulations on logging your first mood entry!",
+  "badgeLabelFirstMedLog": "Medication Tracker",
+  "badgeDescriptionFirstMedLog": "You've successfully logged your first medication entry.",
+  "badgeLabelFirstActivityLog": "Activity Starter",
+  "badgeDescriptionFirstActivityLog": "Great job logging your first activity!",
+  "badgeLabelMedMaestro10": "Medication Maestro (10)",
+  "badgeDescriptionMedMaestro10": "Logged 10 medication entries. You're a pro!",
+  "badgeLabelActivityChampion7": "Activity Champion (7 Days)",
+  "badgeDescriptionActivityChampion7": "Logged an activity every day for a week!",
+  "badgesScreenTitle": "My Achievements",
+  "badgesScreenNoBadges": "No badges available yet. Keep using the app to earn them!",
+  "selfCareScreenAchievementsTitle": "My Achievements",
+  "@selfCareScreenAchievementsTitle": {
+      "description": "Title for the achievements/badges section on the Self Care screen."
+  },
+  "selfCareScreenNoBadgesUnlocked": "No badges unlocked yet. Keep up the great work!",
+  "@selfCareScreenNoBadgesUnlocked": {
+      "description": "Message shown on Self Care screen when no badges are unlocked."
+  },
+  "imageUploadScreenTitle": "Image Scanner & Uploader",
+  "@imageUploadScreenTitle": {
+      "description": "Title for the Image Upload screen link in settings"
+    },
+  "imageUploadErrorNoElderSelected": "Please select an active elder profile to upload images.",
+  "@imageUploadErrorNoElderSelected": {
+      "description": "Error message shown when trying to access image upload without an active elder."
+    }
+,
+  "imageUploadErrorPicking": "Error picking image: {errorDetails}",
+  "@imageUploadErrorPicking": {
+    "description": "Error message when image picking fails.",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "imageUploadErrorNoFileSelected": "No file selected. Please pick an image first.",
+  "@imageUploadErrorNoFileSelected": {
+    "description": "Error message when user tries to upload without selecting a file."
+  },
+  "imageUploadErrorNotLoggedIn": "You must be logged in to upload images.",
+  "@imageUploadErrorNotLoggedIn": {
+    "description": "Error message when an unauthenticated user tries to upload."
+  },
+  "imageUploadDefaultTitle": "Uploaded Image",
+  "@imageUploadDefaultTitle": {
+    "description": "Default title for an uploaded image if user doesn't provide one."
+  },
+  "imageUploadSuccess": "Image uploaded successfully!",
+  "@imageUploadSuccess": {
+    "description": "Success message after image upload."
+  },
+  "imageUploadErrorFailed": "Image upload failed: {errorDetails}",
+  "@imageUploadErrorFailed": {
+    "description": "Error message when image upload to storage or Firestore fails.",
+    "placeholders": {
+      "errorDetails": {
+        "type": "String"
+      }
+    }
+  },
+  "imageUploadForElder": "Upload Image for {elderName}",
+  "@imageUploadForElder": {
+    "description": "Header text indicating for which elder the image is being uploaded.",
+    "placeholders": {
+      "elderName": {
+        "type": "String"
+      }
+    }
+  },
+  "imageUploadButtonGallery": "Choose from Gallery",
+  "imageUploadButtonCamera": "Take Photo",
+  "imageUploadPreviewTitle": "Image Preview:",
+  "imageUploadErrorLoadingPreview": "Error loading preview",
+  "imageUploadLabelTitle": "Image Title (Optional)",
+  "imageUploadHintTitle": "Enter a title for the image",
+  "imageUploadStatusUploading": "Uploading...",
+  "imageUploadButtonUpload": "Upload Image",
+    "@imageUploadButtonUpload": {},
+
+    "uploadedImagesSectionTitle": "Uploaded Images",
+    "@uploadedImagesSectionTitle": {
+        "description": "Title for the section displaying already uploaded images."
+    },
+    "noImagesUploadedYet": "No images uploaded yet for this elder.",
+    "@noImagesUploadedYet": {
+        "description": "Message shown when no images are found for the selected elder."
+    },
+    "imageUnavailable": "Image unavailable",
+    "@imageUnavailable": {
+        "description": "Placeholder text when an image URL is invalid or image cannot be loaded in the grid."
+    },
+  "emergencyContactSectionTitle": "Emergency Contact",
+  "emergencyContactNameLabel": "Contact Name",
+  "emergencyContactPhoneLabel": "Contact Phone",
+  "emergencyContactRelationshipLabel": "Relationship", 
+  "calendarRemindersTitle": "Health Reminders",
+  "calendarReminderNotificationTitle": "Health Reminder",
+  "calendarReminderSet": "Reminder for \"{title}\" set for {datetime}.",
+  "@calendarReminderSet": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "datetime": {
+        "type": "String"
+      }
+    }
+  },
+  "setReminder": "Set Reminder",
+  "vaccineCovid19": "COVID-19 Vaccine",
+  "vaccineCovid19Freq": "At least 2 doses of current vaccine for adults 65+",
+  "vaccineInfluenza": "Influenza (Flu) Vaccine",
+  "vaccineInfluenzaFreq": "1 dose annually",
+  "vaccineRSV": "RSV Vaccine",
+  "vaccineRSVFreq": "1 dose, recommended for adults ≥60 years",
+  "vaccineTdap": "Tdap/Td Vaccine",
+  "vaccineTdapFreq": "Booster every 10 years",
+  "vaccineShingles": "Shingles (Zoster) Vaccine",
+  "vaccineShinglesFreq": "2 doses for healthy adults ≥50 years",
+  "vaccinePneumococcal": "Pneumococcal Vaccine",
+  "vaccinePneumococcalFreq": "All adults ≥65 years",
+  "vaccineHepatitisB": "Hepatitis B Vaccine",
+  "vaccineHepatitisBFreq": "For adults 60+ with risk factors",
+  "checkupPhysicalExam": "Annual Physical Exam",
+  "checkupPhysicalExamFreq": "Annually",
+  "checkupMammogram": "Mammogram",
+  "checkupMammogramFreq": "Every 1-2 years for women",
+  "checkupPapTest": "Cervical Cancer (Pap test)",
+  "checkupPapTestFreq": "May not be needed if over 65 with normal test history",
+  "checkupColonCancer": "Colon Cancer Screening",
+  "checkupColonCancerFreq": "Colonoscopy every 10 years",
+  "checkupLungCancer": "Lung Cancer Screening",
+  "checkupLungCancerFreq": "Yearly for long-time smokers",
+  "checkupProstateCancer": "Prostate Cancer (DRE/PSA)",
+  "checkupProstateCancerFreq": "Discuss with provider (men 55-70)",
+  "checkupSkinCancer": "Skin Cancer Checks",
+  "checkupSkinCancerFreq": "Regular checks as needed",
+  "checkupBloodPressure": "Blood Pressure",
+  "checkupBloodPressureFreq": "At least annually",
+  "checkupCholesterol": "Cholesterol Screening",
+  "checkupCholesterolFreq": "Every 4-6 years for normal risk",
+  "checkupBloodGlucose": "Blood Glucose (A1C)",
+  "checkupBloodGlucoseFreq": "Every 3 years if results are normal",
+  "checkupVision": "Vision Screening",
+  "checkupVisionFreq": "Annually for 50+",
+  "checkupHearing": "Hearing Screening",
+  "checkupHearingFreq": "Every 1-3 years for 65+",
+  "checkupBoneDensity": "Bone Density (DXA)",
+  "checkupBoneDensityFreq": "Every 1-2 years if on osteoporosis medicine",
+  "checkupCognitive": "Cognitive Assessment",
+  "checkupCognitiveFreq": "Annually for 65+",
+  "checkupMentalHealth": "Mental Health Screening",
+  "checkupMentalHealthFreq": "As needed, during annual physical",  
+  "timelineFilterResetDates": "Reset Dates",
+    "@@locale": "en",
+  "appTitle": "Cecelia Care",
+  "dialogTitleAddNewLog": "Add a New Log",
+  "careScreenButtonAddMed": "Add Medication",
+  "formTooltipVoiceInput": "Tap for voice input",
+  "journalEntryCannotBeEmpty": "Journal entry cannot be empty.",
+  "journalEntryUpdatedSuccessfully": "Journal entry updated successfully!",
+  "journalEntryAddedSuccessfully": "Journal entry added successfully!",
+  "journalEntryDeletedSuccessfully": "Journal entry deleted successfully.",
+  "failedToDeleteJournalEntry": "Failed to delete journal entry.",
+  "caregiverJournal": "Caregiver Journal",
+  "pleaseLogInToAccessJournal": "Please log in to access your journal.",
+  "editJournalEntry": "Edit Journal Entry",
+  "addJournalEntry": "Add New Journal Entry",
+  "writeYourEntryHere": "Write your entry here...",
+  "error": "Error",
+  "noJournalEntriesYet": "No journal entries yet.",
+  "date": "Date",
+  "noContent": "No Content",
+  "edit": "Edit",
+  "delete": "Delete",
+  "updateEntry": "Update Entry",
+  "addEntry": "Add Entry",
+  "cancelEdit": "Cancel Edit", 
+  "dailyMood": "Daily Mood",
+  "optionalNote": "Optional note",
+  "breakReminders": "Break Reminders",
+  "hydrate": "Hydrate",
+  "stretch": "Stretch",
+  "walk": "Walk",
+  "caregiverJournalTitle": "Caregiver Journal",
+  "caregiverJournalButton": "Open Caregiver Journal",
+  "off": "Off",
+  "selfCareReminderTitle": "Self-Care Reminder",
+  "timeTo": "Time to",
+  "timelineAddNewLogTooltip": "Add a new log",
+  "timelineNewMessageButton": "New Message",
+      "settingsTitleCareRecipientProfileManagement": "Care Recipient Management",
+    "settingsCurrentCareRecipient": "Active Care Recipient: {profileName}",
+    "@settingsCurrentCareRecipient": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsNoActiveCareRecipientSelected": "No active care recipient is selected.",
+    "settingsButtonManageCareRecipientProfiles": "Manage Care Recipient Profiles",
+    "settingsErrorNavToManageCareRecipientProfiles": "Could not navigate to manage profiles.",
+    "manageCareRecipientProfilesTitle": "Manage Care Recipient Profiles",
+    "createCareRecipientProfileTitle": "Create Care Recipient Profile",
+    "noCareRecipientProfilesFound": "No care recipient profiles found.",
+    "errorCareRecipientIdMissing": "Care Recipient ID is missing, cannot update.",
+    "errorSelectCareRecipientAndEmail": "Please select a care recipient and enter an email.",
+    "timelineFiltersTitle": "Timeline Filters",
+    "careScreenTitle": "Care",
+    "budgetTrackerTitle": "Budget Tracker",
+    "settingsProfileNoChanges": "No changes to save.",
+    "formErrorNotAuthenticated": "Error: User not authenticated. Please sign in again.",
+    "activityFormLabelActivityTypeRequired": "Activity Type*",
+    "medFormLabelNameRequired": "Medication Name*",
+    "vitalFormLabelTypeRequired": "Vital Type*",
+    "medicationsTooltipAskCecelia": "Ask Cecelia about medications",
+    "formErrorUserOrElderNotFound": "Error: Could not find user or care recipient profile.",
+    "medicationDefinitionSaveFailed": "Failed to save medication to the managed list.",
+    "errorTitle": "Error",
+    "settingsTitleCareRecipientManagement": "Care Recipient Management",
+    "settingsActiveCareRecipient": "Active: {name}",
+    "@settingsActiveCareRecipient": {
+      "placeholders": { "name": { "type": "String" } }
+  },
+    "settingsNoActiveCareRecipient": "No active care recipient is selected.",
+    "settingsItemManageProfiles": "Manage Care Recipient Profiles",
+    "settingsErrorCouldNotNavigateToProfiles": "Could not navigate to manage profiles.",
+    "settingsItemClearData": "Clear All Data for This Care Recipient",
+    "confirmButton": "Confirm",
+    "editReminder": "Edit Reminder",
+    "cancelReminder": "Cancel Reminder",
+    "ceceliaBotName": "Cecelia",
+    "chatWithCeceliaTitle": "Chat with Cecelia",
+    "ceceliaInitialGreeting": "Hello! I am a specialized bot for medication interactions. How can I assist you today?",
+    "geminiUnknownError": "An unknown error occurred.",
+    "notificationPreferencesTitle": "Notification Preferences",
+    "medsNotificationsLabel": "Medication Reminders",
+    "calendarNotificationsLabel": "Calendar Events",
+    "selfCareNotificationsLabel": "Self-Care Reminders",
+    "chatNotificationsLabel": "Chat Message Notifications",
+    "healthRemindersNotificationsLabel": "Health Reminders",
+    "generalNotificationsLabel": "General App Notifications",
+
+    "genericError": "An error occurred: {details}",
+    "@genericError": {
+      "placeholders": { "details": { "type": "String" } }
+  },
+    "characterCount": "{count}/{max}",
+    "@characterCount": {
+      "placeholders": { "count": { "type": "int" }, "max": { "type": "int" } }
+  },
+    "dateLabel": "Date: {date}",
+    "@dateLabel": {
+      "placeholders": { "date": { "type": "String" } }
+  },
+    "medicationsInteractionDetails": "{severity} interaction with {otherDrug}: {description}",
+    "@medicationsInteractionDetails": {
+      "placeholders": { "severity": {}, "otherDrug": {}, "description": {} }
+  },
+    "calendarEventStarting": "Event starting: {eventTitle}",
+    "@calendarEventStarting": {
+      "placeholders": { "eventTitle": { "type": "String" } }
+  },
+    "calendarErrorSavingReminder": "Error saving reminder: {details}",
+    "@calendarErrorSavingReminder": {
+      "placeholders": { "details": { "type": "String" } }
+  },
+    "calendarConfirmCancelReminder": "Are you sure you want to cancel the reminder for \"{reminderTitle}\"?",
+    "@calendarConfirmCancelReminder": {
+      "placeholders": { "reminderTitle": { "type": "String" } }
+  },
+    "calendarReminderCancelled": "Reminder for \"{reminderTitle}\" cancelled.",
+    "@calendarReminderCancelled": {
+      "placeholders": { "reminderTitle": { "type": "String" } }
+  },
+    "calendarReminderSetFor": "Reminder set for:",
+    "selfCareReminderBody": "Time to {activity}.",
+    "@selfCareReminderBody": {
+      "placeholders": { "activity": { "type": "String" } }
+  },
+    "geminiFirebaseError": "An error occurred with the AI service: {details}",
+    "@geminiFirebaseError": {
+      "placeholders": { "details": { "type": "String" } }
+  },
+    "geminiCommunicationError": "I'm sorry, I encountered a communication error: {details}",
+    "@geminiCommunicationError": {
+      "placeholders": { "details": { "type": "String" } }
+  },
+    "geminiUnexpectedError": "An unexpected system error occurred: {details}",
+    "@geminiUnexpectedError": {
+      "placeholders": { "details": { "type": "String" } }
+  },
+    "vitalFormLabelValueRequired": "Value ({unit})*",
+    "@vitalFormLabelValueRequired": {
+      "placeholders": { "unit": { "type": "String" } }
+  },
+
+    "notificationChannelDefaultName": "General Notifications",
+    "notificationChannelDefaultDescription": "Channel for general app notifications.",
+    "notificationChannelCalendarName": "Calendar Events",
+    "notificationChannelCalendarDescription": "Notifications for upcoming calendar events.",
+    "notificationChannelMedRemindersName": "Medication Reminders",
+    "notificationChannelMedRemindersDescription": "Daily reminders to take scheduled medications.",
+    "notificationChannelSelfCareName": "Self-Care Breaks",
+    "notificationChannelSelfCareDescription": "Reminders to hydrate, stretch, and take a walk.",
+    "notificationChannelChatMessagesName": "Chat Messages",
+    "notificationChannelChatMessagesDescription": "Notifications for new direct messages.",
+    "notificationChannelHealthRemindersName": "Health Reminders",
+    "notificationChannelHealthRemindersDescription": "Notifications for important health checkups and vaccines.",
+    "medicationReminderTitle": "Medication Reminder: {medName}",
+    "@medicationReminderTitle": {
+      "placeholders": { "medName": { "type": "String" } }
+  },
+  "medicationReminderBody": "Time to take {dosage} for {elderName}.",
+  "@medicationReminderBody": {
+    "placeholders": {
+      "dosage":    { "type": "String" },
+      "elderName": { "type": "String" }
+    }
+  },
+  "calendarAllDay": "All Day",
+  "@calendarAllDay": {
+    "description": "Text to indicate an event lasts the entire day."
+  },
+  "formErrorMicPermissionDenied": "Microphone permission was denied.",
+  "@formErrorMicPermissionDenied": {
+    "description": "Text shown when the user has denied microphone permission."
+  },
+  "formErrorAiProcessing": "An error occurred during AI processing.",
+  "@formErrorAiProcessing": {
+    "description": "Text shown when the AI fails to process a request."
+  },
+  "timelineSummaryMealCaloriesFormat": "{calories} kcal",
+  "@timelineSummaryMealCaloriesFormat": {
+    "description": "Formats the calories in the timeline summary for meals.",
+    "placeholders": {
+      "calories": { "type": "String" }
+    }
+  },
+  "eventFormValidationTitle": "Please enter an event title.",
+  "@eventFormValidationTitle": {
+    "description": "Validation message shown when the event title is empty."
+  },
+  "eventFormValidationStartDateTime": "Please select a start date and time.",
+  "@eventFormValidationStartDateTime": {
+    "description": "Validation message shown when the event start date/time is not set."
+  },
+  "eventFormTitleCreate": "Create Event",
+  "@eventFormTitleCreate": {
+    "description": "Dialog title for creating a new event."
+  },
+  "eventFormTitleEdit": "Edit Event",
+  "@eventFormTitleEdit": {
+    "description": "Dialog title for editing an existing event."
+  },
+  "eventFormLabelTitle": "Title",
+  "@eventFormLabelTitle": {
+    "description": "Label for the event title input field."
+  },
+  "eventFormLabelType": "Type",
+  "@eventFormLabelType": {
+    "description": "Label for the event type selector."
+  },
+  "eventFormLabelAllDay": "All Day",
+  "@eventFormLabelAllDay": {
+    "description": "Label for the all-day toggle."
+  },
+  "eventFormLabelStartDate": "Start Date",
+  "@eventFormLabelStartDate": {
+    "description": "Label for the start date picker."
+  },
+  "eventFormLabelEndDate": "End Date",
+  "@eventFormLabelEndDate": {
+    "description": "Label for the end date picker."
+  },
+  "eventFormLabelDate": "Date",
+  "@eventFormLabelDate": {
+    "description": "Label for the date picker when the event is all-day."
+  },
+  "eventFormLabelStartTime": "Start Time",
+  "@eventFormLabelStartTime": {
+    "description": "Label for the start time picker."
+  },
+  "eventFormLabelEndTime": "End Time",
+  "@eventFormLabelEndTime": {
+    "description": "Label for the end time picker."
+  },
+  "eventFormHintSelectDate": "Select date",
+  "@eventFormHintSelectDate": {
+    "description": "Hint text for the date selection field."
+  },
+"medicationsInteractionsSectionTitle": "Potential Medication Interactions",
+  "@medicationsInteractionsSectionTitle": {
+    "description": "Title for the section warning about possible medication interactions."
+  },
+  "validationErrorRequired": "{fieldName} is required",
+  "@validationErrorRequired": {
+    "description": "Error message when a required field is empty",
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "validationErrorInvalidNumber": "Please enter a valid number for {fieldName}",
+  "@validationErrorInvalidNumber": {
+    "description": "Error message when a field expects a number but gets text",
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "validationErrorNumericRange": "{fieldName} must be between {min} and {max}",
+  "@validationErrorNumericRange": {
+    "description": "Error message when a number is outside the allowed range",
+    "placeholders": {
+      "fieldName": { "type": "String" },
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "validationErrorPositiveNumber": "{fieldName} must be a positive number",
+  "@validationErrorPositiveNumber": {
+    "description": "Error message when a number must be positive",
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "validationErrorInvalidFormat": "Invalid format for {fieldName}",
+  "@validationErrorInvalidFormat": {
+    "description": "Error message when a field format (like regex) is invalid",
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "expenseFormValidationAmountEmpty": "Please enter an amount",
+  "@expenseFormValidationAmountEmpty": { "description": "Validation error for empty expense amount" },
+  "expenseFormValidationAmountInvalid": "Please enter a valid amount greater than 0",
+  "@expenseFormValidationAmountInvalid": { "description": "Validation error for invalid expense amount" },
+  "vitalFormValidationValueEmpty": "Please enter a value",
+  "@vitalFormValidationValueEmpty": { "description": "Validation error for empty vital value" },
+  "sleepFormValidationSelectQuality": "Please select sleep quality",
+  "@sleepFormValidationSelectQuality": { "description": "Validation error for missing sleep quality" },
+  "sleepFormValidationDescribeOtherQuality": "Please describe the 'Other' sleep quality",
+  "@sleepFormValidationDescribeOtherQuality": { "description": "Validation error for missing description of 'Other' sleep quality" },
+  "moodFormValidationSelectOrSpecifyMood": "Please select a mood or specify 'Other'",
+  "@moodFormValidationSelectOrSpecifyMood": { "description": "Validation error for missing mood selection" },
+  "moodFormValidationSpecifyOtherMood": "Please specify the 'Other' mood",
+  "@moodFormValidationSpecifyOtherMood": { "description": "Validation error for missing 'Other' mood description" },
+  "painFormValidationSelectOrSpecifyDescription": "Please select a description or specify 'Other'",
+  "@painFormValidationSelectOrSpecifyDescription": { "description": "Validation error for missing pain description" },
+  "painFormValidationSpecifyOtherDescription": "Please specify the 'Other' description",
+  "@painFormValidationSpecifyOtherDescription": { "description": "Validation error for missing 'Other' pain description" },
+  "moodFormValidationIntensityRange": "Intensity must be between 1 and 5",
+  "@moodFormValidationIntensityRange": { "description": "Validation error for mood intensity range" }
+}

@@ -1,0 +1,1448 @@
+{
+    "@@locale": "es",
+    "appTitle": "Cecelia Care",
+    "loginButton": "Iniciar Sesión",
+    "settingsTitle": "Configuración",
+    "languageSetting": "Idioma",
+    "manageElderProfilesTitle": "Gestionar Perfiles de Ancianos",
+    "createProfileButton": "Crear Perfil",
+    "pleaseLogInToManageProfiles": "Por favor, inicie sesión para gestionar los perfiles de ancianos.",
+    "calendarScreenTitle": "Calendario para {elderName}",
+    "@calendarScreenTitle": {
+        "description": "Título de la pantalla del calendario, incluye el nombre del anciano",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Jane Doe"
+            }
+        }
+    },
+
+    "formOptionOther": "Otro",
+    "formLabelNotesOptional": "Notas (Opcional)",
+    "cancelButton": "Cancelar",
+    "updateButton": "Actualizar",
+    "saveButton": "Guardar",
+    "okButton": "Aceptar",
+    "deleteButton": "Eliminar",
+    "removeButton": "Quitar",
+    "inviteButton": "Invitar",
+    "activeButton": "Activo",
+    "setActiveButton": "Establecer Activo",
+    "sendInviteButton": "Enviar Invitación",
+    "formUnknownUser": "Usuario Desconocido",
+    "timePickerHelpText": "SELECCIONAR HORA",
+
+    "expenseFormTitleEdit": "Editar Gasto",
+    "expenseFormTitleNew": "Nuevo Gasto",
+    "expenseFormLabelDescription": "Descripción",
+    "expenseFormHintDescription": "Ej: Recarga de receta",
+    "expenseFormValidationDescription": "Por favor, ingrese una descripción.",
+    "expenseFormLabelAmount": "Monto",
+    "expenseFormHintAmount": "Ej: 25.50",
+    "expenseFormValidationAmountEmpty": "Por favor, ingrese un monto.",
+    "expenseFormValidationAmountInvalid": "Por favor, ingrese un monto positivo válido.",
+    "expenseFormLabelCategory": "Categoría",
+    "expenseCategoryMedical": "Médico",
+    "expenseCategoryGroceries": "Comestibles",
+    "expenseCategorySupplies": "Suministros",
+    "expenseCategoryHousehold": "Hogar",
+    "expenseCategoryPersonalCare": "Cuidado Personal",
+    "expenseFormValidationCategory": "Por favor, seleccione una categoría.",
+    "expenseFormHintNotes": "Añada cualquier nota relevante aquí...",
+    "formErrorFailedToUpdateExpense": "Error al actualizar el gasto. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveExpense": "Error al guardar el gasto. Por favor, inténtelo de nuevo.",
+
+    "mealFormTitleEdit": "Editar Comida / Ingesta de Agua",
+    "mealFormTitleNew": "Registrar Comida / Ingesta de Agua",
+    "mealFormLabelIntakeType": "Tipo de Ingesta",
+    "mealFormIntakeCategoryFood": "Comida",
+    "mealFormIntakeCategoryWater": "Agua",
+    "mealFormLabelMealType": "Tipo de Comida",
+    "mealFormMealTypeBreakfast": "Desayuno",
+    "mealFormMealTypeLunch": "Almuerzo",
+    "mealFormMealTypeSnack": "Merienda",
+    "mealFormMealTypeDinner": "Cena",
+    "mealFormLabelDescription": "Descripción",
+    "mealFormHintFoodDescription": "Ej: Sopa de pollo, tostada",
+    "mealFormValidationFoodDescription": "Por favor, describa la comida.",
+    "mealFormLabelWaterContext": "Contexto del Agua (Opcional)",
+    "mealFormHintWaterContext": "Ej: Con medicación, Sediento/a",
+    "mealFormLabelWaterAmount": "Cantidad",
+    "mealFormHintWaterAmount": "Ej: 1 vaso, 200ml",
+    "mealFormValidationWaterAmount": "Por favor, especifique la cantidad de agua.",
+    "mealFormHintFoodNotes": "Ej: Comió bien, no le gustaron las zanahorias",
+    "mealFormHintWaterNotes": "Ej: Bebió lentamente",
+    "formErrorFailedToUpdateMeal": "Error al actualizar la comida. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveMeal": "Error al guardar la comida. Por favor, inténtelo de nuevo.",
+
+    "medFormTitleEdit": "Editar Medicación",
+    "medFormTitleNew": "Registrar Medicación",
+    "medFormTimePickerHelpText": "SELECCIONAR HORA DE MEDICACIÓN",
+    "medFormLabelName": "Nombre del Medicamento",
+    "medFormHintNameCustom": "O escriba un nombre de medicamento personalizado",
+    "medFormHintName": "Ingrese el nombre del medicamento",
+    "medFormValidationName": "Por favor, ingrese el nombre del medicamento.",
+    "medFormLabelDose": "Dosis (Opcional)",
+    "medFormHintDose": "Ej: 1 tableta, 10mg",
+    "medFormLabelTime": "Hora (Opcional)",
+    "medFormHintTime": "Seleccionar hora",
+    "medFormLabelMarkAsTaken": "Marcar como Tomado",
+    "formErrorFailedToUpdateMed": "Error al actualizar la medicación. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveMed": "Error al guardar la medicación. Por favor, inténtelo de nuevo.",
+
+    "moodFormTitleEdit": "Editar Estado de Ánimo",
+    "moodFormTitleNew": "Registrar Estado de Ánimo",
+    "moodHappy": "😊 Feliz",
+    "moodContent": "🙂 Contento/a",
+    "moodSad": "😟 Triste",
+    "moodAnxious": "😬 Ansioso/a",
+    "moodCalm": "😌 Calmado/a",
+    "moodIrritable": "😠 Irritable",
+    "moodAgitated": "😫 Agitado/a",
+    "moodPlayful": "🥳 Juguetón/a",
+    "moodTired": "😴 Cansado/a",
+    "moodOptionOther": "📝 Otro",
+    "moodFormLabelSelectMood": "Seleccionar Estado de Ánimo",
+    "moodFormValidationSelectOrSpecifyMood": "Por favor, seleccione o especifique un estado de ánimo.",
+    "moodFormValidationSpecifyOtherMood": "Por favor, especifique el estado de ánimo.",
+    "moodFormHintSpecifyOtherMood": "Describa el estado de ánimo...",
+    "moodFormLabelIntensity": "Intensidad (1-5, Opcional)",
+    "moodFormHintIntensity": "1 (Leve) - 5 (Severo)",
+    "moodFormValidationIntensityRange": "La intensidad debe estar entre 1 y 5.",
+    "moodFormHintNotes": "Ej: Sintiéndose bien después de un paseo",
+    "moodFormButtonUpdate": "Actualizar Ánimo",
+    "moodFormButtonSave": "Guardar Ánimo",
+    "formErrorFailedToUpdateMood": "Error al actualizar el estado de ánimo. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveMood": "Error al guardar el estado de ánimo. Por favor, inténtelo de nuevo.",
+
+    "painFormTitleEdit": "Editar Registro de Dolor",
+    "painFormTitleNew": "Registrar Dolor",
+    "painTypeAching": "Adolorido",
+    "painTypeBurning": "Ardiente",
+    "painTypeDull": "Sordo",
+    "painTypeSharp": "Agudo",
+    "painTypeShooting": "Punzante",
+    "painTypeStabbing": "Apuñalador",
+    "painTypeThrobbing": "Palpitante",
+    "painTypeTender": "Sensible",
+    "painFormLabelLocation": "Ubicación",
+    "painFormHintLocation": "Ej: Rodilla izquierda, Espalda baja",
+    "painFormValidationLocation": "Por favor, especifique la ubicación del dolor.",
+    "painFormLabelIntensity": "Intensidad (0-10)",
+    "painFormHintIntensity": "0 (Sin dolor) - 10 (Peor dolor)",
+    "painFormValidationIntensityEmpty": "Por favor, ingrese la intensidad del dolor.",
+    "painFormValidationIntensityRange": "La intensidad debe estar entre 0 y 10.",
+    "painFormLabelDescription": "Descripción",
+    "painFormValidationSelectOrSpecifyDescription": "Por favor, seleccione o especifique una descripción del dolor.",
+    "painFormValidationSpecifyOtherDescription": "Por favor, especifique la descripción del dolor.",
+    "painFormHintSpecifyOtherDescription": "Describa el dolor...",
+    "painFormHintNotes": "Ej: Peor después de la actividad, aliviado con reposo",
+    "formErrorFailedToUpdatePain": "Error al actualizar el registro de dolor. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSavePain": "Error al guardar el registro de dolor. Por favor, inténtelo de nuevo.",
+
+    "sleepFormTitleEdit": "Editar Registro de Sueño",
+    "sleepFormTitleNew": "Registrar Sueño",
+    "sleepQualityGood": "Bueno",
+    "sleepQualityFair": "Regular",
+    "sleepQualityPoor": "Malo",
+    "sleepQualityRestless": "Inquieto",
+    "sleepQualityInterrupted": "Interrumpido",
+    "sleepFormLabelWentToBed": "Se acostó a las",
+    "sleepFormHintTimeWentToBed": "Seleccionar hora",
+    "sleepFormValidationTimeWentToBed": "Por favor, seleccione la hora en que se acostó.",
+    "sleepFormLabelWokeUp": "Se despertó a las (Opcional)",
+    "sleepFormHintTimeWokeUp": "Seleccionar hora",
+    "sleepFormLabelTotalDuration": "Duración Total (Opcional)",
+    "sleepFormHintTotalDuration": "Ej: 7 horas, 7h 30m",
+    "sleepFormLabelQuality": "Calidad",
+    "sleepFormValidationSelectQuality": "Por favor, seleccione la calidad del sueño.",
+    "sleepFormLabelDescribeOtherQuality": "Describir Otra Calidad",
+    "sleepFormHintDescribeOtherQuality": "Describa la calidad del sueño...",
+    "sleepFormValidationDescribeOtherQuality": "Por favor, describa la calidad del sueño.",
+    "sleepFormLabelNaps": "Siestas (Opcional)",
+    "sleepFormHintNaps": "Ej: 1 siesta, 30 mins",
+    "sleepFormLabelGeneralNotes": "Notas Generales (Opcional)",
+    "sleepFormHintGeneralNotes": "Ej: Se despertó sintiéndose renovado/a",
+    "sleepFormButtonUpdate": "Actualizar Sueño",
+    "sleepFormButtonSave": "Guardar Sueño",
+    "formErrorFailedToUpdateSleep": "Error al actualizar el registro de sueño. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveSleep": "Error al guardar el registro de sueño. Por favor, inténtelo de nuevo.",
+
+    "vitalFormTitleEdit": "Editar Signo Vital",
+    "vitalFormTitleNew": "Registrar Signo Vital",
+    "vitalTypeBPLabel": "Presión Arterial",
+    "vitalTypeBPUnit": "mmHg",
+    "vitalTypeBPPlaceholder": "Ej: 120/80",
+    "vitalTypeHRLabel": "Frecuencia Cardíaca",
+    "vitalTypeHRUnit": "lpm",
+    "vitalTypeHRPlaceholder": "Ej: 70",
+    "vitalTypeWTLabel": "Peso",
+    "vitalTypeWTUnit": "kg/lbs",
+    "vitalTypeWTPlaceholder": "Ej: 65 kg o 143 lbs",
+    "vitalTypeBGLabel": "Glucosa en Sangre",
+    "vitalTypeBGUnit": "mg/dL o mmol/L",
+    "vitalTypeBGPlaceholder": "Ej: 90 mg/dL",
+    "vitalTypeTempLabel": "Temperatura",
+    "vitalTypeTempUnit": "°C/°F",
+    "vitalTypeTempPlaceholder": "Ej: 36.5°C o 97.7°F",
+    "vitalTypeO2Label": "Saturación de Oxígeno",
+    "vitalTypeO2Unit": "%",
+    "vitalTypeO2Placeholder": "Ej: 98",
+    "vitalFormLabelType": "Tipo",
+    "vitalFormLabelValue": "Valor",
+    "vitalFormValidationValueEmpty": "Por favor, ingrese un valor.",
+    "vitalFormValidationBPFormat": "Ingrese PA como 'SIS/DIA', ej: 120/80.",
+    "vitalFormValidationValueNumeric": "Por favor, ingrese un valor numérico.",
+    "vitalFormHintNotes": "Ej: Tomado después de la comida",
+    "vitalFormButtonUpdate": "Actualizar Vital",
+    "vitalFormButtonSave": "Guardar Vital",
+    "formErrorFailedToUpdateVital": "Error al actualizar el signo vital. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveVital": "Error al guardar el signo vital. Por favor, inténtelo de nuevo.",
+
+    "settingsUserProfileNotLoaded": "Perfil de usuario no cargado.",
+    "settingsDisplayNameCannotBeEmpty": "El nombre para mostrar no puede estar vacío.",
+    "settingsProfileUpdatedSuccess": "Perfil actualizado correctamente.",
+    "settingsErrorUpdatingProfile": "Error al actualizar el perfil: {errorMessage}",
+    "@settingsErrorUpdatingProfile": {
+      "placeholders": {
+        "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsSelectElderFirstMedDef": "Por favor, seleccione primero un perfil de anciano para gestionar las definiciones de medicamentos.",
+    "settingsMedNameRequired": "El nombre del medicamento es obligatorio.",
+    "settingsMedDefaultTimeFormatError": "Formato de hora inválido. Por favor, use HH:mm (ej: 09:00).",
+    "settingsMedDefAddedSuccess": "Definición de medicamento agregada correctamente.",
+    "settingsClearDataErrorElderOrUserMissing": "No se pueden borrar los datos: Falta el anciano activo o el usuario.",
+    "settingsClearDataErrorNotAdmin": "No eres el administrador principal del perfil de este anciano. Los datos solo pueden ser borrados por el administrador principal.",
+    "settingsClearDataDialogTitle": "¿Borrar todos los datos de {elderName}?",
+    "@settingsClearDataDialogTitle": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsClearDataDialogContent": "Esta acción es irreversible y eliminará todos los registros asociados (medicamentos, comidas, signos vitales, etc.) para este anciano. ¿Estás seguro de que quieres continuar?",
+    "settingsClearDataDialogConfirmButton": "Sí, Borrar Todos los Datos",
+    "settingsClearDataSuccess": "Todos los datos de {elderName} han sido borrados.",
+    "@settingsClearDataSuccess": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsClearDataErrorGeneric": "Error al borrar los datos: {errorMessage}",
+    "@settingsClearDataErrorGeneric": {
+      "placeholders": {
+        "error": {
+                "type": "String"
+            }
+        }
+    },
+    "languageNameEn": "English (Inglés)",
+    "languageNameEs": "Español",
+    "languageNameJa": "日本語 (Japonés)",
+    "languageNameKo": "한국어 (Coreano)",
+    "languageNameZh": "中文 (Chino)",
+    "settingsTitleMyAccount": "Mi Cuenta",
+    "settingsLabelDisplayName": "Nombre para Mostrar",
+    "settingsHintDisplayName": "Ingrese su nombre para mostrar",
+    "settingsLabelDOB": "Fecha de Nacimiento",
+    "settingsHintDOB": "Seleccione su fecha de nacimiento",
+    "settingsButtonSaveProfile": "Guardar Perfil",
+    "settingsButtonSignOut": "Cerrar Sesión",
+    "settingsErrorLoadingProfile": "Error al cargar el perfil.",
+    "settingsTitleLanguage": "Configuración de Idioma",
+    "settingsLabelSelectLanguage": "Seleccionar Idioma de la Aplicación",
+    "settingsLanguageChangedConfirmation": "Idioma cambiado a {languageTag}.",
+    "@settingsLanguageChangedConfirmation": {
+      "placeholders": {
+        "locale": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsTitleElderProfileManagement": "Gestión de Perfiles de Ancianos",
+    "settingsCurrentElder": "Anciano Activo Actual: {elderName}",
+    "@settingsCurrentElder": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsNoActiveElderSelected": "Ningún anciano activo seleccionado. Por favor, seleccione o cree uno.",
+    "settingsErrorNavToManageElderProfiles": "No se pudo navegar a la gestión de perfiles de ancianos. Usuario no ha iniciado sesión.",
+    "settingsButtonManageElderProfiles": "Gestionar Perfiles de Ancianos",
+    "settingsTitleAdminActions": "Acciones de Administrador para {elderName}",
+    "@settingsTitleAdminActions": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsButtonClearAllData": "Borrar Todos los Datos de Este Anciano",
+    "settingsTitleMedicationDefinitions": "Definiciones de Medicamentos",
+    "settingsSubtitleAddNewMedDef": "Agregar Nueva Definición de Medicamento:",
+    "settingsLabelMedName": "Nombre del Medicamento",
+    "settingsHintMedName": "Ej: Lisinopril",
+    "settingsLabelMedDose": "Dosis Predeterminada (Opcional)",
+    "settingsHintMedDose": "Ej: 10mg, 1 tableta",
+    "settingsLabelMedDefaultTime": "Hora Predeterminada (HH:mm, Opcional)",
+    "settingsHintMedDefaultTime": "Ej: 08:00",
+    "settingsButtonAddMedDef": "Agregar Definición de Medicamento",
+    "settingsSelectElderToAddMedDefs": "Seleccione un perfil de anciano para agregar definiciones de medicamentos.",
+    "settingsSelectElderToViewMedDefs": "Seleccione un perfil de anciano para ver las definiciones de medicamentos.",
+    "settingsNoMedDefsForElder": "No se encontraron definiciones de medicamentos para {elderName}.",
+    "@settingsNoMedDefsForElder": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsExistingMedDefsForElder": "Definiciones Existentes para {elderNameOrFallback}:",
+    "@settingsExistingMedDefsForElder": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsSelectedElderFallback": "Anciano Seleccionado",
+    "settingsMedDefDosePrefix": "Dosis: {dose}",
+    "@settingsMedDefDosePrefix": {
+        "placeholders": {
+            "dose": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsMedDefDefaultTimePrefix": "Hora: {time}",
+    "@settingsMedDefDefaultTimePrefix": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsTooltipDeleteMedDef": "Eliminar esta definición de medicamento",
+    "settingsDeleteMedDefDialogTitle": "¿Eliminar la definición de '{medName}'?",
+    "@settingsDeleteMedDefDialogTitle": {
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsDeleteMedDefDialogContent": "¿Está seguro de que desea eliminar esta definición de medicamento? Esto no afectará los registros de medicamentos pasados, pero la eliminará como opción para registros futuros.",
+    "settingsMedDefDeletedSuccess": "Definición de medicamento '{medName}' eliminada.",
+    "@settingsMedDefDeletedSuccess": {
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            }
+        }
+    },
+
+    "errorNotLoggedIn": "Error: Usuario no ha iniciado sesión.",
+    "errorElderIdMissing": "Error: Falta el ID del anciano.",
+    "profileUpdatedSnackbar": "Perfil de {profileName} actualizado.",
+    "@profileUpdatedSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "profileCreatedSnackbar": "Perfil de {profileName} creado.",
+    "@profileCreatedSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSavingProfile": "Error al guardar el perfil: {errorMessage}",
+    "@errorSavingProfile": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSelectElderAndEmail": "Por favor, seleccione un perfil de anciano e ingrese una dirección de correo electrónico válida.",
+    "invitationSentSnackbar": "Invitación enviada a {email}.",
+    "@invitationSentSnackbar": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSendingInvitation": "Error al enviar la invitación: {errorMessage}",
+    "@errorSendingInvitation": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "removeCaregiverDialogTitle": "¿Quitar Cuidador?",
+    "removeCaregiverDialogContent": "¿Está seguro de que desea quitar a {caregiverIdentifier} como cuidador de este anciano?",
+    "@removeCaregiverDialogContent": {
+        "placeholders": {
+            "caregiverIdentifier": {
+                "type": "String"
+            }
+        }
+    },
+    "caregiverRemovedSnackbar": "Cuidador {caregiverIdentifier} quitado.",
+    "@caregiverRemovedSnackbar": {
+        "placeholders": {
+            "caregiverIdentifier": {
+                "type": "String"
+            }
+        }
+    },
+    "errorRemovingCaregiver": "Error al quitar el cuidador: {errorMessage}",
+    "@errorRemovingCaregiver": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "tooltipEditProfile": "Editar Perfil",
+    "dobLabelPrefix": "FDN:",
+    "allergiesLabelPrefix": "Alergias:",
+    "dietLabelPrefix": "Dieta:",
+    "primaryAdminLabel": "Administrador Principal:",
+    "adminNotAssigned": "No asignado",
+    "loadingAdminInfo": "Cargando información del administrador...",
+    "caregiversLabel": "Cuidadores ({count}):",
+    "@caregiversLabel": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "noCaregiversYet": "Aún no hay cuidadores.",
+    "errorLoadingCaregiverNames": "Error al cargar los nombres de los cuidadores.",
+    "caregiverAdminSuffix": "(Admin)",
+    "tooltipRemoveCaregiver": "Quitar a {identifier}",
+    "@tooltipRemoveCaregiver": {
+        "placeholders": {
+            "identifier": {
+                "type": "String"
+            }
+        }
+    },
+    "profileSetActiveSnackbar": "{profileName} es ahora el perfil activo.",
+    "@profileSetActiveSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteDialogTitle": "Invitar Cuidador al Perfil de {profileName}",
+    "@inviteDialogTitle": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "caregiversEmailLabel": "Correo Electrónico del Cuidador",
+    "enterEmailHint": "Ingrese la dirección de correo electrónico",
+    "createElderProfileTitle": "Crear Nuevo Perfil de Anciano",
+    "editProfileTitle": "Editar {profileNameOrFallback}",
+    "@editProfileTitle": {
+        "placeholders": {
+            "profileNameOrFallback": {
+                "type": "String"
+            }
+        }
+    },
+    "profileNameLabel": "Nombre del Perfil",
+    "validatorPleaseEnterName": "Por favor, ingrese un nombre.",
+    "dateOfBirthLabel": "Fecha de Nacimiento",
+    "allergiesLabel": "Alergias (separadas por comas)",
+    "dietaryRestrictionsLabel": "Restricciones Alimentarias (separadas por comas)",
+    "createNewProfileButton": "Crear Nuevo Perfil",
+    "saveChangesButton": "Guardar Cambios",
+    "errorPrefix": "Error: ",
+    "noElderProfilesFound": "No se encontraron perfiles de ancianos.",
+    "createNewProfileOrWait": "Cree un nuevo perfil o espere una invitación.",
+    "fabNewProfile": "Nuevo Perfil",
+
+    "activityTypeWalk": "Caminata",
+    "activityTypeExercise": "Ejercicio",
+    "activityTypePhysicalTherapy": "Fisioterapia",
+    "activityTypeOccupationalTherapy": "Terapia Ocupacional",
+    "activityTypeOuting": "Salida",
+    "activityTypeSocialVisit": "Visita Social",
+    "activityTypeReading": "Lectura",
+    "activityTypeTV": "Ver TV/Películas",
+    "activityTypeGardening": "Jardinería",
+    "assistanceLevelIndependent": "Independiente",
+    "assistanceLevelStandbyAssist": "Asistencia en Espera",
+    "assistanceLevelWithWalker": "Con Andador",
+    "assistanceLevelWithCane": "Con Bastón",
+    "assistanceLevelWheelchair": "Silla de Ruedas",
+    "assistanceLevelMinAssist": "Asistencia Mínima (Min A)",
+    "assistanceLevelModAssist": "Asistencia Moderada (Mod A)",
+    "assistanceLevelMaxAssist": "Asistencia Máxima (Max A)",
+    "formErrorFailedToUpdateActivity": "Error al actualizar la actividad. Por favor, inténtelo de nuevo.",
+    "formErrorFailedToSaveActivity": "Error al guardar la actividad. Por favor, inténtelo de nuevo.",
+    "activityFormTitleEdit": "Editar Actividad",
+    "activityFormTitleNew": "Registrar Nueva Actividad",
+    "activityFormLabelActivityType": "Tipo de Actividad",
+    "activityFormHintActivityType": "Seleccione o escriba la actividad",
+    "activityFormValidationActivityType": "Por favor, seleccione o especifique un tipo de actividad.",
+    "activityFormLabelDuration": "Duración (Opcional)",
+    "activityFormHintDuration": "Ej: 30 minutos, 1 hora",
+    "activityFormLabelAssistance": "Nivel de Asistencia (Opcional)",
+    "activityFormHintAssistance": "Seleccione el nivel de asistencia",
+    "activityFormHintNotes": "Ej: Disfrutó del sol, caminó hasta el parque",
+
+    "notApplicable": "No aplica",
+
+    "careScreenWaterLog": "Agua: {description}",
+    "@careScreenWaterLog": {
+        "description": "Registro de ingesta de agua, muestra descripción o cantidad.",
+        "placeholders": {
+            "description": {
+                "type": "String",
+                "example": "2 vasos"
+            }
+        }
+    },
+    "careScreenMealLog": "{mealType}: {description}",
+    "@careScreenMealLog": {
+        "description": "Registro de una comida, muestra tipo de comida y descripción.",
+        "placeholders": {
+            "mealType": {
+                "type": "String",
+                "example": "Almuerzo"
+            },
+            "description": {
+                "type": "String",
+                "example": "Sándwich de pollo"
+            }
+        }
+    },
+    "careScreenMealGeneric": "Comida",
+    "careScreenWaterContext": "Contexto: {contextDetails}",
+    "@careScreenWaterContext": {
+        "description": "Contexto para la ingesta de agua.",
+        "placeholders": {
+            "contextDetails": {
+                "type": "String",
+                "example": "Con medicación"
+            }
+        }
+    },
+    "careScreenNotes": "Notas: {noteContent}",
+    "@careScreenNotes": {
+        "description": "Muestra notas para un registro.",
+        "placeholders": {
+            "noteContent": {
+                "type": "String",
+                "example": "Sintiéndose bien hoy."
+            }
+        }
+    },
+    "careScreenLoggedBy": "Registrado por: {userName}",
+    "@careScreenLoggedBy": {
+        "description": "Indica quién registró la entrada.",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "Juan Pérez"
+            }
+        }
+    },
+    "careScreenTooltipEditFoodWater": "Editar Entrada de Comida/Agua",
+    "careScreenTooltipDeleteFoodWater": "Eliminar Entrada de Comida/Agua",
+    "careScreenErrorMissingIdDelete": "Error: No se puede eliminar la entrada, falta el ID.",
+    "careScreenButtonAddFoodWater": "Añadir Comida / Agua",
+    "careScreenSectionTitleMoodBehavior": "Estado de Ánimo y Comportamiento",
+    "careScreenNoMoodBehaviorLogged": "No se ha registrado ningún estado de ánimo o comportamiento para este día.",
+    "careScreenMood": "Ánimo: {mood}",
+    "@careScreenMood": {
+        "description": "Muestra el estado de ánimo registrado.",
+        "placeholders": {
+            "mood": {
+                "type": "String",
+                "example": "Feliz"
+            }
+        }
+    },
+    "careScreenMoodIntensity": "Intensidad: {intensityLevel}",
+    "@careScreenMoodIntensity": {
+        "description": "Muestra la intensidad del estado de ánimo.",
+        "placeholders": {
+            "intensityLevel": {
+                "type": "String",
+                "example": "3/5"
+            }
+        }
+    },
+    "careScreenTooltipEditMood": "Editar Entrada de Ánimo",
+    "careScreenTooltipDeleteMood": "Eliminar Entrada de Ánimo",
+    "careScreenButtonAddMood": "Añadir Ánimo / Comportamiento",
+    "careScreenSectionTitlePain": "Dolor",
+    "careScreenNoPainLogged": "No se ha registrado dolor para este día.",
+    "careScreenPainLog": "Dolor: {location} - {description}{intensityDetails}",
+    "@careScreenPainLog": {
+        "description": "Registro de dolor.",
+        "placeholders": {
+            "location": {
+                "type": "String",
+                "example": "Rodilla izquierda"
+            },
+            "description": {
+                "type": "String",
+                "example": "Adolorido"
+            },
+            "intensityDetails": {
+                "type": "String",
+                "example": " (Intensidad: 5/10)"
+            }
+        }
+    },
+    "careScreenPainIntensity": "Intensidad: {intensityValue}",
+    "@careScreenPainIntensity": {
+        "description": "Muestra la intensidad del dolor.",
+        "placeholders": {
+            "intensityValue": {
+                "type": "String",
+                "example": "7/10"
+            }
+        }
+    },
+    "careScreenTooltipEditPain": "Editar Entrada de Dolor",
+    "careScreenTooltipDeletePain": "Eliminar Entrada de Dolor",
+    "careScreenButtonAddPain": "Añadir Registro de Dolor",
+    "careScreenSectionTitleActivity": "Actividades",
+    "careScreenNoActivitiesLogged": "No se han registrado actividades para este día.",
+    "careScreenUnknownActivity": "Actividad Desconocida",
+    "careScreenActivityDuration": "Duración: {duration}",
+    "@careScreenActivityDuration": {
+        "description": "Muestra la duración de la actividad.",
+        "placeholders": {
+            "duration": {
+                "type": "String",
+                "example": "30 minutos"
+            }
+        }
+    },
+    "careScreenActivityAssistance": "Asistencia: {assistanceLevel}",
+    "@careScreenActivityAssistance": {
+        "description": "Muestra el nivel de asistencia para una actividad.",
+        "placeholders": {
+            "assistanceLevel": {
+                "type": "String",
+                "example": "Con Andador"
+            }
+        }
+    },
+    "careScreenTooltipEditActivity": "Editar Entrada de Actividad",
+    "careScreenTooltipDeleteActivity": "Eliminar Entrada de Actividad",
+    "careScreenButtonAddActivity": "Añadir Actividad",
+    "careScreenSectionTitleVitals": "Signos Vitales",
+    "careScreenNoVitalsLogged": "No se han registrado signos vitales para este día.",
+    "careScreenVitalLog": "{vitalType}: {value} {unit}",
+    "@careScreenVitalLog": {
+        "description": "Registro de un signo vital.",
+        "placeholders": {
+            "vitalType": {
+                "type": "String",
+                "example": "Presión Arterial"
+            },
+            "value": {
+                "type": "String",
+                "example": "120/80"
+            },
+            "unit": {
+                "type": "String",
+                "example": "mmHg"
+            }
+        }
+    },
+    "careScreenTooltipEditVital": "Editar Entrada de Signo Vital",
+    "careScreenTooltipDeleteVital": "Eliminar Entrada de Signo Vital",
+    "careScreenButtonAddVital": "Añadir Signo Vital",
+    "careScreenSectionTitleExpenses": "Gastos",
+    "careScreenNoExpensesLogged": "No se han registrado gastos para este día.",
+    "careScreenExpenseLog": "{description}: ${amount}",
+    "@careScreenExpenseLog": {
+        "description": "Registro de un gasto.",
+        "placeholders": {
+            "description": {
+                "type": "String",
+                "example": "Comestibles"
+            },
+            "amount": {
+                "type": "String",
+                "example": "45.50"
+            }
+        }
+    },
+    "careScreenExpenseCategory": "Categoría: {category}{noteDetails}",
+    "@careScreenExpenseCategory": {
+        "description": "Muestra la categoría del gasto y notas opcionales.",
+        "placeholders": {
+            "category": {
+                "type": "String",
+                "example": "Médico"
+            },
+            "noteDetails": {
+                "type": "String",
+                "example": " (Recarga)"
+            }
+        }
+    },
+    "careScreenTooltipEditExpense": "Editar Entrada de Gasto",
+    "careScreenTooltipDeleteExpense": "Eliminar Entrada de Gasto",
+    "careScreenButtonAddExpense": "Añadir Gasto",
+
+    "calendarErrorLoadEvents": "Error al cargar los eventos del calendario. Por favor, inténtelo de nuevo.",
+    "calendarErrorUserNotLoggedIn": "Error: Usuario no ha iniciado sesión. No se pueden cargar los eventos del calendario.",
+    "calendarErrorEditMissingId": "Error: No se puede editar el evento, falta el ID.",
+    "calendarErrorEditPermission": "Error: No tiene permiso para editar este evento.",
+    "calendarErrorUpdateOriginalMissing": "Error: Faltan los datos originales del evento para la actualización.",
+    "calendarErrorUpdatePermission": "Error: No tiene permiso para actualizar este evento.",
+    "calendarEventAddedSuccess": "Evento añadido correctamente.",
+    "calendarEventUpdatedSuccess": "Evento actualizado correctamente.",
+    "calendarErrorSaveEvent": "Error al guardar el evento: {errorMessage}",
+    "@calendarErrorSaveEvent": {
+        "description": "Mensaje de error cuando falla el guardado de un evento del calendario.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Tiempo de espera de red agotado"
+            }
+        }
+    },
+    "calendarErrorDeleteMissingId": "Error: No se puede eliminar el evento, falta el ID.",
+    "calendarErrorDeletePermission": "Error: No tiene permiso para eliminar este evento.",
+    "calendarConfirmDeleteTitle": "Confirmar Eliminación",
+    "calendarConfirmDeleteContent": "¿Está seguro de que desea eliminar el evento '{eventTitle}'?",
+    "@calendarConfirmDeleteContent": {
+        "description": "Mensaje de confirmación para eliminar un evento del calendario.",
+        "placeholders": {
+            "eventTitle": {
+                "type": "String",
+                "example": "Cita Médica"
+            }
+        }
+    },
+    "calendarUntitledEvent": "Evento Sin Título",
+    "eventDeletedSuccess": "Evento eliminado correctamente.",
+    "errorCouldNotDeleteEvent": "Error: No se pudo eliminar el evento.",
+    "calendarNoElderSelected": "Ningún anciano seleccionado. Por favor, seleccione un anciano para ver su calendario.",
+    "calendarAddNewEventButton": "Añadir Nuevo Evento",
+    "calendarEventsOnDate": "Eventos el {formattedDate}:",
+    "@calendarEventsOnDate": {
+        "description": "Encabezado para la lista de eventos en una fecha específica.",
+        "placeholders": {
+            "formattedDate": {
+                "type": "String",
+                "example": "3 de junio de 2024"
+            }
+        }
+    },
+    "calendarNoEventsScheduled": "No hay eventos programados para este día.",
+    "calendarTooltipEditEvent": "Editar Evento",
+    "calendarEventTypePrefix": "Tipo:",
+    "calendarEventTimePrefix": "Hora:",
+    "calendarEventNotesPrefix": "Notas:",
+
+    "expenseUncategorized": "Sin Categoría",
+    "expenseErrorProcessingData": "Error al procesar los datos de gastos: {errorMessage}",
+    "@expenseErrorProcessingData": {
+        "description": "Mensaje de error cuando falla el procesamiento de datos de gastos.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Formato inválido"
+            }
+        }
+    },
+    "expenseErrorFetching": "Error al obtener los gastos: {errorMessage}",
+    "@expenseErrorFetching": {
+        "description": "Mensaje de error cuando falla la obtención de gastos.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "El servidor no responde"
+            }
+        }
+    },
+    "expenseUnknownUser": "Usuario Desconocido",
+    "expenseSelectElderPrompt": "Por favor, seleccione un perfil de anciano para ver los gastos.",
+    "expenseLoading": "Cargando gastos...",
+    "expenseScreenTitle": "Gastos",
+    "expenseForElder": "Gastos de {elderName}",
+    "@expenseForElder": {
+        "description": "Título que indica los gastos de un anciano específico.",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Juana Pérez"
+            }
+        }
+    },
+    "expensePrevWeekButton": "Semana Anterior",
+    "expenseNextWeekButton": "Semana Siguiente",
+    "expenseNoExpensesThisWeek": "No hay gastos registrados para esta semana.",
+    "expenseSummaryByCategoryTitle": "Resumen por Categoría (Esta Semana)",
+    "expenseNoExpensesInCategoryThisWeek": "No hay gastos en esta categoría para la semana seleccionada.",
+    "expenseWeekTotalLabel": "Total de la Semana:",
+    "expenseDetailedByUserTitle": "Gastos Detallados (Esta Semana - Por Usuario)",
+    "expenseCategoryLabel": "Categoría: {categoryName}",
+    "@expenseCategoryLabel": {
+        "description": "Etiqueta para la categoría de gastos.",
+        "placeholders": {
+            "categoryName": {
+                "type": "String",
+                "example": "Comestibles"
+            }
+        }
+    },
+
+    "errorEnterEmailPassword": "Por favor, ingrese correo electrónico y contraseña.",
+    "errorLoginFailedDefault": "Inicio de sesión fallido. Verifique sus credenciales o conexión de red.",
+    "loginScreenTitle": "Bienvenido a Cecelia Care",
+    "emailLabel": "Correo Electrónico",
+    "emailHint": "Ingrese su correo electrónico",
+    "passwordLabel": "Contraseña",
+    "dontHaveAccountSignUp": "¿No tiene una cuenta? Regístrese",
+    "signUpNotImplemented": "La funcionalidad de registro aún no está implementada.",
+    "homeScreenBaseTitleTimeline": "Cronología",
+    "homeScreenBaseTitleCareLog": "Registro de {term}",
+    "homeScreenBaseTitleCalendar": "Calendario de {term}",
+    "homeScreenBaseTitleExpenses": "Gastos",
+    "homeScreenBaseTitleSettings": "Configuración",
+    "mustBeLoggedInToAddData": "Debe iniciar sesión para agregar datos.",
+    "mustBeLoggedInToUpdateData": "Debe iniciar sesión para actualizar datos.",
+    "selectElderToViewCareLog": "Por favor, seleccione un Anciano desde Configuración para ver el Registro de Cuidado.",
+    "@selectElderToViewCareLog": {
+        "description": "Mensaje que se muestra cuando no se selecciona ningún Anciano para el registro de cuidado, usando el término fijo 'Anciano'."
+    },    
+    "goToSettingsButton": "Ir a Configuración",
+    "bottomNavTimeline": "Cronología",
+    "bottomNavCareLog": "Registro de {term}",
+    "bottomNavCalendar": "Calendario de {term}",
+    "bottomNavExpenses": "Gastos",
+    "bottomNavSettings": "Ajustes",
+    "timelineUnknownTime": "Hora desconocida",
+    "timelineInvalidTime": "Hora inválida",
+    "timelineMustBeLoggedInToPost": "Debe iniciar sesión para publicar un mensaje.",
+    "timelineSelectElderToPost": "Por favor, seleccione un perfil de anciano activo para publicar en su cronología.",
+    "timelineAnonymousUser": "Anónimo",
+    "timelineCouldNotPostMessage": "No se pudo publicar el mensaje: {errorMessage}",
+    "@timelineCouldNotPostMessage": {
+        "description": "Mensaje de error cuando falla la publicación de un mensaje en la cronología.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Error de red"
+            }
+        }
+    },
+    "timelinePleaseLogInToView": "Por favor, inicie sesión para ver la cronología.",
+    "timelineSelectElderToView": "Por favor, seleccione un perfil de anciano para ver su cronología.",
+    "timelineWriteMessageHint": "Escriba un mensaje para la cronología de {elderName}...",
+    "@timelineWriteMessageHint": {
+        "description": "Texto de sugerencia para el campo de entrada de mensajes de la cronología.",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Juana"
+            }
+        }
+    },
+    "timelineUnknownUser": "Usuario Desconocido",
+    "timelinePostButton": "Publicar",
+    "timelineCancelButton": "Cancelar",
+    "timelinePostMessageToTimelineButton": "Publicar Mensaje en la Cronología",
+    "timelineLoading": "Cargando cronología...",
+    "timelineErrorLoading": "Error al cargar la cronología: {errorMessage}",
+    "@timelineErrorLoading": {
+        "description": "Mensaje de error cuando falla la carga de entradas de la cronología.",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "Base de datos no disponible"
+            }
+        }
+    },
+    "timelineNoEntriesYet": "Aún no hay entradas para {elderName}. ¡Sé el primero en publicar!",
+    "@timelineNoEntriesYet": {
+        "description": "Mensaje que se muestra cuando no hay entradas en la cronología para un anciano.",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "Juana"
+            }
+        }
+    },
+    "timelineItemTitleMessage": "Mensaje",
+    "timelineEmptyMessage": "[Mensaje Vacío]",
+    "timelineItemTitleMedication": "Medicación",
+    "timelineItemTitleSleep": "Sueño",
+    "timelineItemTitleMeal": "Comida",
+    "timelineItemTitleMood": "Estado de Ánimo",
+    "timelineItemTitlePain": "Dolor",
+    "timelineItemTitleActivity": "Actividad",
+    "timelineItemTitleVital": "Signo Vital",
+    "timelineItemTitleExpense": "Gasto",
+    "timelineItemTitleEntry": "Entrada",
+    "timelineNoDetailsProvided": "No se proporcionaron detalles.",
+    "timelineLoggedBy": "Registrado por {userName}",
+    "@timelineLoggedBy": {
+        "description": "Indica quién registró una entrada en la cronología.",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "Juan D."
+            }
+        }
+    },
+    "timelineErrorRenderingItem": "Error al renderizar el ítem en el índice {index}: {errorDetails}",
+    "@timelineErrorRenderingItem": {
+        "description": "Mensaje de error para un problema específico de renderizado de un ítem de la cronología.",
+        "placeholders": {
+            "index": {
+                "type": "String"
+            },
+            "errorDetails": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryDetailsUnavailable": "Detalles no disponibles",
+    "timelineSummaryNotApplicable": "N/A",
+    "timelineSummaryMedicationStatusFormat": "({status})",
+    "@timelineSummaryMedicationStatusFormat": {
+        "description": "Formato para el estado de la medicación en el resumen de la cronología.",
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "Tomada"
+            }
+        }
+    },
+    "timelineSummaryMedicationFormat": "{medName} {dose} {status}",
+    "@timelineSummaryMedicationFormat": {
+        "description": "Formato para el resumen de medicación en la cronología.",
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            },
+            "dose": {
+                "type": "String"
+            },
+            "status": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMedicationStatusTaken": "Tomada",
+    "@timelineSummaryMedicationStatusTaken": {
+        "description": "Texto de estado para medicación tomada en el resumen de la cronología."
+    },
+    "timelineSummaryMedicationStatusNotTaken": "No Tomada",
+    "@timelineSummaryMedicationStatusNotTaken": {
+        "description": "Texto de estado para medicación no tomada en el resumen de la cronología."
+    },
+    "timelineSummarySleepQualityFormat": "Calidad: {quality}",
+    "@timelineSummarySleepQualityFormat": {
+        "description": "Formato para la calidad del sueño en el resumen de la cronología.",
+        "placeholders": {
+            "quality": {
+                "type": "String",
+                "example": "Buena"
+            }
+        }
+    },
+    "timelineSummarySleepFormat": "Cama: {wentToBed}, Despertó: {wokeUp}. {quality}",
+    "@timelineSummarySleepFormat": {
+        "description": "Formato para el resumen del sueño en la cronología.",
+        "placeholders": {
+            "wentToBed": {
+                "type": "String"
+            },
+            "wokeUp": {
+                "type": "String"
+            },
+            "quality": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMealFormat": "{mealType}: {description}",
+    "@timelineSummaryMealFormat": {
+        "description": "Formato para el resumen de comidas en la cronología.",
+        "placeholders": {
+            "mealType": {
+                "type": "String"
+            },
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMoodNotesFormat": "(Notas: {notes})",
+    "@timelineSummaryMoodNotesFormat": {
+        "description": "Formato para las notas de estado de ánimo en el resumen de la cronología.",
+        "placeholders": {
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMoodFormat": "Ánimo: {mood} {notes}",
+    "@timelineSummaryMoodFormat": {
+        "description": "Formato para el resumen del estado de ánimo en la cronología.",
+        "placeholders": {
+            "mood": {
+                "type": "String"
+            },
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryPainLocationFormat": "en {location}",
+    "@timelineSummaryPainLocationFormat": {
+        "description": "Formato para la ubicación del dolor en el resumen de la cronología.",
+        "placeholders": {
+            "location": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryPainFormat": "Nivel de Dolor: {level}/10 {location}",
+    "@timelineSummaryPainFormat": {
+        "description": "Formato para el resumen del dolor en la cronología.",
+        "placeholders": {
+            "level": {
+                "type": "String"
+            },
+            "location": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryActivityDurationFormat": "durante {duration}",
+    "@timelineSummaryActivityDurationFormat": {
+        "description": "Formato para la duración de la actividad en el resumen de la cronología.",
+        "placeholders": {
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryActivityFormat": "{activityType} {duration}",
+    "@timelineSummaryActivityFormat": {
+        "description": "Formato para el resumen de la actividad en la cronología.",
+        "placeholders": {
+            "activityType": {
+                "type": "String"
+            },
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatGeneric": "{vitalType}: {value} {unit}",
+    "@timelineSummaryVitalFormatGeneric": {
+        "description": "Formato genérico para un signo vital en el resumen de la cronología.",
+        "placeholders": {
+            "vitalType": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatBP": "PA: {systolic}/{diastolic} mmHg",
+    "@timelineSummaryVitalFormatBP": {
+        "description": "Formato para la presión arterial en el resumen de la cronología.",
+        "placeholders": {
+            "systolic": {
+                "type": "String"
+            },
+            "diastolic": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatHR": "FC: {heartRate} lpm",
+    "@timelineSummaryVitalFormatHR": {
+        "description": "Formato para la frecuencia cardíaca en el resumen de la cronología.",
+        "placeholders": {
+            "heartRate": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatTemp": "Temp: {temperature}°",
+    "@timelineSummaryVitalFormatTemp": {
+        "description": "Formato para la temperatura en el resumen de la cronología.",
+        "placeholders": {
+            "temperature": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalNote": "Nota: {note}",
+    "@timelineSummaryVitalNote": {
+        "description": "Formato para las notas de signos vitales en el resumen de la cronología.",
+        "placeholders": {
+            "note": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalsRecorded": "Signos Vitales Registrados",
+    "timelineSummaryExpenseDescriptionFormat": "({description})",
+    "@timelineSummaryExpenseDescriptionFormat": {
+        "description": "Formato para la descripción de gastos en el resumen de la cronología.",
+        "placeholders": {
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryExpenseFormat": "{category}: ${amount} {description}",
+    "@timelineSummaryExpenseFormat": {
+        "description": "Formato para el resumen de gastos en la cronología.",
+        "placeholders": {
+            "category": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            },
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryErrorProcessing": "Error al procesar detalles para la cronología.",
+    "careScreenErrorMissingIdGeneral": "Error: Falta el ID del elemento. No se puede continuar.",
+    "careScreenErrorEditPermission": "Error: No tiene permiso para editar este elemento.",
+    "careScreenErrorUpdateMedStatus": "Error al actualizar el estado de la medicación. Por favor, inténtelo de nuevo.",
+    "careScreenLoadingRecords": "Cargando registros de hoy...",
+    "careScreenErrorNoRecords": "No se encontraron registros para este día o ocurrió un error.",
+    "careScreenSectionTitleMeds": "Medicamentos",
+    "careScreenNoMedsLogged": "No se han registrado medicamentos para este día.",
+    "careScreenUnknownMedication": "Medicación Desconocida",
+    "careScreenTooltipEditMed": "Editar Entrada de Medicación",
+    "careScreenTooltipDeleteMed": "Eliminar Entrada de Medicación",
+    "careScreenButtonAddMed": "Añadir Medicación",
+    "careScreenSectionTitleSleep": "Sueño",
+    "careScreenNoSleepLogged": "No se ha registrado sueño para este día.",
+    "careScreenSleepTimeRange": "{wentToBed} - {wokeUp}",
+    "@careScreenSleepTimeRange": {
+        "description": "Muestra el rango de tiempo de sueño.",
+        "placeholders": {
+            "wentToBed": {
+                "type": "String",
+                "example": "10:00 PM"
+            },
+            "wokeUp": {
+                "type": "String",
+                "example": "6:00 AM"
+            }
+        }
+    },
+    "careScreenSleepQuality": "Calidad: {quality} {duration}",
+    "@careScreenSleepQuality": {
+        "description": "Muestra la calidad del sueño y duración opcional.",
+        "placeholders": {
+            "quality": {
+                "type": "String",
+                "example": "Buena"
+            },
+            "duration": {
+                "type": "String",
+                "example": "(7h 30m)"
+            }
+        }
+    },
+    "careScreenSleepNaps": "Siestas: {naps}",
+    "@careScreenSleepNaps": {
+        "description": "Muestra información de las siestas.",
+        "placeholders": {
+            "naps": {
+                "type": "String",
+                "example": "1 siesta, 30m"
+            }
+        }
+    },
+    "careScreenErrorFailedToLoad": "Error al cargar los registros de este día. Por favor, inténtelo de nuevo.",
+    "@careScreenErrorFailedToLoad": {
+        "description": "Mensaje de error cuando no se pueden cargar los registros para el día seleccionado en la pantalla de cuidados."
+    },
+    "careScreenTooltipEditSleep": "Editar Entrada de Sueño",
+    "careScreenTooltipDeleteSleep": "Eliminar Entrada de Sueño",
+    "careScreenButtonAddSleep": "Añadir Sueño",
+    "careScreenSectionTitleFoodWater": "Ingesta de Comida y Agua",
+    "careScreenNoFoodWaterLogged": "No se ha registrado ingesta de comida o agua para este día.",
+    "formErrorNoItemToDelete": "No hay elemento para eliminar.",
+    "formConfirmDeleteTitle": "Confirmar Eliminación",
+    "formConfirmDeleteVitalMessage": "¿Está seguro de que desea eliminar este registro de signo vital?",
+    "formSuccessVitalDeleted": "Registro de signo vital eliminado.",
+    "formErrorFailedToDeleteVital": "No se pudo eliminar el registro de signo vital.",
+    "formTooltipDeleteVital": "Eliminar signo vital",
+    "formConfirmDeleteMealMessage": "¿Está seguro de que desea eliminar este registro de comida?",
+    "formSuccessMealDeleted": "Registro de comida eliminado.",
+    "formErrorFailedToDeleteMeal": "No se pudo eliminar el registro de comida.",
+    "formTooltipDeleteMeal": "Eliminar comida",
+    "goToTodayButtonLabel": "Ir a Hoy",
+    "@goToTodayButtonLabel": {
+        "description": "Etiqueta para el botón que navega la Pantalla de Cuidados al día actual."
+    },
+    "formConfirmDeleteMedMessage": "¿Está seguro de que desea eliminar este registro de medicación?",
+    "formSuccessMedDeleted": "Registro de medicación eliminado.",
+    "formErrorFailedToDeleteMed": "No se pudo eliminar el registro de medicación.",
+    "formTooltipDeleteMed": "Eliminar medicación",
+    "formConfirmDeleteMoodMessage": "¿Está seguro de que desea eliminar este registro de estado de ánimo?",
+    "formSuccessMoodDeleted": "Registro de estado de ánimo eliminado.",
+    "formErrorFailedToDeleteMood": "No se pudo eliminar el registro de estado de ánimo.",
+    "formTooltipDeleteMood": "Eliminar estado de ánimo",
+    "formConfirmDeletePainMessage": "¿Está seguro de que desea eliminar este registro de dolor?",
+    "formSuccessPainDeleted": "Registro de dolor eliminado.",
+    "formErrorFailedToDeletePain": "No se pudo eliminar el registro de dolor.",
+    "formTooltipDeletePain": "Eliminar dolor",
+    "formConfirmDeleteActivityMessage": "¿Está seguro de que desea eliminar este registro de actividad?",
+    "formSuccessActivityDeleted": "Registro de actividad eliminado.",
+    "formErrorFailedToDeleteActivity": "No se pudo eliminar el registro de actividad.",
+    "formTooltipDeleteActivity": "Eliminar actividad",
+    "formConfirmDeleteSleepMessage": "¿Está seguro de que desea eliminar este registro de sueño?",
+    "formSuccessSleepDeleted": "Registro de sueño eliminado.",
+    "formErrorFailedToDeleteSleep": "No se pudo eliminar el registro de sueño.",
+    "formTooltipDeleteSleep": "Eliminar sueño",
+    "formConfirmDeleteExpenseMessage": "¿Está seguro de que desea eliminar este registro de gasto?",
+    "formSuccessExpenseDeleted": "Registro de gasto eliminado.",
+    "formErrorFailedToDeleteExpense": "No se pudo eliminar el registro de gasto.",
+    "formTooltipDeleteExpense": "Eliminar gasto"
+    ,
+    "termElderDefault": "Receptor de Cuidados",
+    "@termElderDefault": {
+        "description": "El término predeterminado utilizado si el usuario no ha especificado uno."
+    },
+    "@homeScreenBaseTitleCareLog": {
+        "description": "Título para la pantalla de registro de cuidados, el término es dinámico.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Ser Querido"
+            }
+        }
+    },
+    "@homeScreenBaseTitleCalendar": {
+        "description": "Título para la pantalla de calendario, el término es dinámico.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Ser Querido"
+            }
+        }
+    },
+    "selectTermToViewCareLog": "Seleccione un {term} para ver el Registro de Cuidado.",
+    "@selectTermToViewCareLog": {
+        "description": "Mensaje que se muestra cuando no se selecciona ningún término para el registro de cuidados.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Ser Querido"
+            }
+        }
+    },
+    "selectTermToViewCalendar": "Seleccione un {term} para ver el Calendario.",
+    "@selectTermToViewCalendar": {
+        "description": "Mensaje que se muestra cuando no se selecciona ningún término para el calendario.",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "Ser Querido"
+            }
+        }
+    },
+    "@bottomNavCareLog": {
+        "description": "Etiqueta de navegación inferior para el registro de cuidados, el término es dinámico."
+    },
+    "@bottomNavCalendar": {
+        "description": "Etiqueta de navegación inferior para el calendario, el término es dinámico."
+    },
+    "createAccountTitle": "Crear su Cuenta",
+    "errorEnterValidEmailPasswordMinLength": "Por favor, ingrese un correo electrónico válido y una contraseña (mínimo {minLength} caracteres).",
+    "@errorEnterValidEmailPasswordMinLength": {
+        "description": "Error message for invalid email or password not meeting minimum length.",
+        "placeholders": {
+            "minLength": {
+                "type": "int",
+                "example": "6"
+            }
+        }
+    },
+    "errorSignUpFailedDefault": "Registro fallido. Por favor, inténtelo de nuevo o verifique su conexión de red.",
+    "formErrorGenericSaveUpdate": "Error al guardar o actualizar. Por favor, inténtelo de nuevo.",
+    "formSuccessActivitySaved": "Actividad guardada correctamente.",
+    "formSuccessActivityUpdated": "Actividad actualizada correctamente.",
+    "formSuccessExpenseSaved": "Gasto guardado correctamente.",
+    "formSuccessExpenseUpdated": "Gasto actualizado correctamente.",
+    "formSuccessMealSaved": "Comida guardada correctamente.",
+    "formSuccessMealUpdated": "Comida actualizada correctamente.",
+    "formSuccessMedSaved": "Medicación guardada correctamente.",
+    "formSuccessMedUpdated": "Medicación actualizada correctamente.",
+    "formSuccessMoodSaved": "Estado de ánimo guardado correctamente.",
+    "formSuccessMoodUpdated": "Estado de ánimo actualizado correctamente.",
+    "formSuccessPainSaved": "Registro de dolor guardado correctamente.",
+    "formSuccessPainUpdated": "Registro de dolor actualizado correctamente.",
+    "formSuccessSleepSaved": "Registro de sueño guardado correctamente.",
+    "formSuccessSleepUpdated": "Registro de sueño actualizado correctamente.",
+    "formSuccessVitalSaved": "Signo vital guardado correctamente.",
+    "formSuccessVitalUpdated": "Signo vital actualizado correctamente.",
+    "selectElderToViewCalendar": "Seleccione un Receptor de Cuidados para ver el Calendario.",
+    "selectElderToViewCareLog": "Seleccione un Receptor de Cuidados para ver el Registro de Cuidado.",
+    "settingsHintRelationshipToElder": "Ej: Hijo/a, Cónyuge, Cuidador/a",
+    "settingsLabelRelationshipToElder": "Relación con el Receptor de Cuidados",
+    "signUpButton": "Registrarse",
+    "signUpScreenTitle": "Crear Cuenta",
+    "timelineSummaryMealTypeGeneric": "Comida",
+    "userSelectorSendToLabel": "Enviar a:",
+    "userSelectorAudienceAll": "Todos los Usuarios",
+    "userSelectorAudienceSpecific": "Usuarios Específicos",
+    "userSelectorNoUsersAvailable": "No hay otros usuarios disponibles para seleccionar.",
+    "timelinePostingToAll": "Publicando para: Todos los usuarios",
+    "timelinePostingToCount": "Publicando para: {count} usuarios específicos",
+    "@timelinePostingToCount": {
+        "description": "Mensaje que indica el número de usuarios a los que se envía una publicación de la cronología.",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "timelinePrivateMessageIndicator": "Mensaje Privado",
+    "timelineEditMessage": "Editar Mensaje",
+    "timelineDeleteMessage": "Eliminar Mensaje",
+    "timelineConfirmDeleteMessageTitle": "¿Eliminar Mensaje?",
+    "timelineConfirmDeleteMessageContent": "¿Está seguro de que desea eliminar este mensaje?",
+    "timelineMessageDeletedSuccess": "Mensaje eliminado.",
+    "timelineErrorDeletingMessage": "Error al eliminar el mensaje: {errorMessage}",
+    "@timelineErrorDeletingMessage": {
+        "placeholders": { "errorMessage": { "type": "String" } }
+    },
+    "timelineMessageUpdatedSuccess": "Mensaje actualizado.",
+    "timelineErrorUpdatingMessage": "Error al actualizar el mensaje: {errorMessage}",
+    "@timelineErrorUpdatingMessage": {
+        "placeholders": { "errorMessage": { "type": "String" } }
+    },
+    "timelineUpdateButton": "Actualizar",
+    "timelineHideMessage": "Ocultar Mensaje",
+    "timelineMessageHiddenSuccess": "Mensaje ocultado de tu vista.",
+    "timelineShowHiddenMessagesButton": "Mostrar Ocultos",
+    "timelineHideHiddenMessagesButton": "Mostrar Todos",
+    "timelineUnhideMessage": "Mostrar Mensaje",
+    "timelineMessageUnhiddenSuccess": "Mensaje mostrado.",
+    "timelineNoHiddenMessages": "No tiene mensajes ocultos para esta cronología.",
+    "selfCareScreenTitle": "Autocuidado",
+    "@selfCareScreenTitle": {
+        "description": "Título para la pantalla de Autocuidado"
+    }
+    ,
+    "settingsTitleNotificationPreferences": "Configuración de Notificaciones",
+    "settingsItemNotificationPreferences": "Preferencias de Notificación",
+    "landingPageAlreadyLoggedIn": "Ya has iniciado sesión.",
+    "manageMedications": "Gestionar Medicamentos",
+    "@manageMedications": {
+        "description": "Label for the settings item to manage medications and title for the medication management screen."
+    },
+    "medicationsScreenTitleGeneric": "Medicamentos",
+    "@medicationsScreenTitleGeneric": {
+        "description": "Generic title for the medications screen when no specific elder is in context."
+    },
+  "medicationsScreenTitleForElder": "Medicamentos de {name}",
+  "@medicationsScreenTitleForElder": {
+    "description": "Título para la pantalla de medicamentos, específico para un anciano.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Juana"
+      }
+    }
+    },
+    "medicationsSearchHint": "Buscar nombre del medicamento",
+  "medicationsDoseHint": "Ej: 10 mg",
+  "medicationsScheduleHint": "Ej: AM / PM",
+  "medicationsListEmpty": "Aún no hay medicamentos añadidos",
+  "medicationsDoseNotSet": "Dosis no establecida",
+  "medicationsScheduleNotSet": "Horario no establecido",
+  "medicationsTooltipDelete": "Eliminar medicamento",
+  "medicationsConfirmDeleteTitle": "¿Eliminar '{medName}'?",
+  "@medicationsConfirmDeleteTitle": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicationsConfirmDeleteContent": "Esto no se puede deshacer.",
+  "medicationsDeletedSuccess": "Medicamento '{medName}' eliminado.",
+  "@medicationsDeletedSuccess": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "rxNavGenericSearchError": "No se pudo obtener la lista de medicamentos. Inténtelo de nuevo.",
+  "medicationsValidationNameRequired": "Nombre requerido",
+  "medicationsValidationDoseRequired": "Dosis requerida",
+  "medicationsInteractionsFoundTitle": "Posibles interacciones encontradas",
+  "medicationsNoInteractionsFound": "No se encontraron interacciones",
+  "medicationsInteractionsSaveAnyway": "Guardar de todos modos",
+  "medicationsAddedSuccess": "Medicamento '{medName}' añadido.",
+  "@medicationsAddedSuccess": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicationsAddDialogTitle": "Añadir medicamento",
+  "routeErrorGenericMessage": "Algo salió mal. Por favor, inténtelo de nuevo.",
+  "goHomeButton": "Ir a Inicio",
+
+  "settingsTitleHelpfulResources": "Recursos Útiles",
+  "settingsItemHelpfulResources": "Ver Recursos Útiles",
+
+  "timelineFilterOnlyMyLogs": "Solo Mis Registros:",
+  "timelineFilterFromDate": "Desde",
+  "timelineFilterToDate": "Hasta",
+  
+  "medicationsInteractionsSectionTitle": "Interacciones",
+  "@medicationsInteractionsSectionTitle": {
+    "description": "Título de la sección de interacciones medicamentosas en un formulario."
+  }
+}

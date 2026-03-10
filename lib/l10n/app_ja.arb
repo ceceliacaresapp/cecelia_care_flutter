@@ -1,0 +1,1449 @@
+{
+    "@@locale": "ja",
+    "appTitle": "セシリアケア",
+    "loginButton": "ログイン",
+    "settingsTitle": "設定",
+    "languageSetting": "言語",
+    "manageElderProfilesTitle": "高齢者プロファイルの管理",
+    "createProfileButton": "プロファイル作成",
+    "pleaseLogInToManageProfiles": "高齢者プロファイルを管理するにはログインしてください。",
+    "calendarScreenTitle": "{elderName}さんのカレンダー",
+    "@calendarScreenTitle": {
+        "description": "カレンダー画面のタイトル、高齢者の名前を含む",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "山田花子"
+            }
+        }
+    },
+
+    "formOptionOther": "その他",
+    "formLabelNotesOptional": "メモ (任意)",
+    "cancelButton": "キャンセル",
+    "updateButton": "更新",
+    "saveButton": "保存",
+    "okButton": "OK",
+    "deleteButton": "削除",
+    "removeButton": "削除",
+    "inviteButton": "招待",
+    "activeButton": "有効",
+    "setActiveButton": "有効にする",
+    "sendInviteButton": "招待を送信",
+    "formUnknownUser": "不明なユーザー",
+    "timePickerHelpText": "時間を選択",
+
+    "expenseFormTitleEdit": "経費編集",
+    "expenseFormTitleNew": "新規経費",
+    "expenseFormLabelDescription": "説明",
+    "expenseFormHintDescription": "例: 処方箋の補充",
+    "expenseFormValidationDescription": "説明を入力してください。",
+    "expenseFormLabelAmount": "金額",
+    "expenseFormHintAmount": "例: 25.50",
+    "expenseFormValidationAmountEmpty": "金額を入力してください。",
+    "expenseFormValidationAmountInvalid": "有効な正の金額を入力してください。",
+    "expenseFormLabelCategory": "カテゴリ",
+    "expenseCategoryMedical": "医療",
+    "expenseCategoryGroceries": "食料品",
+    "expenseCategorySupplies": "消耗品",
+    "expenseCategoryHousehold": "家庭用品",
+    "expenseCategoryPersonalCare": "パーソナルケア",
+    "expenseFormValidationCategory": "カテゴリを選択してください。",
+    "expenseFormHintNotes": "関連するメモをここに追加...",
+    "formErrorFailedToUpdateExpense": "経費の更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveExpense": "経費の保存に失敗しました。もう一度お試しください。",
+
+    "mealFormTitleEdit": "食事・水分摂取の編集",
+    "mealFormTitleNew": "食事・水分摂取の記録",
+    "mealFormLabelIntakeType": "摂取タイプ",
+    "mealFormIntakeCategoryFood": "食事",
+    "mealFormIntakeCategoryWater": "水分",
+    "mealFormLabelMealType": "食事の種類",
+    "mealFormMealTypeBreakfast": "朝食",
+    "mealFormMealTypeLunch": "昼食",
+    "mealFormMealTypeSnack": "間食",
+    "mealFormMealTypeDinner": "夕食",
+    "mealFormLabelDescription": "説明",
+    "mealFormHintFoodDescription": "例: チキンスープ、トースト",
+    "mealFormValidationFoodDescription": "食事内容を記述してください。",
+    "mealFormLabelWaterContext": "水分摂取の状況 (任意)",
+    "mealFormHintWaterContext": "例: 服薬時、喉が渇いた時",
+    "mealFormLabelWaterAmount": "量",
+    "mealFormHintWaterAmount": "例: コップ1杯、200ml",
+    "mealFormValidationWaterAmount": "水分量を指定してください。",
+    "mealFormHintFoodNotes": "例: よく食べた、人参が嫌いだった",
+    "mealFormHintWaterNotes": "例: ゆっくり飲んだ",
+    "formErrorFailedToUpdateMeal": "食事の更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveMeal": "食事の保存に失敗しました。もう一度お試しください。",
+
+    "medFormTitleEdit": "投薬編集",
+    "medFormTitleNew": "投薬記録",
+    "medFormTimePickerHelpText": "投薬時間を選択",
+    "medFormLabelName": "薬剤名",
+    "medFormHintNameCustom": "またはカスタム薬剤名を入力",
+    "medFormHintName": "薬剤名を入力",
+    "medFormValidationName": "薬剤名を入力してください。",
+    "medFormLabelDose": "用量 (任意)",
+    "medFormHintDose": "例: 1錠、10mg",
+    "medFormLabelTime": "時間 (任意)",
+    "medFormHintTime": "時間を選択",
+    "medFormLabelMarkAsTaken": "服用済みにする",
+    "formErrorFailedToUpdateMed": "投薬の更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveMed": "投薬の保存に失敗しました。もう一度お試しください。",
+
+    "moodFormTitleEdit": "気分の編集",
+    "moodFormTitleNew": "気分の記録",
+    "moodHappy": "😊 嬉しい",
+    "moodContent": "🙂 満足",
+    "moodSad": "😟 悲しい",
+    "moodAnxious": "😬 不安",
+    "moodCalm": "😌 穏やか",
+    "moodIrritable": "😠 イライラ",
+    "moodAgitated": "😫 興奮",
+    "moodPlayful": "🥳 陽気",
+    "moodTired": "😴 疲れた",
+    "moodOptionOther": "📝 その他",
+    "moodFormLabelSelectMood": "気分を選択",
+    "moodFormValidationSelectOrSpecifyMood": "気分を選択または指定してください。",
+    "moodFormValidationSpecifyOtherMood": "気分を指定してください。",
+    "moodFormHintSpecifyOtherMood": "気分を記述してください...",
+    "moodFormLabelIntensity": "強度 (1-5, 任意)",
+    "moodFormHintIntensity": "1 (軽度) - 5 (重度)",
+    "moodFormValidationIntensityRange": "強度は1から5の間でなければなりません。",
+    "moodFormHintNotes": "例: 散歩の後気分が良い",
+    "moodFormButtonUpdate": "気分を更新",
+    "moodFormButtonSave": "気分を保存",
+    "formErrorFailedToUpdateMood": "気分の更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveMood": "気分の保存に失敗しました。もう一度お試しください。",
+
+    "painFormTitleEdit": "痛みの記録編集",
+    "painFormTitleNew": "痛みの記録",
+    "painTypeAching": "ズキズキする痛み",
+    "painTypeBurning": "焼けるような痛み",
+    "painTypeDull": "鈍い痛み",
+    "painTypeSharp": "鋭い痛み",
+    "painTypeShooting": "突き刺すような痛み",
+    "painTypeStabbing": "刺すような痛み",
+    "painTypeThrobbing": "脈打つような痛み",
+    "painTypeTender": "圧痛",
+    "painFormLabelLocation": "場所",
+    "painFormHintLocation": "例: 左膝、腰",
+    "painFormValidationLocation": "痛みの場所を指定してください。",
+    "painFormLabelIntensity": "強度 (0-10)",
+    "painFormHintIntensity": "0 (痛みなし) - 10 (最悪の痛み)",
+    "painFormValidationIntensityEmpty": "痛みの強度を入力してください。",
+    "painFormValidationIntensityRange": "強度は0から10の間でなければなりません。",
+    "painFormLabelDescription": "説明",
+    "painFormValidationSelectOrSpecifyDescription": "痛みの説明を選択または指定してください。",
+    "painFormValidationSpecifyOtherDescription": "痛みの説明を指定してください。",
+    "painFormHintSpecifyOtherDescription": "痛みを記述してください...",
+    "painFormHintNotes": "例: 活動後に悪化、安静で軽減",
+    "formErrorFailedToUpdatePain": "痛みの記録の更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSavePain": "痛みの記録の保存に失敗しました。もう一度お試しください。",
+
+    "sleepFormTitleEdit": "睡眠記録の編集",
+    "sleepFormTitleNew": "睡眠記録",
+    "sleepQualityGood": "良い",
+    "sleepQualityFair": "普通",
+    "sleepQualityPoor": "悪い",
+    "sleepQualityRestless": "落ち着かない",
+    "sleepQualityInterrupted": "中断された",
+    "sleepFormLabelWentToBed": "就寝時間",
+    "sleepFormHintTimeWentToBed": "時間を選択",
+    "sleepFormValidationTimeWentToBed": "就寝時間を選択してください。",
+    "sleepFormLabelWokeUp": "起床時間 (任意)",
+    "sleepFormHintTimeWokeUp": "時間を選択",
+    "sleepFormLabelTotalDuration": "合計時間 (任意)",
+    "sleepFormHintTotalDuration": "例: 7時間, 7時間30分",
+    "sleepFormLabelQuality": "質",
+    "sleepFormValidationSelectQuality": "睡眠の質を選択してください。",
+    "sleepFormLabelDescribeOtherQuality": "その他の質を記述",
+    "sleepFormHintDescribeOtherQuality": "睡眠の質を記述してください...",
+    "sleepFormValidationDescribeOtherQuality": "睡眠の質を記述してください。",
+    "sleepFormLabelNaps": "昼寝 (任意)",
+    "sleepFormHintNaps": "例: 1回、30分",
+    "sleepFormLabelGeneralNotes": "一般的なメモ (任意)",
+    "sleepFormHintGeneralNotes": "例: スッキリ目覚めた",
+    "sleepFormButtonUpdate": "睡眠を更新",
+    "sleepFormButtonSave": "睡眠を保存",
+    "formErrorFailedToUpdateSleep": "睡眠記録の更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveSleep": "睡眠記録の保存に失敗しました。もう一度お試しください。",
+
+    "vitalFormTitleEdit": "バイタルサイン編集",
+    "vitalFormTitleNew": "バイタルサイン記録",
+    "vitalTypeBPLabel": "血圧",
+    "vitalTypeBPUnit": "mmHg",
+    "vitalTypeBPPlaceholder": "例: 120/80",
+    "vitalTypeHRLabel": "心拍数",
+    "vitalTypeHRUnit": "bpm",
+    "vitalTypeHRPlaceholder": "例: 70",
+    "vitalTypeWTLabel": "体重",
+    "vitalTypeWTUnit": "kg/lbs",
+    "vitalTypeWTPlaceholder": "例: 65 kg または 143 lbs",
+    "vitalTypeBGLabel": "血糖値",
+    "vitalTypeBGUnit": "mg/dL または mmol/L",
+    "vitalTypeBGPlaceholder": "例: 90 mg/dL",
+    "vitalTypeTempLabel": "体温",
+    "vitalTypeTempUnit": "°C/°F",
+    "vitalTypeTempPlaceholder": "例: 36.5°C または 97.7°F",
+    "vitalTypeO2Label": "酸素飽和度",
+    "vitalTypeO2Unit": "%",
+    "vitalTypeO2Placeholder": "例: 98",
+    "vitalFormLabelType": "種類",
+    "vitalFormLabelValue": "値",
+    "vitalFormValidationValueEmpty": "値を入力してください。",
+    "vitalFormValidationBPFormat": "血圧を「収縮期/拡張期」で入力してください (例: 120/80)。",
+    "vitalFormValidationValueNumeric": "数値を入力してください。",
+    "vitalFormHintNotes": "例: 食後に測定",
+    "vitalFormButtonUpdate": "バイタルを更新",
+    "vitalFormButtonSave": "バイタルを保存",
+    "formErrorFailedToUpdateVital": "バイタルサインの更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveVital": "バイタルサインの保存に失敗しました。もう一度お試しください。",
+
+    "settingsUserProfileNotLoaded": "ユーザープロファイルが読み込まれていません。",
+    "settingsDisplayNameCannotBeEmpty": "表示名は空にできません。",
+    "settingsProfileUpdatedSuccess": "プロファイルが正常に更新されました。",
+    "settingsErrorUpdatingProfile": "プロファイルの更新中にエラーが発生しました: {errorMessage}",
+    "@settingsErrorUpdatingProfile": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsSelectElderFirstMedDef": "薬剤定義を管理するには、まず高齢者プロファイルを選択してください。",
+    "settingsMedNameRequired": "薬剤名は必須です。",
+    "settingsMedDefaultTimeFormatError": "無効な時刻形式です。HH:mm形式で入力してください (例: 09:00)。",
+    "settingsMedDefAddedSuccess": "薬剤定義が正常に追加されました。",
+    "settingsClearDataErrorElderOrUserMissing": "データを消去できません: アクティブな高齢者またはユーザーがいません。",
+    "settingsClearDataErrorNotAdmin": "あなたはこの高齢者のプロファイルの主要管理者ではありません。データは主要管理者のみが消去できます。",
+    "settingsClearDataDialogTitle": "{elderName}さんの全データを消去しますか？",
+    "@settingsClearDataDialogTitle": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsClearDataDialogContent": "この操作は元に戻せません。この高齢者に関連するすべての記録（薬剤、食事、バイタルなど）が削除されます。続行しますか？",
+    "settingsClearDataDialogConfirmButton": "はい、全データを消去します",
+    "settingsClearDataSuccess": "{elderName}さんの全データが消去されました。",
+    "@settingsClearDataSuccess": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsClearDataErrorGeneric": "データの消去中にエラーが発生しました: {errorMessage}",
+    "@settingsClearDataErrorGeneric": {
+      "placeholders": {
+        "error": {
+                "type": "String"
+            }
+        }
+    },
+    "languageNameEn": "英語 (English)",
+    "languageNameEs": "スペイン語 (Español)",
+    "languageNameJa": "日本語",
+    "languageNameKo": "韓国語 (한국어)",
+    "languageNameZh": "中国語 (中文)",
+    "settingsTitleMyAccount": "マイアカウント",
+    "settingsLabelDisplayName": "表示名",
+    "settingsHintDisplayName": "表示名を入力",
+    "settingsLabelDOB": "生年月日",
+    "settingsHintDOB": "生年月日を選択",
+    "settingsButtonSaveProfile": "プロファイルを保存",
+    "settingsButtonSignOut": "サインアウト",
+    "settingsErrorLoadingProfile": "プロファイルの読み込み中にエラーが発生しました。",
+    "settingsTitleLanguage": "言語設定",
+    "settingsLabelSelectLanguage": "アプリの言語を選択",
+    "settingsLanguageChangedConfirmation": "言語が{languageTag}に変更されました。",
+    "@settingsLanguageChangedConfirmation": {
+      "placeholders": {
+        "locale": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsTitleElderProfileManagement": "高齢者プロファイル管理",
+    "settingsCurrentElder": "現在アクティブな高齢者: {elderName}さん",
+    "@settingsCurrentElder": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsNoActiveElderSelected": "アクティブな高齢者が選択されていません。選択または作成してください。",
+    "settingsErrorNavToManageElderProfiles": "高齢者プロファイル管理に移動できませんでした。ユーザーがログインしていません。",
+    "settingsButtonManageElderProfiles": "高齢者プロファイルを管理",
+    "settingsTitleAdminActions": "{elderName}さんの管理者アクション",
+    "@settingsTitleAdminActions": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsButtonClearAllData": "この高齢者の全データを消去",
+    "settingsTitleMedicationDefinitions": "薬剤定義",
+    "settingsSubtitleAddNewMedDef": "新しい薬剤定義を追加:",
+    "settingsLabelMedName": "薬剤名",
+    "settingsHintMedName": "例: リシノプリル",
+    "settingsLabelMedDose": "デフォルト用量 (任意)",
+    "settingsHintMedDose": "例: 10mg、1錠",
+    "settingsLabelMedDefaultTime": "デフォルト時刻 (HH:mm, 任意)",
+    "settingsHintMedDefaultTime": "例: 08:00",
+    "settingsButtonAddMedDef": "薬剤定義を追加",
+    "settingsSelectElderToAddMedDefs": "薬剤定義を追加するには高齢者プロファイルを選択してください。",
+    "settingsSelectElderToViewMedDefs": "薬剤定義を表示するには高齢者プロファイルを選択してください。",
+    "settingsNoMedDefsForElder": "{elderName}さんの薬剤定義は見つかりませんでした。",
+    "@settingsNoMedDefsForElder": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsExistingMedDefsForElder": "{elderNameOrFallback}の既存の定義:",
+    "@settingsExistingMedDefsForElder": {
+      "placeholders": {
+        "name": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsSelectedElderFallback": "選択された高齢者",
+    "settingsMedDefDosePrefix": "用量: {dose}",
+    "@settingsMedDefDosePrefix": {
+        "placeholders": {
+            "dose": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsMedDefDefaultTimePrefix": "時刻: {time}",
+    "@settingsMedDefDefaultTimePrefix": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsTooltipDeleteMedDef": "この薬剤定義を削除",
+    "settingsDeleteMedDefDialogTitle": "「{medName}」の定義を削除しますか？",
+    "@settingsDeleteMedDefDialogTitle": {
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            }
+        }
+    },
+    "settingsDeleteMedDefDialogContent": "この薬剤定義を削除してもよろしいですか？過去の投薬記録には影響しませんが、今後の記録のオプションからは削除されます。",
+    "settingsMedDefDeletedSuccess": "薬剤定義「{medName}」が削除されました。",
+    "@settingsMedDefDeletedSuccess": {
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            }
+        }
+    },
+
+    "errorNotLoggedIn": "エラー: ユーザーがログインしていません。",
+    "errorElderIdMissing": "エラー: 高齢者IDがありません。",
+    "profileUpdatedSnackbar": "{profileName}さんのプロファイルが更新されました。",
+    "@profileUpdatedSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "profileCreatedSnackbar": "{profileName}さんのプロファイルが作成されました。",
+    "@profileCreatedSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSavingProfile": "プロファイルの保存中にエラーが発生しました: {errorMessage}",
+    "@errorSavingProfile": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSelectElderAndEmail": "高齢者プロファイルを選択し、有効なメールアドレスを入力してください。",
+    "invitationSentSnackbar": "{email}に招待を送信しました。",
+    "@invitationSentSnackbar": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSendingInvitation": "招待の送信中にエラーが発生しました: {errorMessage}",
+    "@errorSendingInvitation": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "removeCaregiverDialogTitle": "介護者を削除しますか？",
+    "removeCaregiverDialogContent": "{caregiverIdentifier}をこの高齢者の介護者から削除してもよろしいですか？",
+    "@removeCaregiverDialogContent": {
+        "placeholders": {
+            "caregiverIdentifier": {
+                "type": "String"
+            }
+        }
+    },
+    "caregiverRemovedSnackbar": "介護者{caregiverIdentifier}が削除されました。",
+    "@caregiverRemovedSnackbar": {
+        "placeholders": {
+            "caregiverIdentifier": {
+                "type": "String"
+            }
+        }
+    },
+    "errorRemovingCaregiver": "介護者の削除中にエラーが発生しました: {errorMessage}",
+    "@errorRemovingCaregiver": {
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "tooltipEditProfile": "プロファイルを編集",
+    "dobLabelPrefix": "生年月日:",
+    "allergiesLabelPrefix": "アレルギー:",
+    "dietLabelPrefix": "食事制限:",
+    "primaryAdminLabel": "主要管理者:",
+    "adminNotAssigned": "未割り当て",
+    "loadingAdminInfo": "管理者情報を読み込み中...",
+    "caregiversLabel": "介護者 ({count}名):",
+    "@caregiversLabel": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "noCaregiversYet": "まだ介護者はいません。",
+    "errorLoadingCaregiverNames": "介護者名の読み込み中にエラーが発生しました。",
+    "caregiverAdminSuffix": "(管理者)",
+    "tooltipRemoveCaregiver": "{identifier}を削除",
+    "@tooltipRemoveCaregiver": {
+        "placeholders": {
+            "identifier": {
+                "type": "String"
+            }
+        }
+    },
+    "profileSetActiveSnackbar": "{profileName}さんがアクティブなプロファイルになりました。",
+    "@profileSetActiveSnackbar": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "inviteDialogTitle": "{profileName}さんのプロファイルに介護者を招待",
+    "@inviteDialogTitle": {
+        "placeholders": {
+            "profileName": {
+                "type": "String"
+            }
+        }
+    },
+    "caregiversEmailLabel": "介護者のメールアドレス",
+    "enterEmailHint": "メールアドレスを入力",
+    "createElderProfileTitle": "新しい高齢者プロファイルを作成",
+    "editProfileTitle": "{profileNameOrFallback}を編集",
+    "@editProfileTitle": {
+        "placeholders": {
+            "profileNameOrFallback": {
+                "type": "String"
+            }
+        }
+    },
+    "profileNameLabel": "プロファイル名",
+    "validatorPleaseEnterName": "名前を入力してください。",
+    "dateOfBirthLabel": "生年月日",
+    "allergiesLabel": "アレルギー (カンマ区切り)",
+    "dietaryRestrictionsLabel": "食事制限 (カンマ区切り)",
+    "createNewProfileButton": "新しいプロファイルを作成",
+    "saveChangesButton": "変更を保存",
+    "errorPrefix": "エラー: ",
+    "noElderProfilesFound": "高齢者プロファイルが見つかりません。",
+    "createNewProfileOrWait": "新しいプロファイルを作成するか、招待をお待ちください。",
+    "fabNewProfile": "新規プロファイル",
+
+    "activityTypeWalk": "散歩",
+    "activityTypeExercise": "運動",
+    "activityTypePhysicalTherapy": "理学療法",
+    "activityTypeOccupationalTherapy": "作業療法",
+    "activityTypeOuting": "外出",
+    "activityTypeSocialVisit": "訪問",
+    "activityTypeReading": "読書",
+    "activityTypeTV": "テレビ/映画鑑賞",
+    "activityTypeGardening": "園芸",
+    "assistanceLevelIndependent": "自立",
+    "assistanceLevelStandbyAssist": "見守り支援",
+    "assistanceLevelWithWalker": "歩行器使用",
+    "assistanceLevelWithCane": "杖使用",
+    "assistanceLevelWheelchair": "車椅子",
+    "assistanceLevelMinAssist": "最小介助 (Min A)",
+    "assistanceLevelModAssist": "中等度介助 (Mod A)",
+    "assistanceLevelMaxAssist": "最大介助 (Max A)",
+    "formErrorFailedToUpdateActivity": "アクティビティの更新に失敗しました。もう一度お試しください。",
+    "formErrorFailedToSaveActivity": "アクティビティの保存に失敗しました。もう一度お試しください。",
+    "activityFormTitleEdit": "アクティビティを編集",
+    "activityFormTitleNew": "新しいアクティビティを記録",
+    "activityFormLabelActivityType": "アクティビティの種類",
+    "activityFormHintActivityType": "アクティビティを選択または入力",
+    "activityFormValidationActivityType": "アクティビティの種類を選択または指定してください。",
+    "activityFormLabelDuration": "時間 (任意)",
+    "activityFormHintDuration": "例: 30分、1時間",
+    "activityFormLabelAssistance": "介助レベル (任意)",
+    "activityFormHintAssistance": "介助レベルを選択",
+    "activityFormHintNotes": "例: 日差しを楽しんだ、公園まで歩いた",
+
+    "notApplicable": "該当なし",
+
+    "careScreenWaterLog": "水分: {description}",
+    "@careScreenWaterLog": {
+        "description": "水分摂取の記録エントリ、説明または量を示す。",
+        "placeholders": {
+            "description": {
+                "type": "String",
+                "example": "コップ2杯"
+            }
+        }
+    },
+    "careScreenMealLog": "{mealType}: {description}",
+    "@careScreenMealLog": {
+        "description": "食事の記録エントリ、食事の種類と説明を示す。",
+        "placeholders": {
+            "mealType": {
+                "type": "String",
+                "example": "昼食"
+            },
+            "description": {
+                "type": "String",
+                "example": "チキンサンドイッチ"
+            }
+        }
+    },
+    "careScreenMealGeneric": "食事",
+    "careScreenWaterContext": "状況: {contextDetails}",
+    "@careScreenWaterContext": {
+        "description": "水分摂取の状況。",
+        "placeholders": {
+            "contextDetails": {
+                "type": "String",
+                "example": "服薬時"
+            }
+        }
+    },
+    "careScreenNotes": "メモ: {noteContent}",
+    "@careScreenNotes": {
+        "description": "エントリのメモを表示する。",
+        "placeholders": {
+            "noteContent": {
+                "type": "String",
+                "example": "今日は気分が良い。"
+            }
+        }
+    },
+    "careScreenLoggedBy": "記録者: {userName}",
+    "@careScreenLoggedBy": {
+        "description": "エントリを記録した人を示す。",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "山田太郎"
+            }
+        }
+    },
+    "careScreenTooltipEditFoodWater": "食事/水分エントリを編集",
+    "careScreenTooltipDeleteFoodWater": "食事/水分エントリを削除",
+    "careScreenErrorMissingIdDelete": "エラー: IDがないためエントリを削除できません。",
+    "careScreenButtonAddFoodWater": "食事/水分を追加",
+    "careScreenSectionTitleMoodBehavior": "気分と行動",
+    "careScreenNoMoodBehaviorLogged": "この日の気分や行動の記録はありません。",
+    "careScreenMood": "気分: {mood}",
+    "@careScreenMood": {
+        "description": "記録された気分を表示する。",
+        "placeholders": {
+            "mood": {
+                "type": "String",
+                "example": "嬉しい"
+            }
+        }
+    },
+    "careScreenMoodIntensity": "強度: {intensityLevel}",
+    "@careScreenMoodIntensity": {
+        "description": "気分の強度を表示する。",
+        "placeholders": {
+            "intensityLevel": {
+                "type": "String",
+                "example": "3/5"
+            }
+        }
+    },
+    "careScreenTooltipEditMood": "気分エントリを編集",
+    "careScreenTooltipDeleteMood": "気分エントリを削除",
+    "careScreenButtonAddMood": "気分/行動を追加",
+    "careScreenSectionTitlePain": "痛み",
+    "careScreenNoPainLogged": "この日の痛みの記録はありません。",
+    "careScreenPainLog": "痛み: {location} - {description}{intensityDetails}",
+    "@careScreenPainLog": {
+        "description": "痛みの記録エントリ。",
+        "placeholders": {
+            "location": {
+                "type": "String",
+                "example": "左膝"
+            },
+            "description": {
+                "type": "String",
+                "example": "ズキズキする"
+            },
+            "intensityDetails": {
+                "type": "String",
+                "example": " (強度: 5/10)"
+            }
+        }
+    },
+    "careScreenPainIntensity": "強度: {intensityValue}",
+    "@careScreenPainIntensity": {
+        "description": "痛みの強度を表示する。",
+        "placeholders": {
+            "intensityValue": {
+                "type": "String",
+                "example": "7/10"
+            }
+        }
+    },
+    "careScreenTooltipEditPain": "痛みエントリを編集",
+    "careScreenTooltipDeletePain": "痛みエントリを削除",
+    "careScreenButtonAddPain": "痛みの記録を追加",
+    "careScreenSectionTitleActivity": "アクティビティ",
+    "careScreenNoActivitiesLogged": "この日のアクティビティの記録はありません。",
+    "careScreenUnknownActivity": "不明なアクティビティ",
+    "careScreenActivityDuration": "時間: {duration}",
+    "@careScreenActivityDuration": {
+        "description": "アクティビティの時間を表示する。",
+        "placeholders": {
+            "duration": {
+                "type": "String",
+                "example": "30分"
+            }
+        }
+    },
+    "careScreenActivityAssistance": "介助: {assistanceLevel}",
+    "@careScreenActivityAssistance": {
+        "description": "アクティビティの介助レベルを表示する。",
+        "placeholders": {
+            "assistanceLevel": {
+                "type": "String",
+                "example": "歩行器使用"
+            }
+        }
+    },
+    "careScreenTooltipEditActivity": "アクティビティエントリを編集",
+    "careScreenTooltipDeleteActivity": "アクティビティエントリを削除",
+    "careScreenButtonAddActivity": "アクティビティを追加",
+    "careScreenSectionTitleVitals": "バイタルサイン",
+    "careScreenNoVitalsLogged": "この日のバイタルサインの記録はありません。",
+    "careScreenVitalLog": "{vitalType}: {value} {unit}",
+    "@careScreenVitalLog": {
+        "description": "バイタルサインの記録エントリ。",
+        "placeholders": {
+            "vitalType": {
+                "type": "String",
+                "example": "血圧"
+            },
+            "value": {
+                "type": "String",
+                "example": "120/80"
+            },
+            "unit": {
+                "type": "String",
+                "example": "mmHg"
+            }
+        }
+    },
+    "careScreenTooltipEditVital": "バイタルサインエントリを編集",
+    "careScreenTooltipDeleteVital": "バイタルサインエントリを削除",
+    "careScreenButtonAddVital": "バイタルサインを追加",
+    "careScreenSectionTitleExpenses": "経費",
+    "careScreenNoExpensesLogged": "この日の経費の記録はありません。",
+    "careScreenExpenseLog": "{description}: ¥{amount}",
+    "@careScreenExpenseLog": {
+        "description": "経費の記録エントリ。",
+        "placeholders": {
+            "description": {
+                "type": "String",
+                "example": "食料品"
+            },
+            "amount": {
+                "type": "String",
+                "example": "4550"
+            }
+        }
+    },
+    "careScreenExpenseCategory": "カテゴリ: {category}{noteDetails}",
+    "@careScreenExpenseCategory": {
+        "description": "経費カテゴリとオプションのメモを表示する。",
+        "placeholders": {
+            "category": {
+                "type": "String",
+                "example": "医療"
+            },
+            "noteDetails": {
+                "type": "String",
+                "example": " (補充)"
+            }
+        }
+    },
+    "careScreenTooltipEditExpense": "経費エントリを編集",
+    "careScreenTooltipDeleteExpense": "経費エントリを削除",
+    "careScreenButtonAddExpense": "経費を追加",
+
+    "calendarErrorLoadEvents": "カレンダーイベントの読み込みに失敗しました。もう一度お試しください。",
+    "calendarErrorUserNotLoggedIn": "エラー: ユーザーがログインしていません。カレンダーイベントを読み込めません。",
+    "calendarErrorEditMissingId": "エラー: IDがないためイベントを編集できません。",
+    "calendarErrorEditPermission": "エラー: このイベントを編集する権限がありません。",
+    "calendarErrorUpdateOriginalMissing": "エラー: 更新のための元のイベントデータがありません。",
+    "calendarErrorUpdatePermission": "エラー: このイベントを更新する権限がありません。",
+    "calendarEventAddedSuccess": "イベントが正常に追加されました。",
+    "calendarEventUpdatedSuccess": "イベントが正常に更新されました。",
+    "calendarErrorSaveEvent": "イベントの保存中にエラーが発生しました: {errorMessage}",
+    "@calendarErrorSaveEvent": {
+        "description": "カレンダーイベントの保存に失敗した場合のエラーメッセージ。",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "ネットワークタイムアウト"
+            }
+        }
+    },
+    "calendarErrorDeleteMissingId": "エラー: IDがないためイベントを削除できません。",
+    "calendarErrorDeletePermission": "エラー: このイベントを削除する権限がありません。",
+    "calendarConfirmDeleteTitle": "削除の確認",
+    "calendarConfirmDeleteContent": "イベント「{eventTitle}」を削除してもよろしいですか？",
+    "@calendarConfirmDeleteContent": {
+        "description": "カレンダーイベント削除の確認メッセージ。",
+        "placeholders": {
+            "eventTitle": {
+                "type": "String",
+                "example": "医師の診察"
+            }
+        }
+    },
+    "calendarUntitledEvent": "無題のイベント",
+    "eventDeletedSuccess": "イベントが正常に削除されました。",
+    "errorCouldNotDeleteEvent": "エラー: イベントを削除できませんでした。",
+    "calendarNoElderSelected": "高齢者が選択されていません。カレンダーを表示する高齢者を選択してください。",
+    "calendarAddNewEventButton": "新しいイベントを追加",
+    "calendarEventsOnDate": "{formattedDate}のイベント:",
+    "@calendarEventsOnDate": {
+        "description": "特定の日付のイベントリストのヘッダー。",
+        "placeholders": {
+            "formattedDate": {
+                "type": "String",
+                "example": "2024年6月3日"
+            }
+        }
+    },
+    "calendarNoEventsScheduled": "この日には予定されているイベントはありません。",
+    "calendarTooltipEditEvent": "イベントを編集",
+    "calendarEventTypePrefix": "種類:",
+    "calendarEventTimePrefix": "時間:",
+    "calendarEventNotesPrefix": "メモ:",
+
+    "expenseUncategorized": "未分類",
+    "expenseErrorProcessingData": "経費データの処理中にエラーが発生しました: {errorMessage}",
+    "@expenseErrorProcessingData": {
+        "description": "経費データの処理に失敗した場合のエラーメッセージ。",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "無効な形式"
+            }
+        }
+    },
+    "expenseErrorFetching": "経費の取得中にエラーが発生しました: {errorMessage}",
+    "@expenseErrorFetching": {
+        "description": "経費の取得に失敗した場合のエラーメッセージ。",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "サーバーが応答しません"
+            }
+        }
+    },
+    "expenseUnknownUser": "不明なユーザー",
+    "expenseSelectElderPrompt": "経費を表示するには高齢者プロファイルを選択してください。",
+    "expenseLoading": "経費を読み込み中...",
+    "expenseScreenTitle": "経費",
+    "expenseForElder": "{elderName}さんの経費",
+    "@expenseForElder": {
+        "description": "特定の高齢者の経費を示すタイトル。",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "山田花子"
+            }
+        }
+    },
+    "expensePrevWeekButton": "前の週",
+    "expenseNextWeekButton": "次の週",
+    "expenseNoExpensesThisWeek": "今週記録された経費はありません。",
+    "expenseSummaryByCategoryTitle": "カテゴリ別概要 (今週)",
+    "expenseNoExpensesInCategoryThisWeek": "選択した週のこのカテゴリには経費がありません。",
+    "expenseWeekTotalLabel": "週合計:",
+    "expenseDetailedByUserTitle": "詳細経費 (今週 - ユーザー別)",
+    "expenseCategoryLabel": "カテゴリ: {categoryName}",
+    "@expenseCategoryLabel": {
+        "description": "経費カテゴリのラベル。",
+        "placeholders": {
+            "categoryName": {
+                "type": "String",
+                "example": "食料品"
+            }
+        }
+    },
+
+    "errorEnterEmailPassword": "メールアドレスとパスワードの両方を入力してください。",
+    "errorLoginFailedDefault": "ログインに失敗しました。認証情報を確認するか、ネットワーク接続を確認してください。",
+    "loginScreenTitle": "セシリアケアへようこそ",
+    "emailLabel": "メールアドレス",
+    "emailHint": "メールアドレスを入力",
+    "passwordLabel": "パスワード",
+    "dontHaveAccountSignUp": "アカウントをお持ちではありませんか？ サインアップ",
+    "signUpNotImplemented": "サインアップ機能はまだ実装されていません。",
+    "homeScreenBaseTitleTimeline": "タイムライン",
+    "homeScreenBaseTitleCareLog": "{term}のケア記録",
+    "homeScreenBaseTitleCalendar": "{term}のカレンダー",
+    "homeScreenBaseTitleExpenses": "経費",
+    "homeScreenBaseTitleSettings": "設定",
+    "mustBeLoggedInToAddData": "データを追加するにはログインする必要があります。",
+    "mustBeLoggedInToUpdateData": "データを更新するにはログインする必要があります。",
+    "selectElderToViewCareLog": "ケア記録を表示するには、設定から高齢者を選択してください。",
+    "@selectElderToViewCareLog": {
+        "description": "ケア記録の高齢者が選択されていない場合に表示されるメッセージ、固定用語「高齢者」を使用。"
+    },    
+    "goToSettingsButton": "設定へ移動",
+    "bottomNavTimeline": "タイムライン",
+    "bottomNavCareLog": "{term}の記録",
+    "bottomNavCalendar": "{term}のカレンダー",
+    "bottomNavExpenses": "経費",
+    "bottomNavSettings": "設定",
+    "timelineUnknownTime": "不明な時間",
+    "timelineInvalidTime": "無効な時間",
+    "timelineMustBeLoggedInToPost": "メッセージを投稿するにはログインする必要があります。",
+    "timelineSelectElderToPost": "タイムラインに投稿するには、アクティブな高齢者プロファイルを選択してください。",
+    "timelineAnonymousUser": "匿名",
+    "timelineCouldNotPostMessage": "メッセージを投稿できませんでした: {errorMessage}",
+    "@timelineCouldNotPostMessage": {
+        "description": "タイムラインメッセージの投稿に失敗した場合のエラーメッセージ。",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "ネットワークエラー"
+            }
+        }
+    },
+    "timelinePleaseLogInToView": "タイムラインを表示するにはログインしてください。",
+    "timelineSelectElderToView": "タイムラインを表示するには高齢者プロファイルを選択してください。",
+    "timelineWriteMessageHint": "{elderName}さんのタイムラインにメッセージを書いてください...",
+    "@timelineWriteMessageHint": {
+        "description": "タイムラインメッセージ入力フィールドのヒントテキスト。",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "花子"
+            }
+        }
+    },
+    "timelineUnknownUser": "不明なユーザー",
+    "timelinePostButton": "投稿",
+    "timelineCancelButton": "キャンセル",
+    "timelinePostMessageToTimelineButton": "タイムラインにメッセージを投稿",
+    "timelineLoading": "タイムラインを読み込み中...",
+    "timelineErrorLoading": "タイムラインの読み込みエラー: {errorMessage}",
+    "@timelineErrorLoading": {
+        "description": "タイムラインエントリの読み込みに失敗した場合のエラーメッセージ。",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String",
+                "example": "データベース利用不可"
+            }
+        }
+    },
+    "timelineNoEntriesYet": "{elderName}さんのエントリはまだありません。最初に投稿しましょう！",
+    "@timelineNoEntriesYet": {
+        "description": "高齢者のタイムラインエントリがない場合に表示されるメッセージ。",
+        "placeholders": {
+            "elderName": {
+                "type": "String",
+                "example": "花子"
+            }
+        }
+    },
+    "timelineItemTitleMessage": "メッセージ",
+    "timelineEmptyMessage": "[空のメッセージ]",
+    "timelineItemTitleMedication": "投薬",
+    "timelineItemTitleSleep": "睡眠",
+    "timelineItemTitleMeal": "食事",
+    "timelineItemTitleMood": "気分",
+    "timelineItemTitlePain": "痛み",
+    "timelineItemTitleActivity": "アクティビティ",
+    "timelineItemTitleVital": "バイタルサイン",
+    "timelineItemTitleExpense": "経費",
+    "timelineItemTitleEntry": "エントリ",
+    "timelineNoDetailsProvided": "詳細は提供されていません。",
+    "timelineLoggedBy": "{userName}による記録",
+    "@timelineLoggedBy": {
+        "description": "タイムラインエントリを記録した人を示す。",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "山田 太."
+            }
+        }
+    },
+    "timelineErrorRenderingItem": "インデックス{index}のアイテムのレンダリングエラー: {errorDetails}",
+    "@timelineErrorRenderingItem": {
+        "description": "特定のタイムラインアイテムのレンダリング問題のエラーメッセージ。",
+        "placeholders": {
+            "index": {
+                "type": "String"
+            },
+            "errorDetails": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryDetailsUnavailable": "詳細利用不可",
+    "timelineSummaryNotApplicable": "該当なし",
+    "timelineSummaryMedicationStatusFormat": "({status})",
+    "@timelineSummaryMedicationStatusFormat": {
+        "description": "タイムラインサマリーの投薬状況のフォーマット。",
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "服用済み"
+            }
+        }
+    },
+    "timelineSummaryMedicationFormat": "{medName} {dose} {status}",
+    "@timelineSummaryMedicationFormat": {
+        "description": "タイムラインの投薬サマリーのフォーマット。",
+        "placeholders": {
+            "medName": {
+                "type": "String"
+            },
+            "dose": {
+                "type": "String"
+            },
+            "status": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMedicationStatusTaken": "服用済み",
+    "@timelineSummaryMedicationStatusTaken": {
+        "description": "タイムラインサマリーの投薬状況（服用済み）のテキスト。"
+    },
+    "timelineSummaryMedicationStatusNotTaken": "未服用",
+    "@timelineSummaryMedicationStatusNotTaken": {
+        "description": "タイムラインサマリーの投薬状況（未服用）のテキスト。"
+    },
+    "timelineSummaryMealTypeGeneric": "食事",
+    "@timelineSummaryMealTypeGeneric": {
+        "description": "特定の食事が指定されていない場合のタイムラインサマリーの一般的な食事の用語。"
+    },
+    "timelineSummarySleepQualityFormat": "質: {quality}",
+    "@timelineSummarySleepQualityFormat": {
+        "description": "タイムラインサマリーの睡眠の質のフォーマット。",
+        "placeholders": {
+            "quality": {
+                "type": "String",
+                "example": "良い"
+            }
+        }
+    },
+    "timelineSummarySleepFormat": "就寝: {wentToBed}, 起床: {wokeUp}. {quality}",
+    "@timelineSummarySleepFormat": {
+        "description": "タイムラインの睡眠サマリーのフォーマット。",
+        "placeholders": {
+            "wentToBed": {
+                "type": "String"
+            },
+            "wokeUp": {
+                "type": "String"
+            },
+            "quality": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMealFormat": "{mealType}: {description}",
+    "@timelineSummaryMealFormat": {
+        "description": "タイムラインの食事サマリーのフォーマット。",
+        "placeholders": {
+            "mealType": {
+                "type": "String"
+            },
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMoodNotesFormat": "(メモ: {notes})",
+    "@timelineSummaryMoodNotesFormat": {
+        "description": "タイムラインサマリーの気分のメモのフォーマット。",
+        "placeholders": {
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryMoodFormat": "気分: {mood} {notes}",
+    "@timelineSummaryMoodFormat": {
+        "description": "タイムラインの気分サマリーのフォーマット。",
+        "placeholders": {
+            "mood": {
+                "type": "String"
+            },
+            "notes": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryPainLocationFormat": "{location}にて",
+    "@timelineSummaryPainLocationFormat": {
+        "description": "タイムラインサマリーの痛みの場所のフォーマット。",
+        "placeholders": {
+            "location": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryPainFormat": "痛みのレベル: {level}/10 {location}",
+    "@timelineSummaryPainFormat": {
+        "description": "タイムラインの痛みサマリーのフォーマット。",
+        "placeholders": {
+            "level": {
+                "type": "String"
+            },
+            "location": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryActivityDurationFormat": "{duration}間",
+    "@timelineSummaryActivityDurationFormat": {
+        "description": "タイムラインサマリーのアクティビティ期間のフォーマット。",
+        "placeholders": {
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryActivityFormat": "{activityType} {duration}",
+    "@timelineSummaryActivityFormat": {
+        "description": "タイムラインのアクティビティサマリーのフォーマット。",
+        "placeholders": {
+            "activityType": {
+                "type": "String"
+            },
+            "duration": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatGeneric": "{vitalType}: {value} {unit}",
+    "@timelineSummaryVitalFormatGeneric": {
+        "description": "タイムラインサマリーのバイタルサインの一般的なフォーマット。",
+        "placeholders": {
+            "vitalType": {
+                "type": "String"
+            },
+            "value": {
+                "type": "String"
+            },
+            "unit": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatBP": "血圧: {systolic}/{diastolic} mmHg",
+    "@timelineSummaryVitalFormatBP": {
+        "description": "タイムラインサマリーの血圧のフォーマット。",
+        "placeholders": {
+            "systolic": {
+                "type": "String"
+            },
+            "diastolic": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatHR": "心拍数: {heartRate} bpm",
+    "@timelineSummaryVitalFormatHR": {
+        "description": "タイムラインサマリーの心拍数のフォーマット。",
+        "placeholders": {
+            "heartRate": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalFormatTemp": "体温: {temperature}°",
+    "@timelineSummaryVitalFormatTemp": {
+        "description": "タイムラインサマリーの体温のフォーマット。",
+        "placeholders": {
+            "temperature": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalNote": "メモ: {note}",
+    "@timelineSummaryVitalNote": {
+        "description": "タイムラインサマリーのバイタルサインのメモのフォーマット。",
+        "placeholders": {
+            "note": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryVitalsRecorded": "バイタルサイン記録済み",
+    "timelineSummaryExpenseDescriptionFormat": "({description})",
+    "@timelineSummaryExpenseDescriptionFormat": {
+        "description": "タイムラインサマリーの経費説明のフォーマット。",
+        "placeholders": {
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryExpenseFormat": "{category}: ¥{amount} {description}",
+    "@timelineSummaryExpenseFormat": {
+        "description": "タイムラインの経費サマリーのフォーマット。",
+        "placeholders": {
+            "category": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            },
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "timelineSummaryErrorProcessing": "タイムラインの詳細処理エラー。",
+    "careScreenErrorMissingIdGeneral": "エラー: アイテムIDがありません。続行できません。",
+    "careScreenErrorEditPermission": "エラー: このアイテムを編集する権限がありません。",
+    "careScreenErrorUpdateMedStatus": "投薬状況の更新エラー。もう一度お試しください。",
+    "careScreenLoadingRecords": "今日の記録を読み込み中...",
+    "careScreenErrorNoRecords": "この日の記録が見つからないか、エラーが発生しました。",
+    "careScreenSectionTitleMeds": "投薬",
+    "careScreenNoMedsLogged": "この日の投薬記録はありません。",
+    "careScreenUnknownMedication": "不明な薬剤",
+    "careScreenTooltipEditMed": "投薬エントリを編集",
+    "careScreenTooltipDeleteMed": "投薬エントリを削除",
+    "careScreenButtonAddMed": "投薬を追加",
+    "careScreenSectionTitleSleep": "睡眠",
+    "careScreenNoSleepLogged": "この日の睡眠記録はありません。",
+    "careScreenSleepTimeRange": "{wentToBed} - {wokeUp}",
+    "@careScreenSleepTimeRange": {
+        "description": "睡眠時間範囲を表示します。",
+        "placeholders": {
+            "wentToBed": {
+                "type": "String",
+                "example": "午後10:00"
+            },
+            "wokeUp": {
+                "type": "String",
+                "example": "午前6:00"
+            }
+        }
+    },
+    "careScreenSleepQuality": "質: {quality} {duration}",
+    "@careScreenSleepQuality": {
+        "description": "睡眠の質とオプションの期間を表示します。",
+        "placeholders": {
+            "quality": {
+                "type": "String",
+                "example": "良い"
+            },
+            "duration": {
+                "type": "String",
+                "example": "(7時間30分)"
+            }
+        }
+    },
+    "careScreenSleepNaps": "昼寝: {naps}",
+    "@careScreenSleepNaps": {
+        "description": "昼寝情報を表示します。",
+        "placeholders": {
+            "naps": {
+                "type": "String",
+                "example": "1回、30分"
+            }
+        }
+    },
+    "careScreenErrorFailedToLoad": "この日の記録の読み込みに失敗しました。もう一度お試しください。",
+    "@careScreenErrorFailedToLoad": {
+        "description": "ケア画面で選択された日の記録を読み込めない場合のエラーメッセージ。"
+    },
+    "careScreenTooltipEditSleep": "睡眠エントリを編集",
+    "careScreenTooltipDeleteSleep": "睡眠エントリを削除",
+    "careScreenButtonAddSleep": "睡眠を追加",
+    "careScreenSectionTitleFoodWater": "食事と水分摂取",
+    "careScreenNoFoodWaterLogged": "この日の食事または水分摂取の記録はありません。",
+    "formErrorNoItemToDelete": "削除する項目がありません。",
+    "formConfirmDeleteTitle": "削除の確認",
+    "formConfirmDeleteVitalMessage": "このバイタルサイン記録を削除してもよろしいですか？",
+    "formSuccessVitalDeleted": "バイタルサイン記録が削除されました。",
+    "formErrorFailedToDeleteVital": "バイタルサイン記録の削除に失敗しました。",
+    "formTooltipDeleteVital": "バイタルサインを削除",
+    "formConfirmDeleteMealMessage": "この食事記録を削除してもよろしいですか？",
+    "formSuccessMealDeleted": "食事記録が削除されました。",
+    "formErrorFailedToDeleteMeal": "食事記録の削除に失敗しました。",
+    "formTooltipDeleteMeal": "食事を削除",
+    "goToTodayButtonLabel": "今日へ",
+    "@goToTodayButtonLabel": {
+        "description": "ケア画面を当日に移動するボタンのラベル。"
+    },
+    "formConfirmDeleteMedMessage": "この投薬記録を削除してもよろしいですか？",
+    "formSuccessMedDeleted": "投薬記録が削除されました。",
+    "formErrorFailedToDeleteMed": "投薬記録の削除に失敗しました。",
+    "formTooltipDeleteMed": "投薬を削除",
+    "formConfirmDeleteMoodMessage": "この気分記録を削除してもよろしいですか？",
+    "formSuccessMoodDeleted": "気分記録が削除されました。",
+    "formErrorFailedToDeleteMood": "気分記録の削除に失敗しました。",
+    "formTooltipDeleteMood": "気分を削除",
+    "formConfirmDeletePainMessage": "この痛みの記録を削除してもよろしいですか？",
+    "formSuccessPainDeleted": "痛みの記録が削除されました。",
+    "formErrorFailedToDeletePain": "痛みの記録の削除に失敗しました。",
+    "formTooltipDeletePain": "痛みを削除",
+    "formConfirmDeleteActivityMessage": "このアクティビティ記録を削除してもよろしいですか？",
+    "formSuccessActivityDeleted": "アクティビティ記録が削除されました。",
+    "formErrorFailedToDeleteActivity": "アクティビティ記録の削除に失敗しました。",
+    "formTooltipDeleteActivity": "アクティビティを削除",
+    "formConfirmDeleteSleepMessage": "この睡眠記録を削除してもよろしいですか？",
+    "formSuccessSleepDeleted": "睡眠記録が削除されました。",
+    "formErrorFailedToDeleteSleep": "睡眠記録の削除に失敗しました。",
+    "formTooltipDeleteSleep": "睡眠を削除",
+    "formConfirmDeleteExpenseMessage": "この経費記録を削除してもよろしいですか？",
+    "formSuccessExpenseDeleted": "経費記録が削除されました。",
+    "formErrorFailedToDeleteExpense": "経費記録の削除に失敗しました。",
+    "formTooltipDeleteExpense": "経費を削除"
+    ,
+    "termElderDefault": "ケア対象者",
+    "@termElderDefault": {
+        "description": "ユーザーが指定していない場合に使用されるデフォルトの用語。"
+    },
+    "@homeScreenBaseTitleCareLog": {
+        "description": "ケア記録画面のタイトル、用語は動的です。",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "大切な人"
+            }
+        }
+    },
+    "@homeScreenBaseTitleCalendar": {
+        "description": "カレンダー画面のタイトル、用語は動的です。",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "大切な人"
+            }
+        }
+    },
+    "selectTermToViewCareLog": "ケア記録を表示するには、{term}を選択してください。",
+    "@selectTermToViewCareLog": {
+        "description": "ケア記録の用語が選択されていない場合に表示されるメッセージ。",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "大切な人"
+            }
+        }
+    },
+    "selectTermToViewCalendar": "カレンダーを表示するには、{term}を選択してください。",
+    "@selectTermToViewCalendar": {
+        "description": "カレンダーの用語が選択されていない場合に表示されるメッセージ。",
+        "placeholders": {
+            "term": {
+                "type": "String",
+                "example": "大切な人"
+            }
+        }
+    },
+    "@bottomNavCareLog": {
+        "description": "ケア記録のボトムナビゲーションラベル、用語は動的です。"
+    },
+    "@bottomNavCalendar": {
+        "description": "カレンダーのボトムナビゲーションラベル、用語は動的です。"
+    }
+    ,
+    "createAccountTitle": "アカウントを作成",
+    "errorEnterValidEmailPasswordMinLength": "有効なメールアドレスとパスワード（最低{minLength}文字）を入力してください。",
+    "@errorEnterValidEmailPasswordMinLength": {
+        "description": "Error message for invalid email or password not meeting minimum length.",
+        "placeholders": {
+            "minLength": {
+                "type": "int",
+                "example": "6"
+            }
+        }
+    },
+    "errorSignUpFailedDefault": "登録に失敗しました。もう一度試すか、ネットワーク接続を確認してください。",
+    "formErrorGenericSaveUpdate": "保存または更新中にエラーが発生しました。もう一度お試しください。",
+    "formSuccessActivitySaved": "アクティビティが正常に保存されました。",
+    "formSuccessActivityUpdated": "アクティビティが正常に更新されました。",
+    "formSuccessExpenseSaved": "経費が正常に保存されました。",
+    "formSuccessExpenseUpdated": "経費が正常に更新されました。",
+    "formSuccessMealSaved": "食事が正常に保存されました。",
+    "formSuccessMealUpdated": "食事が正常に更新されました。",
+    "formSuccessMedSaved": "投薬が正常に保存されました。",
+    "formSuccessMedUpdated": "投薬が正常に更新されました。",
+    "formSuccessMoodSaved": "気分が正常に保存されました。",
+    "formSuccessMoodUpdated": "気分が正常に更新されました。",
+    "formSuccessPainSaved": "痛みの記録が正常に保存されました。",
+    "formSuccessPainUpdated": "痛みの記録が正常に更新されました。",
+    "formSuccessSleepSaved": "睡眠記録が正常に保存されました。",
+    "formSuccessSleepUpdated": "睡眠記録が正常に更新されました。",
+    "formSuccessVitalSaved": "バイタルサインが正常に保存されました。",
+    "formSuccessVitalUpdated": "バイタルサインが正常に更新されました。",
+    "selectElderToViewCalendar": "カレンダーを表示するにはケア対象者を選択してください。",
+    "selectElderToViewCareLog": "ケア記録を表示するにはケア対象者を選択してください。",
+    "settingsHintRelationshipToElder": "例: 息子/娘、配偶者、介護者",
+    "settingsLabelRelationshipToElder": "ケア対象者との関係",
+    "signUpButton": "登録する",
+    "signUpScreenTitle": "アカウント作成",
+    "userSelectorSendToLabel": "送信先:",
+    "userSelectorAudienceAll": "すべてのユーザー",
+    "userSelectorAudienceSpecific": "特定のユーザー",
+    "userSelectorNoUsersAvailable": "選択可能な他のユーザーがいません。",
+    "timelinePostingToAll": "投稿先: すべてのユーザー",
+    "timelinePostingToCount": "投稿先: {count}人の特定ユーザー",
+    "@timelinePostingToCount": {
+        "description": "タイムライン投稿の送信先ユーザー数を示すメッセージ。",
+        "placeholders": {
+            "count": {
+                "type": "String"
+            }
+        }
+    },
+    "timelinePrivateMessageIndicator": "プライベートメッセージ",
+    "timelineEditMessage": "メッセージを編集",
+    "timelineDeleteMessage": "メッセージを削除",
+    "timelineConfirmDeleteMessageTitle": "メッセージを削除しますか？",
+    "timelineConfirmDeleteMessageContent": "このメッセージを削除してもよろしいですか？",
+    "timelineMessageDeletedSuccess": "メッセージが削除されました。",
+    "timelineErrorDeletingMessage": "メッセージの削除中にエラーが発生しました: {errorMessage}",
+    "@timelineErrorDeletingMessage": {
+        "placeholders": { "errorMessage": { "type": "String" } }
+    },
+    "timelineMessageUpdatedSuccess": "メッセージが更新されました。",
+    "timelineErrorUpdatingMessage": "メッセージの更新中にエラーが発生しました: {errorMessage}",
+    "@timelineErrorUpdatingMessage": {
+        "placeholders": { "errorMessage": { "type": "String" } }
+    },
+    "timelineUpdateButton": "更新",
+    "timelineHideMessage": "メッセージを非表示",
+    "timelineMessageHiddenSuccess": "メッセージが非表示になりました。",
+    "timelineShowHiddenMessagesButton": "非表示を表示",
+    "timelineHideHiddenMessagesButton": "すべて表示",
+    "timelineUnhideMessage": "メッセージを再表示",
+    "timelineNoHiddenMessages": "非表示のメッセージはありません。",
+    "@timelineNoHiddenMessages": {
+        "description": "Message displayed when there are no hidden timeline messages to show."
+    },
+    "timelineMessageUnhiddenSuccess": "メッセージが再表示されました。",
+    "selfCareScreenTitle": "セルフケア",
+    "@selfCareScreenTitle": {
+        "description": "セルフケア画面のタイトル"
+    }
+    ,
+    "settingsTitleNotificationPreferences": "通知設定",
+    "settingsItemNotificationPreferences": "通知の基本設定",
+    "landingPageAlreadyLoggedIn": "すでにログインしています！",
+  "manageMedications": "薬剤管理",
+    "medicationsScreenTitleGeneric": "薬剤",
+  "medicationsScreenTitleForElder": "{name}さんの薬剤",
+  "@medicationsScreenTitleForElder": {
+    "description": "高齢者特定の薬剤画面のタイトル。",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "花子"
+      }
+    }
+    },
+    "medicationsSearchHint": "薬剤名を検索",
+  "medicationsDoseHint": "例: 10mg",
+  "medicationsScheduleHint": "例: 午前/午後",
+  "medicationsListEmpty": "薬剤はまだ追加されていません",
+  "medicationsDoseNotSet": "用量が設定されていません",
+  "medicationsScheduleNotSet": "スケジュールが設定されていません",
+  "medicationsTooltipDelete": "薬剤を削除",
+  "medicationsConfirmDeleteTitle": "「{medName}」を削除しますか？",
+  "@medicationsConfirmDeleteTitle": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicationsConfirmDeleteContent": "この操作は元に戻せません。",
+  "medicationsDeletedSuccess": "薬剤「{medName}」が削除されました。",
+  "@medicationsDeletedSuccess": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "rxNavGenericSearchError": "薬剤リストを取得できませんでした。もう一度お試しください。",
+  "medicationsValidationNameRequired": "名前が必要です",
+  "medicationsValidationDoseRequired": "用量が必要です",
+  "medicationsInteractionsFoundTitle": "相互作用の可能性が見つかりました",
+  "medicationsNoInteractionsFound": "相互作用は見つかりませんでした",
+  "medicationsInteractionsSaveAnyway": "それでも保存しますか",
+  "medicationsAddedSuccess": "薬剤「{medName}」が追加されました。",
+  "@medicationsAddedSuccess": {
+    "placeholders": {
+      "medName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicationsAddDialogTitle": "薬剤を追加",
+  "routeErrorGenericMessage": "問題が発生しました。もう一度お試しください。",
+  "goHomeButton": "ホームへ戻る",
+
+  "settingsTitleHelpfulResources": "役立つリソース",
+  "settingsItemHelpfulResources": "役立つリソースを表示",
+
+  "timelineFilterOnlyMyLogs": "自分の記録のみ:",
+  "timelineFilterFromDate": "開始日",
+  "timelineFilterToDate": "終了日",
+
+  "medicationsInteractionsSectionTitle": "相互作用",
+  "@medicationsInteractionsSectionTitle": {
+    "description": "フォーム内の薬剤相互作用セクションのタイトル。"
+  }
+}

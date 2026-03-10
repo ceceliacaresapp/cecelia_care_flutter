@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cecelia_care_flutter/providers/notification_prefs_provider.dart';
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
+
+class NotificationSettingsScreen extends StatelessWidget {
+  const NotificationSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // --- FIX ---
+    // Enabled localization and got the theme for consistent styling.
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final prefsProvider = context.watch<NotificationPrefsProvider>();
+
+    return Scaffold(
+      appBar: AppBar(
+        // Use a localization key for the title.
+        title: Text(l10n.notificationPreferencesTitle),
+      ),
+      body: ListView(
+        children: <Widget>[
+          if (prefsProvider.isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          // --- FIX ---
+          // Updated error handling to use the new `errorInfo` object.
+          else if (prefsProvider.errorInfo != null)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                // Display a localized, user-friendly error message.
+                l10n.genericError(prefsProvider.errorInfo!.details),
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            )
+          else ...[
+            // --- FIX ---
+            // All titles now use localization keys.
+            SwitchListTile(
+              title: Text(l10n.medsNotificationsLabel),
+              value: prefsProvider.prefs.meds,
+              onChanged: (bool value) => prefsProvider.toggleMeds(value),
+              secondary: const Icon(Icons.medication_outlined),
+            ),
+            SwitchListTile(
+              title: Text(l10n.calendarNotificationsLabel),
+              value: prefsProvider.prefs.calendar,
+              onChanged: (bool value) => prefsProvider.toggleCalendar(value),
+              secondary: const Icon(Icons.calendar_today_outlined),
+            ),
+            SwitchListTile(
+              title: Text(l10n.selfCareNotificationsLabel),
+              value: prefsProvider.prefs.selfCare,
+              onChanged: (bool value) => prefsProvider.toggleSelfCare(value),
+              secondary: const Icon(Icons.spa_outlined),
+            ),
+            SwitchListTile(
+              title: Text(l10n.chatNotificationsLabel),
+              value: prefsProvider.prefs.chatMessages,
+              onChanged: (bool value) => prefsProvider.toggleChatMessages(value),
+              secondary: const Icon(Icons.chat_bubble_outline),
+            ),
+            SwitchListTile(
+              title: Text(l10n.healthRemindersNotificationsLabel),
+              value: prefsProvider.prefs.healthReminders,
+              onChanged: (bool value) => prefsProvider.toggleHealthReminders(value),
+              secondary: const Icon(Icons.monitor_heart_outlined),
+            ),
+            SwitchListTile(
+              title: Text(l10n.generalNotificationsLabel),
+              value: prefsProvider.prefs.generalDefault,
+              onChanged: (bool value) => prefsProvider.toggleGeneralDefault(value),
+              secondary: const Icon(Icons.notifications_active_outlined),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

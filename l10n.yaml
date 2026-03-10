@@ -1,0 +1,12 @@
+# filepath: l10n.yaml
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+untranslated-messages-file: untranslated_messages.json
+
+# Optional: if you want to specify a class name other than AppLocalizations
+# output-class: MyAppLocalizations
+# Optional: if your ARB files are not in UTF-8 (UTF-8 is default and recommended)
+# source-arb-file-encoding: UTF-8
+# Optional: if you want to use nullable getters for messages (default is false)
+# nullable-getter: false

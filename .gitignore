@@ -1,0 +1,49 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ & Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+# Flutter/Dart/Pub related
+.metadata
+.packages
+.dart_tool/
+.pub-cache/
+/build/
+
+# Generated kernel files
+*.snapshot
+*.dill
+
+# Flutter IDE specific
+app.*.symbols
+app.*.map.json
+**/ios/Flutter/.last_build_id
+
+# Android
+/android/local.properties
+/android/key.properties
+
+# iOS
+/ios/Pods/
+/ios/Flutter/App.framework
+/ios/Flutter/engine.version
+/ios/Flutter/flutter_assets/
+/ios/Flutter/ephemeral_framework.zip
+/ios/.symlinks/
+/ios/Runner.xcworkspace/xcshareddata/
+/ios/Runner.xcworkspace/xcuserdata/
