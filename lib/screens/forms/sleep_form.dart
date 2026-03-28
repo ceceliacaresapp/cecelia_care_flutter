@@ -7,6 +7,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
+import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/models/sleep_entry.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
@@ -32,7 +33,8 @@ class SleepForm extends StatefulWidget {
 class _SleepFormState extends State<SleepForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _totalDurationController = TextEditingController();
+  final TextEditingController _totalDurationController =
+      TextEditingController();
   final TextEditingController _qualityController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
@@ -54,8 +56,6 @@ class _SleepFormState extends State<SleepForm> {
     _theme = Theme.of(context);
   }
 
-  /* ---------- Field helpers ---------- */
-
   void _initializeFields() {
     final editing = widget.editingItem;
     if (editing != null) {
@@ -73,9 +73,7 @@ class _SleepFormState extends State<SleepForm> {
   @override
   void didUpdateWidget(covariant SleepForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.editingItem != widget.editingItem) {
-      _initializeFields();
-    }
+    if (oldWidget.editingItem != widget.editingItem) _initializeFields();
   }
 
   @override
@@ -86,12 +84,9 @@ class _SleepFormState extends State<SleepForm> {
     super.dispose();
   }
 
-  /* ---------- Save/Delete handlers ---------- */
-
   Future<void> _handleSaveSleep() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-
     try {
       final journal = context.read<JournalServiceProvider>();
       final user = AuthService.currentUser;
@@ -108,17 +103,15 @@ class _SleepFormState extends State<SleepForm> {
         'date': widget.currentDate,
         'elderId': widget.activeElder.id,
         'loggedByUserId': user.uid,
-        'loggedBy': user.displayName ?? user.email ?? _l10n.formUnknownUser,
+        'loggedBy':
+            user.displayName ?? user.email ?? _l10n.formUnknownUser,
         'updatedAt': FieldValue.serverTimestamp(),
         'isPublic': true,
         'visibleToUserIds': <String>[],
       };
       if (widget.editingItem != null) {
         await journal.updateJournalEntry(
-          'sleep',
-          payload,
-          widget.editingItem!.firestoreId,
-        );
+            'sleep', payload, widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessSleepUpdated, Colors.green);
       } else {
         payload['createdAt'] = FieldValue.serverTimestamp();
@@ -148,7 +141,8 @@ class _SleepFormState extends State<SleepForm> {
             onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
+            style: TextButton.styleFrom(
+                foregroundColor: AppTheme.dangerColor),
             child: Text(_l10n.deleteButton),
             onPressed: () => Navigator.of(ctx).pop(true),
           ),
@@ -159,7 +153,8 @@ class _SleepFormState extends State<SleepForm> {
       setState(() => _isSaving = true);
       try {
         final journal = context.read<JournalServiceProvider>();
-        await journal.deleteJournalEntry('sleep', widget.editingItem!.firestoreId);
+        await journal.deleteJournalEntry(
+            'sleep', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessSleepDeleted, Colors.green);
         Navigator.of(context).pop();
         widget.onClose?.call();
@@ -172,79 +167,61 @@ class _SleepFormState extends State<SleepForm> {
     }
   }
 
-  /* ---------- Snackbar ---------- */
-
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 3),
+    ));
   }
-
-  /* ---------- UI ---------- */
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingItem != null
-            ? _l10n.sleepFormTitleEdit
-            : _l10n.sleepFormTitleNew),
-        actions: [
-          if (widget.editingItem != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.dangerColor),
-              tooltip: _l10n.formTooltipDeleteSleep,
-              onPressed: _isSaving ? null : _handleDeleteSleep,
-            ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _theme.cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FormSheetHeader(
+          title: widget.editingItem != null
+              ? _l10n.sleepFormTitleEdit
+              : _l10n.sleepFormTitleNew,
+          onDelete:
+              widget.editingItem != null ? _handleDeleteSleep : null,
+          deleteTooltip: _l10n.formTooltipDeleteSleep,
+          isSaving: _isSaving,
+        ),
+        Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
                   Text(
                     _l10n.sleepFormLabelTotalDuration,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _totalDurationController,
-                    decoration: InputDecoration(hintText: _l10n.sleepFormHintTotalDuration),
+                    decoration: InputDecoration(
+                        hintText: _l10n.sleepFormHintTotalDuration),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.sleepFormLabelQuality,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _qualityController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(hintText: _l10n.sleepFormHintQuality),
+                    decoration: InputDecoration(
+                        hintText: _l10n.sleepFormHintQuality),
                     validator: (value) {
                       if (value != null && value.trim().isNotEmpty) {
                         final v = int.tryParse(value.trim());
@@ -255,16 +232,17 @@ class _SleepFormState extends State<SleepForm> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.formLabelNotesOptional,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _notesController,
-                    decoration:
-                        InputDecoration(hintText: _l10n.sleepFormHintGeneralNotes),
+                    decoration: InputDecoration(
+                        hintText: _l10n.sleepFormHintGeneralNotes),
                     maxLines: 3,
                     minLines: 1,
                   ),
@@ -275,14 +253,21 @@ class _SleepFormState extends State<SleepForm> {
                       Btn(
                         title: _l10n.cancelButton,
                         variant: BtnVariant.secondaryOutline,
-                        onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        onPressed: _isSaving
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                       const SizedBox(width: 12),
                       Btn(
-                        title: widget.editingItem != null ? _l10n.updateButton : _l10n.saveButton,
-                        onPressed: _isSaving ? null : _handleSaveSleep,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        title: widget.editingItem != null
+                            ? _l10n.updateButton
+                            : _l10n.saveButton,
+                        onPressed:
+                            _isSaving ? null : _handleSaveSleep,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                     ],
                   ),
@@ -291,7 +276,7 @@ class _SleepFormState extends State<SleepForm> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

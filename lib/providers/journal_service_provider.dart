@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
-import 'package:cecelia_care_flutter/models/entry_types.dart'; // NEW: Import EntryType
+import 'package:cecelia_care_flutter/models/entry_types.dart';
 
 class JournalServiceProvider extends ChangeNotifier {
   final FirestoreService _firestoreService;
@@ -23,26 +23,64 @@ class JournalServiceProvider extends ChangeNotifier {
         _firestoreService = firestoreService,
         _badgeProvider = badgeProvider;
 
+  ElderProfile? get activeElder => _activeElder;
+  String? get errorMessage => _errorMessage;
+
+  // ---------------------------------------------------------------------------
+  // FIX: duplicate if condition merged into one block.
+  //
+  // The original had two separate `if (_activeElder?.id != elder?.id)` checks
+  // that were identical — the second one could never evaluate differently from
+  // the first. Both bodies now live inside a single guard.
+  //
+  // Note: notifyListeners() is intentionally absent here. This method is called
+  // from main.dart's ChangeNotifierProxyProvider update: callback, which
+  // returns the mutated provider and triggers a rebuild automatically.
+  // ---------------------------------------------------------------------------
   void setActiveElder(ElderProfile? elder) {
     if (_activeElder?.id != elder?.id) {
       _errorMessage = null;
-    }
-    if (_activeElder?.id != elder?.id) {
       _activeElder = elder;
     }
   }
-
-  ElderProfile? get activeElder => _activeElder;
-  String? get errorMessage => _errorMessage;
 
   void clearErrorMessage() {
     _errorMessage = null;
     notifyListeners();
   }
 
+  // ---------------------------------------------------------------------------
+  // FIX: EntryType fallback replaced with an explicit throw.
+  //
+  // The original silently fell back to EntryType.pain for any unrecognised
+  // journal type string, which would have caused mystery pain entries to appear
+  // on the timeline whenever a new type was added to the app but not yet
+  // reflected in the enum. Now it throws immediately so the bug surfaces at
+  // the exact call site during development rather than silently corrupting data
+  // in production.
+  //
+  // The try/catch that surrounded firstWhere was also unnecessary — firstWhere
+  // with an orElse closure never throws; the catch block was dead code.
+  // ---------------------------------------------------------------------------
+  EntryType _entryTypeFromString(String journalType) {
+    final EntryType? match = EntryType.values
+        .where((e) => e.name == journalType)
+        .firstOrNull;
+
+    if (match != null) return match;
+
+    // Surface immediately in debug so the developer fixes the mapping.
+    // In release we still throw — recording a corrupted entry type is worse
+    // than a caught exception that shows an error snackbar to the user.
+    throw ArgumentError(
+      'JournalServiceProvider: unknown journal type "$journalType". '
+      'Add it to the EntryType enum before using it.',
+    );
+  }
+
   JournalEntry _prepareTimelineSummaryData({
     required String elderId,
-    required String journalType, // This remains String for the collection path
+    required String journalType,
     required Map<String, dynamic> detailedEntryData,
     required DateTime entryDateTime,
     required String loggedByUserId,
@@ -50,7 +88,8 @@ class JournalServiceProvider extends ChangeNotifier {
     String? loggedByUserAvatarUrl,
   }) {
     String summaryText = '${journalType.capitalize()} entry logged.';
-    if (journalType == 'medication' && detailedEntryData.containsKey('name')) {
+    if (journalType == 'medication' &&
+        detailedEntryData.containsKey('name')) {
       summaryText = 'Medication: ${detailedEntryData['name']}';
     } else if (detailedEntryData.containsKey('description')) {
       summaryText = detailedEntryData['description'] as String;
@@ -58,23 +97,16 @@ class JournalServiceProvider extends ChangeNotifier {
       summaryText = detailedEntryData['activityType'] as String;
     }
 
-    final String dateStringForPath = DateFormat('yyyy-MM-dd').format(entryDateTime);
+    final String dateStringForPath =
+        DateFormat('yyyy-MM-dd').format(entryDateTime);
 
-    // Convert journalType String to EntryType enum for JournalEntry constructor
-    EntryType entryTypeEnum;
-    try {
-      entryTypeEnum = EntryType.values.firstWhere(
-        (e) => e.name == journalType,
-        orElse: () => EntryType.pain, // Default or handle as appropriate
-      );
-    } catch (e) {
-      debugPrint('Warning: Invalid journalType "$journalType" for enum conversion. Defaulting to Pain. Error: $e');
-      entryTypeEnum = EntryType.pain; // Fallback
-    }
+    // FIX: _entryTypeFromString throws on unknown types instead of silently
+    // defaulting to EntryType.pain.
+    final EntryType entryTypeEnum = _entryTypeFromString(journalType);
 
-    final JournalEntry timelineJournalEntry = JournalEntry(
+    return JournalEntry(
       elderId: elderId,
-      type: entryTypeEnum, // NEW: Use EntryType enum
+      type: entryTypeEnum,
       loggedByUserId: loggedByUserId,
       loggedByDisplayName: loggedByDisplayName ?? 'Unknown User',
       loggedByUserAvatarUrl: loggedByUserAvatarUrl,
@@ -85,70 +117,89 @@ class JournalServiceProvider extends ChangeNotifier {
       isPublic: true,
       visibleToUserIds: ['all'],
     );
-    return timelineJournalEntry;
   }
 
-  /// Adds a new journal entry.
-  /// **CONSISTENT SIGNATURE:** (String type, Map payload, String userId)
+  /// Adds a new journal entry for the active elder.
+  ///
+  /// Signature: (String type, Map payload, String userId)
   Future<Map<String, dynamic>?> addJournalEntry(
-      String type, // Keep as String for this method's parameter
-      Map<String, dynamic> payload, // Keep as Map second
-      String userId) async {
+    String type,
+    Map<String, dynamic> payload,
+    String userId,
+  ) async {
     _errorMessage = null;
 
     if (_activeElder == null || _activeElder!.id.isEmpty) {
-      debugPrint('JournalServiceProvider: No active elder set for addJournalEntry.');
+      debugPrint(
+          'JournalServiceProvider: No active elder set for addJournalEntry.');
       _errorMessage = 'Cannot add entry: No active elder selected.';
       notifyListeners();
       return null;
     }
 
-    final String elderId = _activeElder!.id;
-    final User? authServiceCurrentUser = AuthService.currentUser; // Assuming AuthService.currentUser exists and is a static getter
-    String authServiceDisplayName = 'Unknown User';
-    if (authServiceCurrentUser != null) {
-        String? dn = authServiceCurrentUser.displayName;
-        String? em = authServiceCurrentUser.email;
-        if (dn != null && dn.trim().isNotEmpty) {
-            authServiceDisplayName = dn.trim();
-        } else if (em != null && em.trim().isNotEmpty) {
-            authServiceDisplayName = em.trim();
-        }
-    }
-    final String? authServiceAvatarUrl = authServiceCurrentUser?.photoURL;
-
     if (userId.isEmpty) {
-      debugPrint('JournalServiceProvider: loggedByUserId is missing or empty. Cannot add entry.');
+      debugPrint(
+          'JournalServiceProvider: loggedByUserId is missing or empty.');
       _errorMessage = 'Cannot add entry: User information is missing.';
       notifyListeners();
       return null;
     }
 
-    final DateTime actualEntryDateTime = DateTime.now();
-    final JournalEntry timelineSummaryEntry = _prepareTimelineSummaryData(
-      elderId: elderId,
-      journalType: type, // This `type` is String, used for collection path and _prepareTimelineSummaryData
-      detailedEntryData: payload,
-      entryDateTime: actualEntryDateTime,
-      loggedByUserId: userId,
-      loggedByDisplayName: authServiceDisplayName,
-      loggedByUserAvatarUrl: authServiceAvatarUrl,
-    );
+    final String elderId = _activeElder!.id;
+    final User? authUser = AuthService.currentUser;
+    String displayName = 'Unknown User';
+    if (authUser != null) {
+      final String? dn = authUser.displayName;
+      final String? em = authUser.email;
+      if (dn != null && dn.trim().isNotEmpty) {
+        displayName = dn.trim();
+      } else if (em != null && em.trim().isNotEmpty) {
+        displayName = em.trim();
+      }
+    }
+    final String? avatarUrl = authUser?.photoURL;
 
-    Map<String, dynamic> detailedEntryDataForFirestore = {
+    final DateTime actualEntryDateTime = DateTime.now();
+    final String dateString =
+        DateFormat('yyyy-MM-dd').format(actualEntryDateTime);
+
+    // FIX: _prepareTimelineSummaryData now calls _entryTypeFromString, which
+    // throws on unknown types. Wrap in try/catch so callers get a clean error
+    // message rather than an unhandled exception.
+    final JournalEntry timelineSummaryEntry;
+    try {
+      timelineSummaryEntry = _prepareTimelineSummaryData(
+        elderId: elderId,
+        journalType: type,
+        detailedEntryData: payload,
+        entryDateTime: actualEntryDateTime,
+        loggedByUserId: userId,
+        loggedByDisplayName: displayName,
+        loggedByUserAvatarUrl: avatarUrl,
+      );
+    } catch (e) {
+      debugPrint('JournalServiceProvider.addJournalEntry: $e');
+      _errorMessage = 'Cannot add entry: Unrecognised entry type "$type".';
+      notifyListeners();
+      return null;
+    }
+
+    final Map<String, dynamic> detailedEntryDataForFirestore = {
       ...payload,
       'loggedByUserId': userId,
-      'loggedByDisplayName': authServiceDisplayName,
-      'loggedByUserAvatarUrl': authServiceAvatarUrl,
+      'loggedByDisplayName': displayName,
+      'loggedByUserAvatarUrl': avatarUrl,
     };
 
-    final String dateString = DateFormat('yyyy-MM-dd').format(actualEntryDateTime);
+    debugPrint(
+        'JSP.addJournalEntry: calling addDetailedJournalEntryWithTimelineLink '
+        'for $type on $dateString');
 
-    debugPrint('JSP.addJournalEntry: Calling FirestoreService.addDetailedJournalEntryWithTimelineLink for $type on $dateString');
-    final DocumentReference? detailedDocRef = await _firestoreService.addDetailedJournalEntryWithTimelineLink(
+    final DocumentReference? detailedDocRef =
+        await _firestoreService.addDetailedJournalEntryWithTimelineLink(
       elderId: elderId,
       dateString: dateString,
-      journalType: type, // This `journalType` is String, passed to FirestoreService
+      journalType: type,
       detailedEntryData: detailedEntryDataForFirestore,
       timelineSummaryEntry: timelineSummaryEntry,
     );
@@ -156,18 +207,17 @@ class JournalServiceProvider extends ChangeNotifier {
     if (detailedDocRef != null) {
       final docSnap = await detailedDocRef.get();
       if (docSnap.exists) {
-        final Map<String, dynamic> resultData = docSnap.data() as Map<String, dynamic>;
+        final Map<String, dynamic> resultData =
+            docSnap.data() as Map<String, dynamic>;
         resultData['firestoreId'] = docSnap.id;
 
         try {
-          // Pass the string type to badge provider if it expects string, or convert if needed
           await _badgeProvider.checkForNewBadgesAfterEntry(
-            type, // This is still a string here, assuming badgeProvider expects string
-            userId,
-            elderId,
-          );
+              type, userId, elderId);
         } catch (badgeError) {
-          debugPrint('JournalServiceProvider: Error triggering badge check: $badgeError');
+          debugPrint(
+              'JournalServiceProvider: error triggering badge check: '
+              '$badgeError');
         }
         notifyListeners();
         return resultData;
@@ -180,33 +230,58 @@ class JournalServiceProvider extends ChangeNotifier {
   }
 
   /// Updates an existing journal entry.
-  /// **CONSISTENT SIGNATURE:** (String type, Map payload, String docId)
+  ///
+  /// Signature: (String type, Map payload, String docId)
   Future<Map<String, dynamic>?> updateJournalEntry(
-      String entryTypeString, // CHANGED: Now String first for consistency (name entryTypeString to clarify)
-      Map<String, dynamic> entryData, // CHANGED: Now Map second for consistency
-      String entryId) async {
+    String entryTypeString,
+    Map<String, dynamic> entryData,
+    String entryId,
+  ) async {
     _errorMessage = null;
+
     if (_activeElder == null || _activeElder!.id.isEmpty) {
-      debugPrint('JournalServiceProvider: No active elder set for updateJournalEntry.');
+      debugPrint(
+          'JournalServiceProvider: No active elder set for updateJournalEntry.');
       _errorMessage = 'Cannot update entry: No active elder selected.';
       notifyListeners();
       return null;
     }
-    final currentUser = AuthService.currentUser; // Assuming AuthService.currentUser exists and is a static getter
+
+    final currentUser = AuthService.currentUser;
     if (currentUser == null) {
-      debugPrint('JournalServiceProvider: No current user logged in for updateJournalEntry.');
+      debugPrint(
+          'JournalServiceProvider: No current user logged in for '
+          'updateJournalEntry.');
       _errorMessage = 'Cannot update entry: You are not logged in.';
       notifyListeners();
       return null;
     }
 
+    // FIX: validate the type string early so we fail fast before touching
+    // Firestore, rather than silently defaulting to EntryType.pain later.
+    final EntryType entryTypeEnum;
+    try {
+      entryTypeEnum = _entryTypeFromString(entryTypeString);
+    } catch (e) {
+      debugPrint('JournalServiceProvider.updateJournalEntry: $e');
+      _errorMessage =
+          'Cannot update entry: Unrecognised entry type "$entryTypeString".';
+      notifyListeners();
+      return null;
+    }
+
     String dateString;
-    if (entryData.containsKey('dateString') && entryData['dateString'] is String) {
+    if (entryData.containsKey('dateString') &&
+        entryData['dateString'] is String) {
       dateString = entryData['dateString'] as String;
-    } else if (entryData.containsKey('entryTimestamp') && entryData['entryTimestamp'] is Timestamp) {
-      dateString = DateFormat('yyyy-MM-dd').format((entryData['entryTimestamp'] as Timestamp).toDate());
+    } else if (entryData.containsKey('entryTimestamp') &&
+        entryData['entryTimestamp'] is Timestamp) {
+      dateString = DateFormat('yyyy-MM-dd').format(
+          (entryData['entryTimestamp'] as Timestamp).toDate());
     } else {
-      debugPrint('Warning: Date string not found in entryData for update. Using current date.');
+      debugPrint(
+          'JournalServiceProvider: dateString not found in entryData for '
+          'update. Using current date.');
       dateString = DateFormat('yyyy-MM-dd').format(DateTime.now());
     }
 
@@ -218,114 +293,139 @@ class JournalServiceProvider extends ChangeNotifier {
           .doc(_activeElder!.id)
           .collection('days')
           .doc(dateString)
-          .collection(entryTypeString) // Use entryTypeString (now the first arg)
+          .collection(entryTypeString)
           .doc(entryId);
 
       final updatePayload = {
         ...entryData,
         'updatedAt': FieldValue.serverTimestamp(),
-        'loggedByUserId': entryData['loggedByUserId'] ?? currentUser.uid,
-        'loggedByDisplayName': entryData['loggedByDisplayName'] ?? (currentUser.displayName ?? currentUser.email ?? 'Unknown User'),
-        'loggedByUserAvatarUrl': entryData['loggedByUserAvatarUrl'] ?? currentUser.photoURL,
+        'loggedByUserId':
+            entryData['loggedByUserId'] ?? currentUser.uid,
+        'loggedByDisplayName': entryData['loggedByDisplayName'] ??
+            (currentUser.displayName ??
+                currentUser.email ??
+                'Unknown User'),
+        'loggedByUserAvatarUrl':
+            entryData['loggedByUserAvatarUrl'] ?? currentUser.photoURL,
       };
       await detailedDocRef.update(updatePayload);
 
       final docSnapshot = await detailedDocRef.get();
       if (!docSnapshot.exists) {
-        debugPrint('Failed to retrieve document immediately after updating for $entryTypeString. ID: $entryId, Elder ID: ${_activeElder!.id}');
-        _errorMessage = 'Failed to confirm entry update. Please check the journal.';
+        debugPrint(
+            'JournalServiceProvider: failed to retrieve document '
+            'immediately after updating $entryTypeString (ID: $entryId).');
+        _errorMessage =
+            'Failed to confirm entry update. Please check the journal.';
         notifyListeners();
         return null;
       }
-      updatedEntryDataWithId = docSnapshot.data() as Map<String, dynamic>;
+
+      updatedEntryDataWithId =
+          docSnapshot.data() as Map<String, dynamic>;
       updatedEntryDataWithId['firestoreId'] = detailedDocRef.id;
 
-      debugPrint('Successfully updated $entryTypeString entry (ID: $entryId) for elder ${_activeElder!.id} on $dateString.');
+      debugPrint(
+          'JournalServiceProvider: updated $entryTypeString entry '
+          '(ID: $entryId) for elder ${_activeElder!.id} on $dateString.');
 
       try {
-        final String? timelineEntryId = updatedEntryDataWithId['timelineEntryId'] as String?;
+        final String? timelineEntryId =
+            updatedEntryDataWithId['timelineEntryId'] as String?;
 
         if (timelineEntryId != null && timelineEntryId.isNotEmpty) {
-          final timelineDocRef = FirebaseFirestore.instance
-              .collection('elders')
-              .doc(_activeElder!.id)
-              .collection('timeline')
-              .doc(timelineEntryId);
-
           DateTime entryDateTimeForSummary;
-          if (updatedEntryDataWithId.containsKey('entryTimestamp') && updatedEntryDataWithId['entryTimestamp'] is Timestamp) {
-            entryDateTimeForSummary = (updatedEntryDataWithId['entryTimestamp'] as Timestamp).toDate();
+          if (updatedEntryDataWithId.containsKey('entryTimestamp') &&
+              updatedEntryDataWithId['entryTimestamp'] is Timestamp) {
+            entryDateTimeForSummary =
+                (updatedEntryDataWithId['entryTimestamp'] as Timestamp)
+                    .toDate();
           } else {
             entryDateTimeForSummary = DateTime.now();
-            debugPrint('Warning: entryTimestamp not found in updated data for timeline summary. Using current time.');
+            debugPrint(
+                'JournalServiceProvider: entryTimestamp not found in '
+                'updated data for timeline summary — using current time.');
           }
 
-          // Convert entryTypeString to EntryType enum for _prepareTimelineSummaryData
-          EntryType entryTypeEnumForSummary;
-          try {
-            entryTypeEnumForSummary = EntryType.values.firstWhere(
-              (e) => e.name == entryTypeString,
-              orElse: () => EntryType.pain,
-            );
-          } catch (e) {
-            debugPrint('Warning: Invalid entryTypeString "$entryTypeString" for enum conversion in update. Defaulting to Pain. Error: $e');
-            entryTypeEnumForSummary = EntryType.pain;
-          }
-
-          final JournalEntry updatedTimelineSummaryEntry = _prepareTimelineSummaryData(
+          // entryTypeEnum is already resolved above; no second conversion
+          // needed and no risk of silently falling back to EntryType.pain.
+          final JournalEntry updatedTimelineSummaryEntry =
+              _prepareTimelineSummaryData(
             elderId: _activeElder!.id,
-            journalType: entryTypeString, // Keep as string for collection path
+            journalType: entryTypeString,
             detailedEntryData: updatedEntryDataWithId,
             entryDateTime: entryDateTimeForSummary,
-            loggedByUserId: updatedEntryDataWithId['loggedByUserId'] as String,
-            loggedByDisplayName: updatedEntryDataWithId['loggedByDisplayName'] as String?,
-            loggedByUserAvatarUrl: updatedEntryDataWithId['loggedByUserAvatarUrl'] as String?,
+            loggedByUserId:
+                updatedEntryDataWithId['loggedByUserId'] as String,
+            loggedByDisplayName: updatedEntryDataWithId[
+                'loggedByDisplayName'] as String?,
+            loggedByUserAvatarUrl: updatedEntryDataWithId[
+                'loggedByUserAvatarUrl'] as String?,
           );
-          final Map<String, dynamic> timelineUpdatePayload = updatedTimelineSummaryEntry.toFirestore();
 
-          // NEW: Call FirestoreService.updateJournalEntry here for consistency
+          final Map<String, dynamic> timelineUpdatePayload =
+              updatedTimelineSummaryEntry.toFirestore();
+
           await _firestoreService.updateJournalEntry(
             entryId: timelineEntryId,
             elderId: _activeElder!.id,
-            type: entryTypeEnumForSummary, // Pass EntryType enum
-            data: timelineUpdatePayload['data'] as Map<String, dynamic>?, // Assuming `data` is correct
-            text: timelineUpdatePayload['text'] as String?, // Assuming `text` is correct
-            timestamp: entryDateTimeForSummary, // Pass the new timestamp
+            type: entryTypeEnum,
+            data: timelineUpdatePayload['data'] as Map<String, dynamic>?,
+            text: timelineUpdatePayload['text'] as String?,
+            timestamp: entryDateTimeForSummary,
             isPublic: updatedTimelineSummaryEntry.isPublic,
-            visibleToUserIds: updatedTimelineSummaryEntry.visibleToUserIds,
+            visibleToUserIds:
+                updatedTimelineSummaryEntry.visibleToUserIds,
             creatorId: updatedTimelineSummaryEntry.loggedByUserId,
           );
 
-          debugPrint('Successfully updated corresponding timeline entry: $timelineEntryId');
+          debugPrint(
+              'JournalServiceProvider: updated timeline entry '
+              '$timelineEntryId.');
         } else {
-          debugPrint('Could not find timelineEntryId in updated detailed entry $entryId to update timeline summary.');
+          debugPrint(
+              'JournalServiceProvider: no timelineEntryId found in '
+              'updated entry $entryId — timeline summary not updated.');
         }
       } catch (timelineError) {
-        debugPrint('Failed to update timeline summary for $entryTypeString entry (ID: $entryId): $timelineError');
-        _errorMessage = 'Entry updated, but failed to update the main timeline summary.';
+        debugPrint(
+            'JournalServiceProvider: failed to update timeline summary '
+            'for $entryTypeString (ID: $entryId): $timelineError');
+        _errorMessage =
+            'Entry updated, but failed to update the main timeline summary.';
         notifyListeners();
         return null;
       }
     } catch (e) {
-      debugPrint('Failed to update $entryTypeString entry (ID: $entryId) for elder ${_activeElder!.id} on $dateString: $e');
-      _errorMessage = 'Failed to update $entryTypeString entry. Please try again.';
+      debugPrint(
+          'JournalServiceProvider: failed to update $entryTypeString '
+          '(ID: $entryId) for elder ${_activeElder!.id} on $dateString: $e');
+      _errorMessage =
+          'Failed to update $entryTypeString entry. Please try again.';
       notifyListeners();
       return null;
     }
+
     notifyListeners();
     return updatedEntryDataWithId;
   }
 
-  Future<bool> deleteJournalEntry(String entryType, String entryId) async {
+  Future<bool> deleteJournalEntry(
+      String entryType, String entryId) async {
     _errorMessage = null;
+
     if (_activeElder == null || _activeElder!.id.isEmpty) {
-      debugPrint('JournalServiceProvider: No active elder set for deleteJournalEntry.');
+      debugPrint(
+          'JournalServiceProvider: No active elder set for '
+          'deleteJournalEntry.');
       _errorMessage = 'Cannot delete entry: No active elder selected.';
       notifyListeners();
       return false;
     }
     if (entryId.isEmpty) {
-      debugPrint('JournalServiceProvider: entryId is empty for deleteJournalEntry. Elder: ${_activeElder?.id}, Type: $entryType');
+      debugPrint(
+          'JournalServiceProvider: entryId is empty for deleteJournalEntry. '
+          'Elder: ${_activeElder?.id}, Type: $entryType');
       _errorMessage = 'Cannot delete entry: Invalid entry ID.';
       notifyListeners();
       return false;
@@ -333,35 +433,44 @@ class JournalServiceProvider extends ChangeNotifier {
 
     String? dateString;
     try {
-      final detailedDocRef = FirebaseFirestore.instance
+      final querySnapshot = await FirebaseFirestore.instance
           .collection('elders')
           .doc(_activeElder!.id)
-          .collection('days');
-
-      final querySnapshot = await detailedDocRef
+          .collection('days')
           .where('$entryType.$entryId', isNotEqualTo: null)
           .limit(1)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         dateString = querySnapshot.docs.first.id;
-        debugPrint('Found dateString $dateString for entry $entryId of type $entryType');
+        debugPrint(
+            'JournalServiceProvider: found dateString $dateString for '
+            'entry $entryId of type $entryType.');
       } else {
-        debugPrint('Could not find dateString for entry $entryId of type $entryType. Cannot delete.');
+        debugPrint(
+            'JournalServiceProvider: could not find dateString for entry '
+            '$entryId of type $entryType.');
         _errorMessage = 'Cannot delete entry: Date information missing.';
         notifyListeners();
         return false;
       }
     } catch (e) {
-      debugPrint('Error deriving dateString for deletion: $e');
-      _errorMessage = 'Failed to delete entry: Internal error deriving date.';
+      debugPrint(
+          'JournalServiceProvider: error deriving dateString for '
+          'deletion: $e');
+      _errorMessage =
+          'Failed to delete entry: Internal error deriving date.';
       notifyListeners();
       return false;
     }
 
-    debugPrint('JSP.deleteJournalEntry: Calling FirestoreService.deleteDetailedJournalEntryWithTimelineLink for $entryType/$entryId on $dateString');
+    debugPrint(
+        'JSP.deleteJournalEntry: calling '
+        'deleteDetailedJournalEntryWithTimelineLink for '
+        '$entryType/$entryId on $dateString');
 
-    final bool success = await _firestoreService.deleteDetailedJournalEntryWithTimelineLink(
+    final bool success =
+        await _firestoreService.deleteDetailedJournalEntryWithTimelineLink(
       elderId: _activeElder!.id,
       dateString: dateString,
       journalType: entryType,
@@ -371,7 +480,9 @@ class JournalServiceProvider extends ChangeNotifier {
     if (success) {
       notifyListeners();
     } else {
-      _errorMessage = 'Failed to delete $entryType entry completely. Please check the journal.';
+      _errorMessage =
+          'Failed to delete $entryType entry completely. '
+          'Please check the journal.';
       notifyListeners();
     }
     return success;
@@ -383,14 +494,23 @@ class JournalServiceProvider extends ChangeNotifier {
     DateTime? startDate,
     DateTime? endDate,
     bool onlyMyLogs = false,
-    String? entryTypeFilter, // This parameter is still a String here
+    String? entryTypeFilter,
   }) {
     EntryType? typeEnumFilter;
     if (entryTypeFilter != null && entryTypeFilter.isNotEmpty) {
+      // FIX: use _entryTypeFromString so unknown filter strings are caught
+      // the same way as unknown entry types everywhere else — no silent
+      // fallback to pain.
       try {
-        typeEnumFilter = EntryType.values.firstWhere((e) => e.name == entryTypeFilter);
+        typeEnumFilter = _entryTypeFromString(entryTypeFilter);
       } catch (e) {
-        debugPrint('Warning: Invalid entryTypeFilter string "$entryTypeFilter" for enum conversion. Ignoring type filter. Error: $e');
+        debugPrint(
+            'JournalServiceProvider.getJournalEntriesStream: '
+            'unrecognised entryTypeFilter "$entryTypeFilter" — '
+            'ignoring type filter. $e');
+        // Returning an empty stream for an invalid filter is safer than
+        // ignoring the filter and returning all entries.
+        return const Stream.empty();
       }
     }
 
@@ -400,7 +520,7 @@ class JournalServiceProvider extends ChangeNotifier {
       startDate: startDate,
       endDate: endDate,
       onlyMyLogs: onlyMyLogs,
-      type: typeEnumFilter, // NEW: Pass the EntryType enum to FirestoreService
+      type: typeEnumFilter,
     );
   }
 }

@@ -1,13 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MedicationDefinition {
-  final String? id; // Document ID from Firestore, nullable for new instances
+  final String? id;
   final String name;
-  final String? rxCui; // RxNorm ID, optional
-  final List<String>? interactionNotes; // Added field
-  final String? dose; // e.g., "10mg", "1 tablet"
-  final String? defaultTime; // Optional: HH:mm format, e.g., "08:00"
-  final String elderId; // To scope definitions per elder
+  final String? rxCui;
+  final List<String>? interactionNotes;
+  final String? dose;
+  final String? defaultTime; // HH:mm format, e.g. "08:00"
+  final String elderId;
+
+  // Persists whether a daily reminder is currently scheduled.
+  final bool reminderEnabled;
+
+  // NEW: Refill reminder fields.
+  //
+  // pillCount       — current number of pills remaining. Decremented by 1
+  //                   each time a dose is marked taken via markTaken().
+  //                   null = caregiver hasn't set up pill counting yet.
+  //
+  // refillThreshold — when pillCount drops to or below this value a one-time
+  //                   low-stock push notification fires via NotificationService.
+  //                   null = refill reminders are disabled for this med.
+  final int? pillCount;
+  final int? refillThreshold;
 
   MedicationDefinition({
     this.id,
@@ -17,9 +32,11 @@ class MedicationDefinition {
     this.dose,
     this.defaultTime,
     required this.elderId,
+    this.reminderEnabled = false,
+    this.pillCount,
+    this.refillThreshold,
   });
 
-  /// Returns an empty placeholder definition.
   static MedicationDefinition empty() {
     return MedicationDefinition(
       id: null,
@@ -29,6 +46,9 @@ class MedicationDefinition {
       dose: null,
       defaultTime: null,
       elderId: '',
+      reminderEnabled: false,
+      pillCount: null,
+      refillThreshold: null,
     );
   }
 
@@ -46,6 +66,9 @@ class MedicationDefinition {
           : null,
       defaultTime: data?['defaultTime'] as String?,
       elderId: data?['elderId'] as String? ?? '',
+      reminderEnabled: data?['reminderEnabled'] as bool? ?? false,
+      pillCount: data?['pillCount'] as int?,
+      refillThreshold: data?['refillThreshold'] as int?,
     );
   }
 
@@ -57,11 +80,13 @@ class MedicationDefinition {
       'interactionNotes': interactionNotes,
       'defaultTime': defaultTime,
       'elderId': elderId,
-      // Note: `id` is the document ID and is not stored in the document fields.
+      'reminderEnabled': reminderEnabled,
+      // Omit when null so existing docs without pill tracking aren't dirtied.
+      if (pillCount != null) 'pillCount': pillCount,
+      if (refillThreshold != null) 'refillThreshold': refillThreshold,
     };
   }
 
-  /// Returns a copy of this instance with the given fields replaced.
   MedicationDefinition copyWith({
     String? id,
     String? name,
@@ -70,6 +95,10 @@ class MedicationDefinition {
     String? dose,
     String? defaultTime,
     String? elderId,
+    bool? reminderEnabled,
+    // Sentinel pattern so callers can explicitly pass null to clear the value.
+    Object? pillCount = _kSentinel,
+    Object? refillThreshold = _kSentinel,
   }) {
     return MedicationDefinition(
       id: id ?? this.id,
@@ -79,6 +108,15 @@ class MedicationDefinition {
       dose: dose ?? this.dose,
       defaultTime: defaultTime ?? this.defaultTime,
       elderId: elderId ?? this.elderId,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      pillCount:
+          identical(pillCount, _kSentinel) ? this.pillCount : pillCount as int?,
+      refillThreshold: identical(refillThreshold, _kSentinel)
+          ? this.refillThreshold
+          : refillThreshold as int?,
     );
   }
 }
+
+// Private sentinel so copyWith can distinguish "not passed" from "null".
+const Object _kSentinel = Object();

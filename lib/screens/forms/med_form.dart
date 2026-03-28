@@ -7,6 +7,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
+import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/models/medication_definition.dart';
@@ -63,33 +64,28 @@ class _MedFormState extends State<MedForm> {
     _theme = Theme.of(context);
   }
 
-  /* ---------- Field Initialization ---------- */
-
   @override
   void didUpdateWidget(covariant MedForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.editingItem != widget.editingItem) {
-      _initializeFields();
-    }
+    if (oldWidget.editingItem != widget.editingItem) _initializeFields();
   }
 
   void _initializeFields() {
-    final editing = widget.editingItem;
     const defaultTimeOfDay = TimeOfDay(hour: 8, minute: 0);
-
+    final editing = widget.editingItem;
     if (editing != null) {
       _nameController.text = editing.name;
       _doseController.text = editing.dose ?? '';
       _isTaken = editing.taken;
       _currentSelectedRxcui = editing.rxCui;
       _fetchAndSetInteractions(_currentSelectedRxcui);
-
       final existing = editing.time;
-      if (existing != null && RegExp(r'^\d{2}:\d{2}$').hasMatch(existing)) {
+      if (existing != null &&
+          RegExp(r'^\d{2}:\d{2}$').hasMatch(existing)) {
         try {
           final parts = existing.split(':');
-          _medTime =
-              TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+          _medTime = TimeOfDay(
+              hour: int.parse(parts[0]), minute: int.parse(parts[1]));
         } catch (_) {
           _medTime = defaultTimeOfDay;
         }
@@ -104,7 +100,6 @@ class _MedFormState extends State<MedForm> {
       _medTime = defaultTimeOfDay;
       _interactions = [];
     }
-
     _time = _formatTimeOfDay(_medTime);
     if (mounted) setState(() {});
   }
@@ -116,38 +111,33 @@ class _MedFormState extends State<MedForm> {
     super.dispose();
   }
 
-  /* ---------- Med‑def handling ---------- */
-
   void _applyMedDefinition(MedicationDefinition def) {
     _nameController.text = def.name;
     _doseController.text = def.dose ?? '';
     _currentSelectedRxcui = def.rxCui;
-
     if (def.defaultTime != null &&
         RegExp(r'^\d{2}:\d{2}$').hasMatch(def.defaultTime!)) {
       try {
         final parts = def.defaultTime!.split(':');
-        _medTime =
-            TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+        _medTime = TimeOfDay(
+            hour: int.parse(parts[0]), minute: int.parse(parts[1]));
       } catch (_) {
         _medTime = const TimeOfDay(hour: 8, minute: 0);
       }
     } else {
       _medTime = const TimeOfDay(hour: 8, minute: 0);
     }
-
     _time = _formatTimeOfDay(_medTime);
     _fetchAndSetInteractions(_currentSelectedRxcui);
     _formKey.currentState?.validate();
   }
 
-  /* ---------- Time & Interaction helpers ---------- */
-
   String _formatTimeOfDay(TimeOfDay tod) =>
       '${tod.hour.toString().padLeft(2, '0')}:${tod.minute.toString().padLeft(2, '0')}';
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _medTime);
+    final picked =
+        await showTimePicker(context: context, initialTime: _medTime);
     if (picked != null && mounted) {
       setState(() {
         _medTime = picked;
@@ -162,10 +152,11 @@ class _MedFormState extends State<MedForm> {
       _isLoadingInteractions = true;
       _interactions = [];
     });
-    final all = await context.read<DayEntriesProvider>().getRxcuisForInteractionCheck(
-          rxcuiToAdd: newRxcui,
-          editingItemId: widget.editingItem?.firestoreId,
-        );
+    final all =
+        await context.read<DayEntriesProvider>().getRxcuisForInteractionCheck(
+              rxcuiToAdd: newRxcui,
+              editingItemId: widget.editingItem?.firestoreId,
+            );
     if (all.length < 2) {
       if (mounted) setState(() => _isLoadingInteractions = false);
       return;
@@ -178,8 +169,6 @@ class _MedFormState extends State<MedForm> {
       });
     }
   }
-
-  /* ---------- Save / Delete ---------- */
 
   Future<void> _handleSaveMed() async {
     if (!_formKey.currentState!.validate()) return;
@@ -204,18 +193,17 @@ class _MedFormState extends State<MedForm> {
         'visibleToUserIds': <String>[],
         'rxCui': _currentSelectedRxcui ?? '',
         'loggedByUserId': user.uid,
-        'loggedBy': user.displayName ?? user.email ?? _l10n.formUnknownUser,
+        'loggedBy':
+            user.displayName ?? user.email ?? _l10n.formUnknownUser,
       };
       if (widget.editingItem != null) {
         await journal.updateJournalEntry(
-          'medication',
-          payload,
-          widget.editingItem!.firestoreId,
-        );
+            'medication', payload, widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMedUpdated, Colors.green);
       } else {
         payload['createdAt'] = FieldValue.serverTimestamp();
-        await journal.addJournalEntry('medication', payload, user.uid);
+        await journal.addJournalEntry(
+            'medication', payload, user.uid);
         _showSnackBar(_l10n.formSuccessMedSaved, Colors.green);
       }
       Navigator.of(context).pop();
@@ -241,7 +229,8 @@ class _MedFormState extends State<MedForm> {
             onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
+            style: TextButton.styleFrom(
+                foregroundColor: AppTheme.dangerColor),
             child: Text(_l10n.deleteButton),
             onPressed: () => Navigator.of(ctx).pop(true),
           ),
@@ -253,32 +242,27 @@ class _MedFormState extends State<MedForm> {
       try {
         final journal = context.read<JournalServiceProvider>();
         await journal.deleteJournalEntry(
-          'medication',
-          widget.editingItem!.firestoreId,
-        );
+            'medication', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMedDeleted, Colors.green);
         Navigator.of(context).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting medication: $e');
-        _showSnackBar(_l10n.formErrorFailedToDeleteMed, Colors.red);
+        _showSnackBar(
+            _l10n.formErrorFailedToDeleteMed, Colors.red);
       } finally {
         if (mounted) setState(() => _isSaving = false);
       }
     }
   }
 
-  /* ---------- UI ---------- */
-
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 3),
+    ));
   }
 
   @override
@@ -287,46 +271,31 @@ class _MedFormState extends State<MedForm> {
     final medDefs = medDefsProvider.medDefinitions;
     final isLoadingDefs = medDefsProvider.isLoadingMedDefs;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingItem != null
-            ? _l10n.medFormTitleEdit
-            : _l10n.medFormTitleNew),
-        actions: [
-          if (widget.editingItem != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.dangerColor),
-              tooltip: _l10n.formTooltipDeleteMed,
-              onPressed: _isSaving ? null : _handleDeleteMed,
-            ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _theme.cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FormSheetHeader(
+          title: widget.editingItem != null
+              ? _l10n.medFormTitleEdit
+              : _l10n.medFormTitleNew,
+          onDelete:
+              widget.editingItem != null ? _handleDeleteMed : null,
+          deleteTooltip: _l10n.formTooltipDeleteMed,
+          isSaving: _isSaving,
+        ),
+        Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
                   Text(
                     _l10n.medFormLabelNameRequired,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   if (isLoadingDefs)
@@ -336,33 +305,48 @@ class _MedFormState extends State<MedForm> {
                       spacing: 8,
                       runSpacing: 8,
                       children: medDefs.map((def) {
-                        final isSel = _nameController.text.trim().toLowerCase() ==
+                        final isSel = _nameController.text
+                                .trim()
+                                .toLowerCase() ==
                             def.name.toLowerCase();
                         return GestureDetector(
-                          onTap: () => mounted ? setState(() => _applyMedDefinition(def)) : null,
+                          onTap: () => mounted
+                              ? setState(
+                                  () => _applyMedDefinition(def))
+                              : null,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color:
-                                  isSel ? AppTheme.primaryColor : AppTheme.backgroundGray,
-                              borderRadius: BorderRadius.circular(20),
+                              color: isSel
+                                  ? AppTheme.primaryColor
+                                  : AppTheme.backgroundGray,
+                              borderRadius:
+                                  BorderRadius.circular(20),
                               border: Border.all(
-                                color: isSel ? AppTheme.primaryColor : _theme.dividerColor,
+                                color: isSel
+                                    ? AppTheme.primaryColor
+                                    : _theme.dividerColor,
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               def.name,
                               style: TextStyle(
-                                color: isSel ? AppTheme.textOnPrimary : AppTheme.textPrimary,
-                                fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                                color: isSel
+                                    ? AppTheme.textOnPrimary
+                                    : AppTheme.textPrimary,
+                                fontWeight: isSel
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
                           ),
                         );
                       }).toList(),
                     ),
-                  if (!isLoadingDefs && medDefs.isNotEmpty) const SizedBox(height: 8),
+                  if (!isLoadingDefs && medDefs.isNotEmpty)
+                    const SizedBox(height: 8),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
@@ -370,38 +354,46 @@ class _MedFormState extends State<MedForm> {
                             ? _l10n.medFormHintNameCustom
                             : _l10n.medFormHintName),
                     onChanged: (_) => setState(() {}),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? _l10n.medFormValidationName : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? _l10n.medFormValidationName
+                        : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.medFormLabelDose,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _doseController,
-                    decoration: InputDecoration(hintText: _l10n.medFormHintDose),
+                    decoration: InputDecoration(
+                        hintText: _l10n.medFormHintDose),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.medFormLabelTime,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: _pickTime,
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 16),
                       decoration: BoxDecoration(
-                        border:
-                            Border.all(color: AppTheme.textLight.withOpacity(0.5)),
+                        border: Border.all(
+                            color:
+                                AppTheme.textLight.withOpacity(0.5)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         _time,
-                        style: const TextStyle(fontSize: 16, color: AppTheme.textPrimary),
+                        style: const TextStyle(
+                            fontSize: 16,
+                            color: AppTheme.textPrimary),
                       ),
                     ),
                   ),
@@ -410,11 +402,13 @@ class _MedFormState extends State<MedForm> {
                     children: [
                       Checkbox(
                         value: _isTaken,
-                        onChanged: (v) => setState(() => _isTaken = v ?? false),
+                        onChanged: (v) =>
+                            setState(() => _isTaken = v ?? false),
                         activeColor: AppTheme.primaryColor,
                       ),
                       GestureDetector(
-                        onTap: () => setState(() => _isTaken = !_isTaken),
+                        onTap: () =>
+                            setState(() => _isTaken = !_isTaken),
                         child: Text(_l10n.medFormLabelMarkAsTaken,
                             style: _theme.textTheme.bodyLarge),
                       ),
@@ -422,17 +416,20 @@ class _MedFormState extends State<MedForm> {
                   ),
                   if (_isLoadingInteractions)
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12.0),
+                      padding: EdgeInsets.symmetric(vertical: 12),
                       child: LinearProgressIndicator(),
                     ),
-                  if (!_isLoadingInteractions && _interactions.isNotEmpty)
+                  if (!_isLoadingInteractions &&
+                      _interactions.isNotEmpty)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.warningColor.withOpacity(0.1),
+                        color:
+                            AppTheme.warningColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.warningColor),
+                        border: Border.all(
+                            color: AppTheme.warningColor),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +445,8 @@ class _MedFormState extends State<MedForm> {
                           ..._interactions.map(
                             (txt) => Text('• $txt',
                                 style: TextStyle(
-                                    color: _theme.colorScheme.onSurface.withOpacity(0.8))),
+                                    color: _theme.colorScheme.onSurface
+                                        .withOpacity(0.8))),
                           ),
                         ],
                       ),
@@ -460,15 +458,20 @@ class _MedFormState extends State<MedForm> {
                       Btn(
                         title: _l10n.cancelButton,
                         variant: BtnVariant.secondaryOutline,
-                        onPressed:
-                            _isSaving ? null : () => Navigator.of(context).pop(),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        onPressed: _isSaving
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                       const SizedBox(width: 12),
                       Btn(
-                        title: widget.editingItem != null ? _l10n.updateButton : _l10n.saveButton,
+                        title: widget.editingItem != null
+                            ? _l10n.updateButton
+                            : _l10n.saveButton,
                         onPressed: _isSaving ? null : _handleSaveMed,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                     ],
                   ),
@@ -477,7 +480,7 @@ class _MedFormState extends State<MedForm> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

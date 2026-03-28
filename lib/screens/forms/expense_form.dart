@@ -8,6 +8,7 @@ import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/models/expense_entry.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
+import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 
@@ -32,7 +33,8 @@ class ExpenseForm extends StatefulWidget {
 class _ExpenseFormState extends State<ExpenseForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _descriptionController =
+      TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
@@ -44,11 +46,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
   late AppLocalizations _l10n;
   late ThemeData _theme;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void didChangeDependencies() {
@@ -79,10 +76,12 @@ class _ExpenseFormState extends State<ExpenseForm> {
     final editing = widget.editingItem;
     if (editing != null) {
       _descriptionController.text = editing.description ?? '';
-      _amountController.text = editing.amount?.toStringAsFixed(2) ?? '';
-      _selectedCategory = _expenseCategories.contains(editing.category)
-          ? editing.category!
-          : _otherCategoryOption;
+      _amountController.text =
+          editing.amount?.toStringAsFixed(2) ?? '';
+      _selectedCategory =
+          _expenseCategories.contains(editing.category)
+              ? editing.category!
+              : _otherCategoryOption;
       _noteController.text = editing.note ?? '';
     } else {
       _descriptionController.clear();
@@ -104,7 +103,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
   Future<void> _handleSaveExpense() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-
     try {
       final journal = context.read<JournalServiceProvider>();
       final user = AuthService.currentUser;
@@ -112,8 +110,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
         _showSnackBar(_l10n.formErrorNotAuthenticated, Colors.red);
         return;
       }
-
-      final amountValue = double.tryParse(_amountController.text.trim());
+      final amountValue =
+          double.tryParse(_amountController.text.trim());
       final payload = <String, dynamic>{
         'description': _descriptionController.text.trim(),
         'amount': amountValue,
@@ -130,20 +128,15 @@ class _ExpenseFormState extends State<ExpenseForm> {
         'isPublic': true,
         'visibleToUserIds': <String>[],
       };
-
       if (widget.editingItem != null) {
         await journal.updateJournalEntry(
-          'expense',
-          payload,
-          widget.editingItem!.firestoreId,
-        );
+            'expense', payload, widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessExpenseUpdated, Colors.green);
       } else {
         payload['createdAt'] = FieldValue.serverTimestamp();
         await journal.addJournalEntry('expense', payload, user.uid);
         _showSnackBar(_l10n.formSuccessExpenseSaved, Colors.green);
       }
-
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {
@@ -159,7 +152,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
       _showSnackBar(_l10n.formErrorNoItemToDelete, Colors.orange);
       return;
     }
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -172,29 +164,26 @@ class _ExpenseFormState extends State<ExpenseForm> {
           ),
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: AppTheme.dangerColor,
-            ),
+                foregroundColor: AppTheme.dangerColor),
             child: Text(_l10n.deleteButton),
             onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
     );
-
     if (confirmed == true) {
       setState(() => _isSaving = true);
       try {
         final journal = context.read<JournalServiceProvider>();
         await journal.deleteJournalEntry(
-          'expense',
-          widget.editingItem!.firestoreId,
-        );
+            'expense', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessExpenseDeleted, Colors.green);
         Navigator.of(context).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Delete error: $e');
-        _showSnackBar(_l10n.formErrorFailedToDeleteExpense, Colors.red);
+        _showSnackBar(
+            _l10n.formErrorFailedToDeleteExpense, Colors.red);
       } finally {
         if (mounted) setState(() => _isSaving = false);
       }
@@ -203,55 +192,36 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 3),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingItem != null
-            ? _l10n.expenseFormTitleEdit
-            : _l10n.expenseFormTitleNew),
-        actions: [
-          if (widget.editingItem != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline,
-                  color: AppTheme.dangerColor),
-              tooltip: _l10n.formTooltipDeleteExpense,
-              onPressed: _isSaving ? null : _handleDeleteExpense,
-            ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _theme.cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FormSheetHeader(
+          title: widget.editingItem != null
+              ? _l10n.expenseFormTitleEdit
+              : _l10n.expenseFormTitleNew,
+          onDelete:
+              widget.editingItem != null ? _handleDeleteExpense : null,
+          deleteTooltip: _l10n.formTooltipDeleteExpense,
+          isSaving: _isSaving,
+        ),
+        Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
                   Text(
                     '${_l10n.expenseFormLabelDescription}*',
                     style: _theme.textTheme.bodyLarge
@@ -261,13 +231,13 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   TextFormField(
                     controller: _descriptionController,
                     decoration: InputDecoration(
-                      hintText: _l10n.expenseFormHintDescription,
-                    ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? _l10n.expenseFormValidationDescription
-                        : null,
+                        hintText: _l10n.expenseFormHintDescription),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty)
+                            ? _l10n.expenseFormValidationDescription
+                            : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     '${_l10n.expenseFormLabelAmount} (\$)*',
                     style: _theme.textTheme.bodyLarge
@@ -276,23 +246,23 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _amountController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true),
                     decoration: InputDecoration(
-                      hintText: _l10n.expenseFormHintAmount,
-                    ),
+                        hintText: _l10n.expenseFormHintAmount),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
                         return _l10n.expenseFormValidationAmountEmpty;
                       }
                       final n = double.tryParse(v);
                       if (n == null || n <= 0) {
-                        return _l10n.expenseFormValidationAmountInvalid;
+                        return _l10n
+                            .expenseFormValidationAmountInvalid;
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     '${_l10n.expenseFormLabelCategory}*',
                     style: _theme.textTheme.bodyLarge
@@ -305,9 +275,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     children: _expenseCategories.map((cat) {
                       final isSelected = cat == _selectedCategory;
                       return GestureDetector(
-                        onTap: () => setState(() {
-                          _selectedCategory = cat;
-                        }),
+                        onTap: () =>
+                            setState(() => _selectedCategory = cat),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
@@ -338,7 +307,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.formLabelNotesOptional,
                     style: _theme.textTheme.bodyLarge
@@ -350,8 +319,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     maxLines: 3,
                     minLines: 1,
                     decoration: InputDecoration(
-                      hintText: _l10n.expenseFormHintNotes,
-                    ),
+                        hintText: _l10n.expenseFormHintNotes),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -374,7 +342,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
                         title: widget.editingItem != null
                             ? _l10n.updateButton
                             : _l10n.saveButton,
-                        onPressed: _isSaving ? null : _handleSaveExpense,
+                        onPressed:
+                            _isSaving ? null : _handleSaveExpense,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),
@@ -385,7 +354,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

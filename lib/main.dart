@@ -5,9 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 
-// --- FIX 1: Add Timezone Imports ---
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -27,16 +26,30 @@ import 'providers/self_care_provider.dart';
 import 'providers/user_profile_provider.dart';
 import 'routing/app_router.dart';
 import 'utils/app_theme.dart';
-import 'screens/splash_screen.dart'; 
+import 'screens/splash_screen.dart';
+
+// ---------------------------------------------------------------------------
+// reCAPTCHA site key for Firebase App Check on Web.
+//
+// Pass your real key at build time using --dart-define so it is never
+// hardcoded in source control:
+//
+//   flutter build web \
+//     --dart-define=RECAPTCHA_SITE_KEY=your-real-key-here
+//
+// During local development the value falls back to an empty string, which
+// causes App Check to use the debug provider automatically (see below).
+// ---------------------------------------------------------------------------
+const String _recaptchaSiteKey = String.fromEnvironment(
+  'RECAPTCHA_SITE_KEY',
+  defaultValue: '',
+);
 
 final AppRouter _appRouter = AppRouter();
 
 void main() {
-  // 1. Only do the absolute minimum here
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator();
-
-  // 2. Run the app immediately. We will handle async loading inside.
   runApp(const AppRoot());
 }
 
@@ -59,27 +72,48 @@ class _AppRootState extends State<AppRoot> {
   Future<SharedPreferences> _initAppResources() async {
     // A. Initialize Firebase
     await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-    // --- FIX 2: Initialize Timezones ---
-    tz.initializeTimeZones(); 
+    // B. Initialize Timezones
+    tz.initializeTimeZones();
 
-    // B. Initialize App Check (Modified for Debug/Local testing)
+    // C. Initialize App Check
+    //
+    // Web: use the debug token provider when in debug mode OR when no
+    //      reCAPTCHA key has been supplied (i.e. local dev).
+    //
+    // Android / iOS: use the real attestation provider in release builds
+    //      (Play Integrity / DeviceCheck) and the debug provider only
+    //      during development. Never ship with the debug provider in
+    //      production — it bypasses all App Check enforcement.
     if (kIsWeb) {
-      await FirebaseAppCheck.instance.activate(
-        // For Web testing, we use the debug provider or your site key
-        webProvider: ReCaptchaV3Provider('your-recaptcha-site-key-goes-here'),
-      );
+      if (kDebugMode || _recaptchaSiteKey.isEmpty) {
+        await FirebaseAppCheck.instance.activate(
+          webProvider: ReCaptchaEnterpriseProvider('debug'),
+        );
+        debugPrint('AppCheck: Web debug provider active.');
+      } else {
+        await FirebaseAppCheck.instance.activate(
+          webProvider: ReCaptchaV3Provider(_recaptchaSiteKey),
+        );
+        debugPrint('AppCheck: Web reCAPTCHA provider active.');
+      }
     } else {
       await FirebaseAppCheck.instance.activate(
-        // CHANGED: Using .debug instead of .playIntegrity/deviceCheck
-        // This stops the "Member not found" errors during local development
-        androidProvider: AndroidProvider.debug,
-        appleProvider: AppleProvider.debug,
+        androidProvider: kDebugMode
+            ? AndroidProvider.debug
+            : AndroidProvider.playIntegrity,
+        appleProvider: kDebugMode
+            ? AppleProvider.debug
+            : AppleProvider.deviceCheck,
+      );
+      debugPrint(
+        'AppCheck: ${kDebugMode ? "debug" : "production"} provider active.',
       );
     }
 
-    // C. Return SharedPreferences
+    // D. Return SharedPreferences
     return await SharedPreferences.getInstance();
   }
 
@@ -124,28 +158,26 @@ class _AppRootState extends State<AppRoot> {
             ChangeNotifierProvider(create: (_) => BadgeProvider()),
             ChangeNotifierProvider(create: (_) => SelfCareProvider()),
             ChangeNotifierProvider(create: (_) => NotificationPrefsProvider()),
+
+            // FIX: On elder switch, mutate the existing JournalServiceProvider
+            // via setActiveElder() instead of discarding and recreating it.
+            // Recreating it every update discards in-flight state and can leak
+            // the old provider's listeners.
             ChangeNotifierProxyProvider<ActiveElderProvider,
                 JournalServiceProvider>(
-              create: (context) {
-                final activeElder =
+              create: (context) => JournalServiceProvider(
+                activeElder:
                     Provider.of<ActiveElderProvider>(context, listen: false)
-                        .activeElder;
-                return JournalServiceProvider(
-                  activeElder: activeElder,
-                  firestoreService: context.read<FirestoreService>(),
-                  badgeProvider: context.read<BadgeProvider>(),
-                );
-              },
+                        .activeElder,
+                firestoreService: context.read<FirestoreService>(),
+                badgeProvider: context.read<BadgeProvider>(),
+              ),
               update: (context, activeElderProv, previousJournalSvc) {
-                return JournalServiceProvider(
-                  activeElder: activeElderProv.activeElder,
-                  firestoreService:
-                      Provider.of<FirestoreService>(context, listen: false),
-                  badgeProvider:
-                      Provider.of<BadgeProvider>(context, listen: false),
-                );
+                previousJournalSvc!.setActiveElder(activeElderProv.activeElder);
+                return previousJournalSvc;
               },
             ),
+
             ChangeNotifierProxyProvider<JournalServiceProvider,
                 DayEntriesProvider>(
               create: (context) {
@@ -190,7 +222,7 @@ class _CeceliaCareAppState extends State<CeceliaCareApp> {
     if (!mounted) return;
     if (!kIsWeb) {
       try {
-        await NotificationService.instance.init(context);
+        await NotificationService.instance.init();
         if (mounted) {
           NotificationService.instance.setNotificationPrefsProvider(
             context.read<NotificationPrefsProvider>(),

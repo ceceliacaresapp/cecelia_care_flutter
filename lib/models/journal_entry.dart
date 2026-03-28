@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 
 class JournalEntry {
@@ -19,7 +20,6 @@ class JournalEntry {
   final List<String>? visibleToUserIds;
   final bool? isPublic;
 
-  // --- ADD THIS ---
   final bool isCaregiverJournal;
 
   final Timestamp? createdAt;
@@ -40,7 +40,6 @@ class JournalEntry {
     this.isPublic,
     this.createdAt,
     this.updatedAt,
-    // --- AND ADD THIS ---
     this.isCaregiverJournal = false,
   });
 
@@ -65,7 +64,12 @@ class JournalEntry {
         orElse: () => EntryType.pain,
       );
     } catch (e) {
-      print('Warning: Invalid or missing EntryType for JournalEntry ${json['id']}. Defaulting to pain. Error: $e');
+      // FIX: was print() — flagged by analyzer as avoid_print.
+      // debugPrint is stripped in release builds and is the correct tool here.
+      debugPrint(
+        'Warning: Invalid or missing EntryType for JournalEntry '
+        '${json['id']}. Defaulting to pain. Error: $e',
+      );
       parsedType = EntryType.pain;
     }
 
@@ -76,15 +80,16 @@ class JournalEntry {
       loggedByUserId: json['loggedByUserId'] as String,
       loggedByDisplayName: json['loggedByDisplayName'] as String?,
       loggedByUserAvatarUrl: json['loggedByUserAvatarUrl'] as String?,
-      entryTimestamp: (json['entryTimestamp'] as Timestamp?) ?? Timestamp.now(),
+      entryTimestamp:
+          (json['entryTimestamp'] as Timestamp?) ?? Timestamp.now(),
       dateString: json['dateString'] as String,
       text: json['text'] as String?,
       data: json['data'] as Map<String, dynamic>?,
-      visibleToUserIds: (json['visibleToUserIds'] as List<dynamic>?)?.cast<String>(),
+      visibleToUserIds:
+          (json['visibleToUserIds'] as List<dynamic>?)?.cast<String>(),
       isPublic: json['isPublic'] as bool? ?? false,
       createdAt: json['createdAt'] as Timestamp?,
       updatedAt: json['updatedAt'] as Timestamp?,
-      // --- AND THIS ---
       isCaregiverJournal: json['isCaregiverJournal'] as bool? ?? false,
     );
   }
@@ -94,8 +99,10 @@ class JournalEntry {
       if (elderId != null) 'elderId': elderId,
       'type': type.name,
       'loggedByUserId': loggedByUserId,
-      if (loggedByDisplayName != null) 'loggedByDisplayName': loggedByDisplayName,
-      if (loggedByUserAvatarUrl != null) 'loggedByUserAvatarUrl': loggedByUserAvatarUrl,
+      if (loggedByDisplayName != null)
+        'loggedByDisplayName': loggedByDisplayName,
+      if (loggedByUserAvatarUrl != null)
+        'loggedByUserAvatarUrl': loggedByUserAvatarUrl,
       'entryTimestamp': entryTimestamp,
       'dateString': dateString,
       if (text != null) 'text': text,
@@ -104,7 +111,6 @@ class JournalEntry {
       if (isPublic != null) 'isPublic': isPublic,
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
-      // --- AND THIS ---
       'isCaregiverJournal': isCaregiverJournal,
     };
   }
@@ -124,7 +130,6 @@ class JournalEntry {
     bool? isPublic,
     Timestamp? createdAt,
     Timestamp? updatedAt,
-    // --- AND THIS ---
     bool? isCaregiverJournal,
   }) {
     return JournalEntry(
@@ -132,8 +137,10 @@ class JournalEntry {
       elderId: elderId ?? this.elderId,
       type: type ?? this.type,
       loggedByUserId: loggedByUserId ?? this.loggedByUserId,
-      loggedByDisplayName: loggedByDisplayName ?? this.loggedByDisplayName,
-      loggedByUserAvatarUrl: loggedByUserAvatarUrl ?? this.loggedByUserAvatarUrl,
+      loggedByDisplayName:
+          loggedByDisplayName ?? this.loggedByDisplayName,
+      loggedByUserAvatarUrl:
+          loggedByUserAvatarUrl ?? this.loggedByUserAvatarUrl,
       entryTimestamp: entryTimestamp ?? this.entryTimestamp,
       dateString: dateString ?? this.dateString,
       text: text ?? this.text,
@@ -142,8 +149,8 @@ class JournalEntry {
       isPublic: isPublic ?? this.isPublic,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      // --- AND THIS ---
-      isCaregiverJournal: isCaregiverJournal ?? this.isCaregiverJournal,
+      isCaregiverJournal:
+          isCaregiverJournal ?? this.isCaregiverJournal,
     );
   }
 }

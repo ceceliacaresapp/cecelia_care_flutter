@@ -5,10 +5,10 @@ class UserProfile {
   final String email;
   final String displayName;
   final String? avatarUrl;
-  final String? dateOfBirth; // Store as YYYY-MM-DD or use DateTime and convert
-  final String? relationshipToElder; // New field
-  final String? preferredTerm; // Field for user's preferred term for "Elder"
-  final String? activeElderId; // ID of the currently active elder for this user
+  final String? dateOfBirth;
+  final String? relationshipToElder;
+  final String? preferredTerm;
+  final String? activeElderId;
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
 
@@ -16,8 +16,8 @@ class UserProfile {
   final String? sexualOrientation;
   final String? genderIdentity;
   final String? preferredPronouns;
-  final String? userGoals; // New field for questionnaire response  
-  final String? preferredName; // New field for preferred name
+  final String? userGoals;
+  final String? preferredName;
 
   UserProfile({
     required this.uid,
@@ -30,29 +30,23 @@ class UserProfile {
     this.activeElderId,
     this.createdAt,
     this.updatedAt,
-    // SOGI and Identity Fields in constructor
     this.sexualOrientation,
     this.genderIdentity,
     this.preferredPronouns,
-    this.userGoals, // Add to constructor
-
-    this.preferredName, // Add to constructor
+    this.userGoals,
+    this.preferredName,
   });
 
-  // Factory constructor to create a UserProfile from a Firestore document
   factory UserProfile.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot, [
-    SnapshotOptions? options, // Made options an optional positional parameter
+    SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    // It's good practice to check for null data, though with converters and strong typing,
-    // this might be less critical if your rules/app logic ensures data exists.
-    // However, for robustness, especially if documents might be incomplete:
     if (data == null) {
       throw StateError('Missing data for UserProfile ${snapshot.id}');
     }
     return UserProfile(
-      uid: snapshot.id, // Use the document ID as uid
+      uid: snapshot.id,
       email: data['email'] as String? ?? '',
       displayName: data['displayName'] as String? ?? '',
       avatarUrl: data['avatarUrl'] as String?,
@@ -62,11 +56,14 @@ class UserProfile {
       activeElderId: data['activeElderId'] as String?,
       createdAt: data['createdAt'] as Timestamp?,
       updatedAt: data['updatedAt'] as Timestamp?,
-      // Read SOGI and Identity Fields from Firestore
       sexualOrientation: data['sexualOrientation'] as String?,
       genderIdentity: data['genderIdentity'] as String?,
       preferredPronouns: data['preferredPronouns'] as String?,
-      preferredName: data['preferredName'] as String?, // Read new field
+      // FIX: userGoals was missing from fromFirestore — it existed in
+      // the constructor, toFirestore, and copyWith but was never read back
+      // from Firestore, so it always returned null after any reload.
+      userGoals: data['userGoals'] as String?,
+      preferredName: data['preferredName'] as String?,
     );
   }
 
@@ -78,23 +75,18 @@ class UserProfile {
       if (dateOfBirth != null) 'dateOfBirth': dateOfBirth,
       if (relationshipToElder != null)
         'relationshipToElder': relationshipToElder,
-      if (preferredTerm != null)
-        'preferredTerm': preferredTerm,
-      if (activeElderId != null)
-        'activeElderId': activeElderId,
+      if (preferredTerm != null) 'preferredTerm': preferredTerm,
+      if (activeElderId != null) 'activeElderId': activeElderId,
       if (createdAt != null) 'createdAt': createdAt,
-      'updatedAt':
-          FieldValue.serverTimestamp(), // Always update 'updatedAt' on save
-      // Add SOGI and Identity Fields to Firestore map
+      'updatedAt': FieldValue.serverTimestamp(),
       if (sexualOrientation != null) 'sexualOrientation': sexualOrientation,
       if (genderIdentity != null) 'genderIdentity': genderIdentity,
       if (preferredPronouns != null) 'preferredPronouns': preferredPronouns,
-      if (userGoals != null) 'userGoals': userGoals, // Add new field      
-      if (preferredName != null) 'preferredName': preferredName, // Add new field
+      if (userGoals != null) 'userGoals': userGoals,
+      if (preferredName != null) 'preferredName': preferredName,
     };
   }
 
-  // Optional: A copyWith method can be useful for updating instances
   UserProfile copyWith({
     String? uid,
     String? email,
@@ -106,12 +98,11 @@ class UserProfile {
     String? activeElderId,
     Timestamp? createdAt,
     Timestamp? updatedAt,
-    // SOGI and Identity Fields in copyWith
     String? sexualOrientation,
     String? genderIdentity,
     String? preferredPronouns,
-    String? userGoals,    
-    String? preferredName, // Add to copyWith
+    String? userGoals,
+    String? preferredName,
   }) {
     return UserProfile(
       uid: uid ?? this.uid,
@@ -124,12 +115,11 @@ class UserProfile {
       activeElderId: activeElderId ?? this.activeElderId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      // Assign SOGI and Identity Fields in copyWith
       sexualOrientation: sexualOrientation ?? this.sexualOrientation,
       genderIdentity: genderIdentity ?? this.genderIdentity,
       preferredPronouns: preferredPronouns ?? this.preferredPronouns,
-      userGoals: userGoals ?? this.userGoals,      
-      preferredName: preferredName ?? this.preferredName, // Assign in copyWith
+      userGoals: userGoals ?? this.userGoals,
+      preferredName: preferredName ?? this.preferredName,
     );
   }
 }

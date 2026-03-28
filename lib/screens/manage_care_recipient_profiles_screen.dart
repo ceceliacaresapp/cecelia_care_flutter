@@ -25,7 +25,6 @@ class ManageCareRecipientProfilesScreen extends StatefulWidget {
 
 class _ManageCareRecipientProfilesScreenState
     extends State<ManageCareRecipientProfilesScreen> {
-  // --- PERFORMANCE FIX: Step 1 ---
   late AppLocalizations _l10n;
   late ThemeData _theme;
 
@@ -38,7 +37,6 @@ class _ManageCareRecipientProfilesScreenState
 
   List<ElderProfile> _displayedProfiles = [];
 
-  // --- PERFORMANCE FIX: Step 2 ---
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -79,9 +77,8 @@ class _ManageCareRecipientProfilesScreenState
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_l10n.errorNotLoggedIn)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_l10n.errorNotLoggedIn)));
       }
       return;
     }
@@ -105,9 +102,8 @@ class _ManageCareRecipientProfilesScreenState
           );
         }
       } else {
-        final newElderId = await firestoreService.createElderProfile(
-          dataFromModal,
-        );
+        final newElderId =
+            await firestoreService.createElderProfile(dataFromModal);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -118,12 +114,11 @@ class _ManageCareRecipientProfilesScreenState
               ),
             ),
           );
-          final newProfile = await firestoreService.getElderProfile(newElderId);
+          final newProfile =
+              await firestoreService.getElderProfile(newElderId);
           if (newProfile != null && mounted) {
-            Provider.of<ActiveElderProvider>(
-              context,
-              listen: false,
-            ).setActive(newProfile);
+            Provider.of<ActiveElderProvider>(context, listen: false)
+                .setActive(newProfile);
           }
         }
       }
@@ -131,7 +126,8 @@ class _ManageCareRecipientProfilesScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.errorSavingProfile(e.toString()))),
+          SnackBar(
+              content: Text(_l10n.errorSavingProfile(e.toString()))),
         );
       }
     }
@@ -141,9 +137,9 @@ class _ManageCareRecipientProfilesScreenState
     final firestoreService = context.read<FirestoreService>();
     if (_selectedElderIdForInvite == null ||
         _inviteEmailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a care recipient and enter an email.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Please select a care recipient and enter an email.')));
       return;
     }
 
@@ -156,9 +152,8 @@ class _ManageCareRecipientProfilesScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              _l10n.invitationSentSnackbar(_inviteEmailController.text.trim()),
-            ),
+            content: Text(_l10n.invitationSentSnackbar(
+                _inviteEmailController.text.trim())),
           ),
         );
       }
@@ -167,13 +162,13 @@ class _ManageCareRecipientProfilesScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.errorSendingInvitation(e.toString()))),
+          SnackBar(
+              content:
+                  Text(_l10n.errorSendingInvitation(e.toString()))),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isInviting = false);
-      }
+      if (mounted) setState(() => _isInviting = false);
     }
   }
 
@@ -187,7 +182,8 @@ class _ManageCareRecipientProfilesScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(_l10n.removeCaregiverDialogTitle),
-        content: Text(_l10n.removeCaregiverDialogContent(caregiverIdentifier)),
+        content: Text(
+            _l10n.removeCaregiverDialogContent(caregiverIdentifier)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -195,7 +191,8 @@ class _ManageCareRecipientProfilesScreenState
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
+            style: TextButton.styleFrom(
+                foregroundColor: AppTheme.dangerColor),
             child: Text(_l10n.removeButton),
           ),
         ],
@@ -211,14 +208,17 @@ class _ManageCareRecipientProfilesScreenState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_l10n.caregiverRemovedSnackbar(caregiverIdentifier)),
+              content: Text(
+                  _l10n.caregiverRemovedSnackbar(caregiverIdentifier)),
             ),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_l10n.errorRemovingCaregiver(e.toString()))),
+            SnackBar(
+                content: Text(
+                    _l10n.errorRemovingCaregiver(e.toString()))),
           );
         }
       }
@@ -226,36 +226,29 @@ class _ManageCareRecipientProfilesScreenState
   }
 
   Future<Map<String, String>> _fetchCaregiverIdentifiers(
-    List<String> userIds,
-  ) async {
+      List<String> userIds) async {
     if (userIds.isEmpty) return {};
     Map<String, String> identifiers = {};
     try {
       if (userIds.length > 10) {
         debugPrint(
-          'Warning: Fetching more than 10 caregiver identifiers at once. Consider batching.',
-        );
+            'Warning: Fetching more than 10 caregiver identifiers at once. Consider batching.');
       }
       QuerySnapshot userDocs = await FirebaseFirestore.instance
           .collection('users')
-          .where(
-            FieldPath.documentId,
-            whereIn: userIds.isNotEmpty ? userIds : [' '],
-          )
+          .where(FieldPath.documentId,
+              whereIn: userIds.isNotEmpty ? userIds : [' '])
           .get();
       for (var doc in userDocs.docs) {
         final data = doc.data() as Map<String, dynamic>?;
-        identifiers[doc.id] =
-            data?['displayName'] as String? ??
+        identifiers[doc.id] = data?['displayName'] as String? ??
             data?['email'] as String? ??
             doc.id;
       }
     } catch (e) {
       debugPrint('Error fetching caregiver identifiers: $e');
       for (var id in userIds) {
-        if (!identifiers.containsKey(id)) {
-          identifiers[id] = id;
-        }
+        if (!identifiers.containsKey(id)) identifiers[id] = id;
       }
     }
     return identifiers;
@@ -268,9 +261,9 @@ class _ManageCareRecipientProfilesScreenState
   ) {
     final bool isActive = activeElder?.id == profile.id;
     final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    final bool isPrimaryAdmin =
-        profile.id.isNotEmpty &&
-        currentUserId != null && profile.primaryAdminUserId == currentUserId;
+    final bool isPrimaryAdmin = profile.id.isNotEmpty &&
+        currentUserId != null &&
+        profile.primaryAdminUserId == currentUserId;
 
     return Card(
       key: ValueKey(profile.id),
@@ -279,7 +272,8 @@ class _ManageCareRecipientProfilesScreenState
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isActive ? AppTheme.accentColor : Colors.transparent,
+          color:
+              isActive ? AppTheme.accentColor : Colors.transparent,
           width: 2,
         ),
       ),
@@ -291,60 +285,86 @@ class _ManageCareRecipientProfilesScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    profile.profileName,
-                    style: AppStyles.sectionTitle.copyWith(
-                      color: isActive
-                          ? AppTheme.accentColor
-                          : AppTheme.primaryColor,
+                // FIX: Show elder photo avatar next to name
+                Row(
+                  children: [
+                    _ElderAvatar(
+                      profileName: profile.profileName,
+                      photoUrl: profile.photoUrl,
+                      radius: 22,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        profile.profileName,
+                        style: AppStyles.sectionTitle.copyWith(
+                          color: isActive
+                              ? AppTheme.accentColor
+                              : AppTheme.primaryColor,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                      if (isPrimaryAdmin)
+                    if (isPrimaryAdmin)
                       IconButton(
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          color: AppTheme.accentColor,
-                        ),
+                        icon: const Icon(Icons.edit_outlined,
+                            color: AppTheme.accentColor),
                         tooltip: _l10n.tooltipEditProfile,
                         onPressed: () => _startEditProfile(profile),
                       ),
                     if (isPrimaryAdmin)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4.0),
                         child: ElevatedButton.icon(
-                          icon: const Icon(Icons.person_add_alt_1_outlined, size: 16),
+                          icon: const Icon(
+                              Icons.person_add_alt_1_outlined,
+                              size: 16),
                           label: Text(_l10n.inviteButton),
-                          onPressed: () => _showInviteDialog(profile),
+                          onPressed: () =>
+                              _showInviteDialog(profile),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentColor.withOpacity(0.8),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            textStyle: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                            backgroundColor:
+                                AppTheme.accentColor.withOpacity(0.8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontFamily: 'Poppins'),
                           ),
                         ),
                       ),
                     ElevatedButton(
                       onPressed: () {
-                        Provider.of<ActiveElderProvider>(context, listen: false).setActive(profile);
+                        Provider.of<ActiveElderProvider>(context,
+                                listen: false)
+                            .setActive(profile);
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(_l10n.profileSetActiveSnackbar(profile.profileName)),
-                            ),
-                          );
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(SnackBar(
+                            content: Text(
+                                _l10n.profileSetActiveSnackbar(
+                                    profile.profileName)),
+                          ));
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isActive ? AppTheme.accentColor : AppTheme.primaryColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        textStyle: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                        backgroundColor: isActive
+                            ? AppTheme.accentColor
+                            : AppTheme.primaryColor,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        textStyle: const TextStyle(
+                            fontSize: 12, fontFamily: 'Poppins'),
                       ),
-                      child: Text(isActive ? _l10n.activeButton : _l10n.setActiveButton),
+                      child: Text(isActive
+                          ? _l10n.activeButton
+                          : _l10n.setActiveButton),
                     ),
                   ],
                 ),
@@ -368,7 +388,8 @@ class _ManageCareRecipientProfilesScreenState
               ),
             if ((profile.emergencyContactName?.isNotEmpty ?? false) ||
                 (profile.emergencyContactPhone?.isNotEmpty ?? false) ||
-                (profile.emergencyContactRelationship?.isNotEmpty ?? false))
+                (profile.emergencyContactRelationship?.isNotEmpty ??
+                    false))
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Column(
@@ -376,22 +397,33 @@ class _ManageCareRecipientProfilesScreenState
                   children: [
                     Text(
                       _l10n.emergencyContactSectionTitle,
-                      style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                      style: _theme.textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    if (profile.emergencyContactName?.isNotEmpty ?? false)
-                      Text('${_l10n.emergencyContactNameLabel}: ${profile.emergencyContactName}', style: _theme.textTheme.bodyLarge),
-                    if (profile.emergencyContactPhone?.isNotEmpty ?? false)
-                      Text('${_l10n.emergencyContactPhoneLabel}: ${profile.emergencyContactPhone}', style: _theme.textTheme.bodyLarge),
-                    if (profile.emergencyContactRelationship?.isNotEmpty ?? false)
-                      Text('${_l10n.emergencyContactRelationshipLabel}: ${profile.emergencyContactRelationship}', style: _theme.textTheme.bodyLarge),
+                    if (profile.emergencyContactName?.isNotEmpty ??
+                        false)
+                      Text(
+                          '${_l10n.emergencyContactNameLabel}: ${profile.emergencyContactName}',
+                          style: _theme.textTheme.bodyLarge),
+                    if (profile.emergencyContactPhone?.isNotEmpty ??
+                        false)
+                      Text(
+                          '${_l10n.emergencyContactPhoneLabel}: ${profile.emergencyContactPhone}',
+                          style: _theme.textTheme.bodyLarge),
+                    if (profile.emergencyContactRelationship
+                            ?.isNotEmpty ??
+                        false)
+                      Text(
+                          '${_l10n.emergencyContactRelationshipLabel}: ${profile.emergencyContactRelationship}',
+                          style: _theme.textTheme.bodyLarge),
                   ],
                 ),
               ),
-
             const SizedBox(height: 12),
             Text(
               _l10n.primaryAdminLabel,
-              style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: _theme.textTheme.bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             FutureBuilder<DocumentSnapshot>(
               future: profile.primaryAdminUserId.isNotEmpty
@@ -402,61 +434,58 @@ class _ManageCareRecipientProfilesScreenState
                   : Future.value(null),
               builder: (context, snapshot) {
                 if (profile.primaryAdminUserId.isEmpty) {
-                  return Text(
-                    _l10n.adminNotAssigned,
-                    style: _theme.textTheme.bodyLarge,
-                  );
+                  return Text(_l10n.adminNotAssigned,
+                      style: _theme.textTheme.bodyLarge);
                 }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Text(
-                    _l10n.loadingAdminInfo,
-                    style: _theme.textTheme.bodyLarge,
-                  );
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Text(_l10n.loadingAdminInfo,
+                      style: _theme.textTheme.bodyLarge);
                 }
                 if (snapshot.hasError ||
                     !snapshot.hasData ||
-                    (snapshot.data != null && !snapshot.data!.exists)) {
-                  return Text(
-                    profile.primaryAdminUserId,
-                    style: _theme.textTheme.bodyLarge?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
-                  );
+                    (snapshot.data != null &&
+                        !snapshot.data!.exists)) {
+                  return Text(profile.primaryAdminUserId,
+                      style: _theme.textTheme.bodyLarge
+                          ?.copyWith(fontStyle: FontStyle.italic));
                 }
                 final adminData =
                     snapshot.data!.data() as Map<String, dynamic>?;
-                final adminName =
-                    adminData?['displayName'] as String? ??
+                final adminName = adminData?['displayName'] as String? ??
                     adminData?['email'] as String? ??
                     profile.primaryAdminUserId;
-                return Text(adminName ?? 'N/A', style: _theme.textTheme.bodyLarge);
+                return Text(adminName ?? 'N/A',
+                    style: _theme.textTheme.bodyLarge);
               },
             ),
             const SizedBox(height: 12),
-
             Text(
               _l10n.caregiversLabel(profile.caregiverUserIds.length),
-              style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: _theme.textTheme.bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (profile.caregiverUserIds.isEmpty)
-              Text(_l10n.noCaregiversYet, style: _theme.textTheme.bodyLarge)
+              Text(_l10n.noCaregiversYet,
+                  style: _theme.textTheme.bodyLarge)
             else
               FutureBuilder<Map<String, String>>(
-                future: _fetchCaregiverIdentifiers(profile.caregiverUserIds),
+                future: _fetchCaregiverIdentifiers(
+                    profile.caregiverUserIds),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                  if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                       child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2)),
                     );
                   }
                   if (snapshot.hasError || !snapshot.hasData) {
-                    return Text(
-                      _l10n.errorLoadingCaregiverNames,
-                      style: const TextStyle(color: AppTheme.dangerColor),
-                    );
+                    return Text(_l10n.errorLoadingCaregiverNames,
+                        style: const TextStyle(
+                            color: AppTheme.dangerColor));
                   }
                   final caregiverIdentifiers = snapshot.data!;
                   return Column(
@@ -469,7 +498,8 @@ class _ManageCareRecipientProfilesScreenState
                       return Padding(
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Text(
@@ -482,14 +512,14 @@ class _ManageCareRecipientProfilesScreenState
                                 !isThisCaregiverThePrimaryAdmin)
                               IconButton(
                                 icon: const Icon(
-                                  Icons.remove_circle_outline,
-                                  color: AppTheme.dangerColor,
-                                  size: 20,
-                                ),
-                                tooltip: _l10n.tooltipRemoveCaregiver(
-                                  identifier,
-                                ),
-                                onPressed: () => _handleRemoveCaregiver(
+                                    Icons.remove_circle_outline,
+                                    color: AppTheme.dangerColor,
+                                    size: 20),
+                                tooltip: _l10n
+                                    .tooltipRemoveCaregiver(
+                                        identifier),
+                                onPressed: () =>
+                                    _handleRemoveCaregiver(
                                   profile.id,
                                   uid,
                                   identifier,
@@ -546,9 +576,8 @@ class _ManageCareRecipientProfilesScreenState
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppTheme.textOnPrimary,
-                      ),
+                          strokeWidth: 2,
+                          color: AppTheme.textOnPrimary),
                     )
                   : Text(_l10n.sendInviteButton),
             ),
@@ -560,13 +589,12 @@ class _ManageCareRecipientProfilesScreenState
 
   @override
   Widget build(BuildContext context) {
-    // --- PERFORMANCE FIX: Step 3 ---
-    // The build method now uses the stored _l10n and _theme variables.
-    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    final activeElder = Provider.of<ActiveElderProvider>(context).activeElder;
-    final currentUserProfile = Provider.of<UserProfileProvider>(
-      context,
-    ).userProfile;
+    final String? currentUserId =
+        FirebaseAuth.instance.currentUser?.uid;
+    final activeElder =
+        Provider.of<ActiveElderProvider>(context).activeElder;
+    final currentUserProfile =
+        Provider.of<UserProfileProvider>(context).userProfile;
 
     if (_isCreatingNewProfile) {
       return Scaffold(
@@ -575,8 +603,7 @@ class _ManageCareRecipientProfilesScreenState
             _editingProfile == null
                 ? 'Create Care Recipient Profile'
                 : _l10n.editProfileTitle(
-                    (_editingProfile?.profileName ?? 'Profile'),
-                  ),
+                    _editingProfile?.profileName ?? 'Profile'),
           ),
           leading: IconButton(
             icon: const Icon(Icons.close),
@@ -587,19 +614,29 @@ class _ManageCareRecipientProfilesScreenState
           visible: true,
           onClose: _cancelCreateOrEdit,
           onSubmit: _handleModalSubmit,
+          // FIX: pass elderId so the photo upload uses the correct storage path
+          elderId: _editingProfile?.id,
+          // FIX: include photoUrl in initialData so the picker pre-fills it
           initialData: _editingProfile != null
               ? {
                   'profileName': _editingProfile!.profileName,
                   'dateOfBirth': _editingProfile!.dateOfBirth,
                   'allergies': _editingProfile!.allergies,
-                  'dietaryRestrictions': _editingProfile!.dietaryRestrictions,
+                  'dietaryRestrictions':
+                      _editingProfile!.dietaryRestrictions,
                   'preferredName': _editingProfile!.preferredName,
-                  'sexualOrientation': _editingProfile!.sexualOrientation,
+                  'sexualOrientation':
+                      _editingProfile!.sexualOrientation,
                   'genderIdentity': _editingProfile!.genderIdentity,
-                  'preferredPronouns': _editingProfile!.preferredPronouns,
-                  'emergencyContactName': _editingProfile!.emergencyContactName,
-                  'emergencyContactPhone': _editingProfile!.emergencyContactPhone,
-                  'emergencyContactRelationship': _editingProfile!.emergencyContactRelationship,                                
+                  'preferredPronouns':
+                      _editingProfile!.preferredPronouns,
+                  'emergencyContactName':
+                      _editingProfile!.emergencyContactName,
+                  'emergencyContactPhone':
+                      _editingProfile!.emergencyContactPhone,
+                  'emergencyContactRelationship':
+                      _editingProfile!.emergencyContactRelationship,
+                  'photoUrl': _editingProfile!.photoUrl, // NEW
                 }
               : null,
           mode: _editingProfile != null ? 'edit' : 'create',
@@ -612,7 +649,9 @@ class _ManageCareRecipientProfilesScreenState
         title: const Text('Manage Care Recipient Profiles'),
       ),
       body: StreamBuilder<List<ElderProfile>>(
-        stream: context.read<FirestoreService>().getMyEldersStream(currentUserId),
+        stream: context
+            .read<FirestoreService>()
+            .getMyEldersStream(currentUserId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -634,23 +673,16 @@ class _ManageCareRecipientProfilesScreenState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.group_add_outlined,
-                      size: 60,
-                      color: AppTheme.textSecondary,
-                    ),
+                    const Icon(Icons.group_add_outlined,
+                        size: 60, color: AppTheme.textSecondary),
                     const SizedBox(height: 16),
-                    Text(
-                      'No care recipient profiles found.',
-                      style: AppStyles.emptyStateText,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text('No care recipient profiles found.',
+                        style: AppStyles.emptyStateText,
+                        textAlign: TextAlign.center),
                     const SizedBox(height: 8),
-                    Text(
-                      _l10n.createNewProfileOrWait,
-                      style: _theme.textTheme.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(_l10n.createNewProfileOrWait,
+                        style: _theme.textTheme.bodyMedium,
+                        textAlign: TextAlign.center),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.add_circle_outline),
@@ -669,24 +701,21 @@ class _ManageCareRecipientProfilesScreenState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.no_accounts_outlined,
-                      size: 60,
-                      color: AppTheme.textSecondary,
-                    ),
+                    const Icon(Icons.no_accounts_outlined,
+                        size: 60, color: AppTheme.textSecondary),
                     const SizedBox(height: 16),
-                    Text(
-                      _l10n.pleaseLogInToManageProfiles,
-                      style: AppStyles.emptyStateText,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(_l10n.pleaseLogInToManageProfiles,
+                        style: AppStyles.emptyStateText,
+                        textAlign: TextAlign.center),
                   ],
                 ),
               ),
             );
           }
 
-          profiles.sort((a, b) => (a.priorityIndex ?? 9999).compareTo(b.priorityIndex ?? 9999));
+          profiles.sort((a, b) =>
+              (a.priorityIndex ?? 9999)
+                  .compareTo(b.priorityIndex ?? 9999));
           _displayedProfiles = List.from(profiles);
 
           return ReorderableListView.builder(
@@ -703,14 +732,14 @@ class _ManageCareRecipientProfilesScreenState
             },
             onReorder: (oldIndex, newIndex) async {
               setState(() {
-                if (newIndex > oldIndex) {
-                  newIndex -= 1;
-                }
-                final ElderProfile item = _displayedProfiles.removeAt(oldIndex);
+                if (newIndex > oldIndex) newIndex -= 1;
+                final ElderProfile item =
+                    _displayedProfiles.removeAt(oldIndex);
                 _displayedProfiles.insert(newIndex, item);
               });
 
-              final firestoreService = context.read<FirestoreService>();
+              final firestoreService =
+                  context.read<FirestoreService>();
               List<Future<void>> updateFutures = [];
               for (var i = 0; i < _displayedProfiles.length; i++) {
                 if (_displayedProfiles[i].priorityIndex != i) {
@@ -726,24 +755,65 @@ class _ManageCareRecipientProfilesScreenState
               await Future.wait(updateFutures);
 
               if (_displayedProfiles.isNotEmpty) {
-                Provider.of<ActiveElderProvider>(context, listen: false)
+                Provider.of<ActiveElderProvider>(context,
+                        listen: false)
                     .setActive(_displayedProfiles.first);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(_l10n.profileSetActiveSnackbar(_displayedProfiles.first.profileName)),
-                ),
-                );
+                  content: Text(_l10n.profileSetActiveSnackbar(
+                      _displayedProfiles.first.profileName)),
+                ));
               }
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'manageCareRecipientFab',
         onPressed: _startCreateNewProfile,
         label: Text(_l10n.fabNewProfile),
         icon: const Icon(Icons.add),
         backgroundColor: AppTheme.accentColor,
         foregroundColor: AppTheme.textOnPrimary,
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reusable elder avatar — shows photo if available, initials if not.
+// Used here in the card and can be imported anywhere else that needs it.
+// ---------------------------------------------------------------------------
+class _ElderAvatar extends StatelessWidget {
+  const _ElderAvatar({
+    required this.profileName,
+    required this.photoUrl,
+    this.radius = 24,
+  });
+
+  final String profileName;
+  final String? photoUrl;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = profileName.isNotEmpty
+        ? profileName[0].toUpperCase()
+        : '?';
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+      backgroundImage:
+          photoUrl != null ? NetworkImage(photoUrl!) : null,
+      child: photoUrl == null
+          ? Text(
+              initial,
+              style: TextStyle(
+                fontSize: radius * 0.75,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            )
+          : null,
     );
   }
 }

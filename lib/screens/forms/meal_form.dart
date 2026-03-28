@@ -8,6 +8,7 @@ import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/models/meal_entry.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
+import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 
@@ -32,7 +33,8 @@ class MealForm extends StatefulWidget {
 class _MealFormState extends State<MealForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _descriptionController =
+      TextEditingController();
   final TextEditingController _caloriesController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
@@ -57,9 +59,7 @@ class _MealFormState extends State<MealForm> {
   @override
   void didUpdateWidget(covariant MealForm oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.editingItem != widget.editingItem) {
-      _initializeFields();
-    }
+    if (oldWidget.editingItem != widget.editingItem) _initializeFields();
   }
 
   void _initializeFields() {
@@ -86,7 +86,6 @@ class _MealFormState extends State<MealForm> {
   Future<void> _handleSaveMeal() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-
     try {
       final journal = context.read<JournalServiceProvider>();
       final user = AuthService.currentUser;
@@ -94,7 +93,6 @@ class _MealFormState extends State<MealForm> {
         _showSnackBar(_l10n.formErrorNotAuthenticated, Colors.red);
         return;
       }
-
       final payload = <String, dynamic>{
         'description': _descriptionController.text.trim(),
         'calories': int.tryParse(_caloriesController.text.trim()),
@@ -110,20 +108,15 @@ class _MealFormState extends State<MealForm> {
         'isPublic': true,
         'visibleToUserIds': <String>[],
       };
-
       if (widget.editingItem != null) {
         await journal.updateJournalEntry(
-          'meal',
-          payload,
-          widget.editingItem!.firestoreId,
-        );
+            'meal', payload, widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMealUpdated, Colors.green);
       } else {
         payload['createdAt'] = FieldValue.serverTimestamp();
         await journal.addJournalEntry('meal', payload, user.uid);
         _showSnackBar(_l10n.formSuccessMealSaved, Colors.green);
       }
-
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {
@@ -150,19 +143,20 @@ class _MealFormState extends State<MealForm> {
             onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
+            style: TextButton.styleFrom(
+                foregroundColor: AppTheme.dangerColor),
             child: Text(_l10n.deleteButton),
             onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
     );
-
     if (confirmed == true) {
       setState(() => _isSaving = true);
       try {
         final journal = context.read<JournalServiceProvider>();
-        await journal.deleteJournalEntry('meal', widget.editingItem!.firestoreId);
+        await journal.deleteJournalEntry(
+            'meal', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMealDeleted, Colors.green);
         Navigator.of(context).pop();
         widget.onClose?.call();
@@ -177,55 +171,36 @@ class _MealFormState extends State<MealForm> {
 
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 3),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingItem != null
-            ? _l10n.mealFormTitleEdit
-            : _l10n.mealFormTitleNew),
-        actions: [
-          if (widget.editingItem != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline,
-                  color: AppTheme.dangerColor),
-              tooltip: _l10n.formTooltipDeleteMeal,
-              onPressed: _isSaving ? null : _handleDeleteMeal,
-            ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _theme.cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FormSheetHeader(
+          title: widget.editingItem != null
+              ? _l10n.mealFormTitleEdit
+              : _l10n.mealFormTitleNew,
+          onDelete:
+              widget.editingItem != null ? _handleDeleteMeal : null,
+          deleteTooltip: _l10n.formTooltipDeleteMeal,
+          isSaving: _isSaving,
+        ),
+        Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
                   Text(
                     '${_l10n.mealFormLabelDescription}*',
                     style: _theme.textTheme.bodyLarge
@@ -236,13 +211,13 @@ class _MealFormState extends State<MealForm> {
                     controller: _descriptionController,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: _l10n.mealFormHintFoodDescription,
-                    ),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? _l10n.mealFormValidationFoodDescription
-                        : null,
+                        hintText: _l10n.mealFormHintFoodDescription),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty)
+                            ? _l10n.mealFormValidationFoodDescription
+                            : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.mealFormLabelCalories,
                     style: _theme.textTheme.bodyLarge
@@ -253,10 +228,9 @@ class _MealFormState extends State<MealForm> {
                     controller: _caloriesController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      hintText: _l10n.mealFormHintCalories,
-                    ),
+                        hintText: _l10n.mealFormHintCalories),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.formLabelNotesOptional,
                     style: _theme.textTheme.bodyLarge
@@ -269,8 +243,7 @@ class _MealFormState extends State<MealForm> {
                     minLines: 1,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: _l10n.mealFormHintFoodNotes,
-                    ),
+                        hintText: _l10n.mealFormHintFoodNotes),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -281,10 +254,7 @@ class _MealFormState extends State<MealForm> {
                         variant: BtnVariant.secondaryOutline,
                         onPressed: _isSaving
                             ? null
-                            : () {
-                                Navigator.of(context).pop();
-                                widget.onClose?.call();
-                              },
+                            : () => Navigator.of(context).pop(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),
@@ -293,7 +263,8 @@ class _MealFormState extends State<MealForm> {
                         title: widget.editingItem != null
                             ? _l10n.updateButton
                             : _l10n.saveButton,
-                        onPressed: _isSaving ? null : _handleSaveMeal,
+                        onPressed:
+                            _isSaving ? null : _handleSaveMeal,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),
@@ -304,7 +275,7 @@ class _MealFormState extends State<MealForm> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

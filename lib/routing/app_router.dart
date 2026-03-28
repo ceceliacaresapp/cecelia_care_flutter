@@ -8,6 +8,7 @@ import 'package:provider/provider.dart'; // Corrected import
 import '../l10n/app_localizations.dart';
 import '../locator.dart';
 import '../providers/active_elder_provider.dart';
+import '../providers/medication_definitions_provider.dart';
 import '../providers/medication_provider.dart';
 import '../screens/caregiver_journal/caregiver_journal_screen.dart';
 import '../screens/home_screen.dart';
@@ -95,6 +96,8 @@ class AppRouter {
                 elderId: activeElder.id,
                 firestoreService: context.read<FirestoreService>(),
                 rxNavService: locator<RxNavService>(),
+                medDefsProvider: context.read<MedicationDefinitionsProvider>(),
+                elderName: activeElder.profileName,
               ),
               child: const MedicationsScreen(),
             ),
@@ -125,6 +128,8 @@ class AppRouter {
                 elderId: elderId,
                 firestoreService: context.read<FirestoreService>(),
                 rxNavService: locator<RxNavService>(),
+                medDefsProvider: context.read<MedicationDefinitionsProvider>(),
+                elderName: Provider.of<ActiveElderProvider>(context, listen: false).activeElder?.profileName ?? '',
               ),
               child: const MedicationManagerScreen(),
             ),

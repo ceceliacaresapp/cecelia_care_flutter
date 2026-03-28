@@ -7,6 +7,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
+import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/models/mood_entry.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
@@ -32,10 +33,8 @@ class MoodForm extends StatefulWidget {
 class _MoodFormState extends State<MoodForm> {
   final _formKey = GlobalKey<FormState>();
 
-  // State
-  int _moodLevel = 0; // 1–5, must select one
+  int _moodLevel = 0;
   final TextEditingController _noteController = TextEditingController();
-
   bool _isSaving = false;
 
   late AppLocalizations _l10n;
@@ -62,14 +61,10 @@ class _MoodFormState extends State<MoodForm> {
     _theme = Theme.of(context);
   }
 
-  /* ---------- Field init / updates ---------- */
-
   @override
   void didUpdateWidget(covariant MoodForm old) {
     super.didUpdateWidget(old);
-    if (old.editingItem != widget.editingItem) {
-      _initializeFields();
-    }
+    if (old.editingItem != widget.editingItem) _initializeFields();
   }
 
   void _initializeFields() {
@@ -90,8 +85,6 @@ class _MoodFormState extends State<MoodForm> {
     super.dispose();
   }
 
-  /* ---------- Save / Delete ---------- */
-
   Future<void> _handleSaveMood() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
@@ -110,17 +103,15 @@ class _MoodFormState extends State<MoodForm> {
         'date': widget.currentDate,
         'elderId': widget.activeElder.id,
         'loggedByUserId': user.uid,
-        'loggedBy': user.displayName ?? user.email ?? _l10n.formUnknownUser,
+        'loggedBy':
+            user.displayName ?? user.email ?? _l10n.formUnknownUser,
         'updatedAt': FieldValue.serverTimestamp(),
         'isPublic': true,
         'visibleToUserIds': <String>[],
       };
       if (widget.editingItem != null) {
         await journal.updateJournalEntry(
-          'mood',
-          payload,
-          widget.editingItem!.firestoreId,
-        );
+            'mood', payload, widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMoodUpdated, Colors.green);
       } else {
         payload['createdAt'] = FieldValue.serverTimestamp();
@@ -150,7 +141,8 @@ class _MoodFormState extends State<MoodForm> {
             onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
+            style: TextButton.styleFrom(
+                foregroundColor: AppTheme.dangerColor),
             child: Text(_l10n.deleteButton),
             onPressed: () => Navigator.of(ctx).pop(true),
           ),
@@ -161,7 +153,8 @@ class _MoodFormState extends State<MoodForm> {
       setState(() => _isSaving = true);
       try {
         final journal = context.read<JournalServiceProvider>();
-        await journal.deleteJournalEntry('mood', widget.editingItem!.firestoreId);
+        await journal.deleteJournalEntry(
+            'mood', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMoodDeleted, Colors.green);
         Navigator.of(context).pop();
         widget.onClose?.call();
@@ -174,63 +167,41 @@ class _MoodFormState extends State<MoodForm> {
     }
   }
 
-  /* ---------- UI helpers ---------- */
-
   void _showSnackBar(String msg, Color col) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: col,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor: col,
+      duration: const Duration(seconds: 3),
+    ));
   }
-
-  /* ---------- UI ---------- */
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingItem != null
-            ? _l10n.moodFormTitleEdit
-            : _l10n.moodFormTitleNew),
-        actions: [
-          if (widget.editingItem != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppTheme.dangerColor),
-              tooltip: _l10n.formTooltipDeleteMood,
-              onPressed: _isSaving ? null : _handleDeleteMood,
-            ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _theme.cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FormSheetHeader(
+          title: widget.editingItem != null
+              ? _l10n.moodFormTitleEdit
+              : _l10n.moodFormTitleNew,
+          onDelete: widget.editingItem != null ? _handleDeleteMood : null,
+          deleteTooltip: _l10n.formTooltipDeleteMood,
+          isSaving: _isSaving,
+        ),
+        Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
                   Text(
                     '${_l10n.moodFormLabelSelectMood}*',
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -248,44 +219,53 @@ class _MoodFormState extends State<MoodForm> {
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: sel ? AppTheme.primaryColor.withOpacity(0.2) : Colors.transparent,
+                            color: sel
+                                ? AppTheme.primaryColor.withOpacity(0.2)
+                                : Colors.transparent,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: sel ? AppTheme.primaryColor : Colors.transparent,
+                              color: sel
+                                  ? AppTheme.primaryColor
+                                  : Colors.transparent,
                               width: 2,
                             ),
                           ),
                           child: Text(
                             emoji,
-                            style: TextStyle(fontSize: sel ? 40 : 32),
+                            style:
+                                TextStyle(fontSize: sel ? 40 : 32),
                           ),
                         ),
                       );
                     }).toList(),
                   ),
-                  // Invisible validator field:
                   Opacity(
                     opacity: 0,
                     child: SizedBox(
                       height: 0,
                       child: TextFormField(
                         key: ValueKey(_moodLevel),
-                        initialValue: _moodLevel > 0 ? _moodLevel.toString() : '',
-                        validator: (v) => (v == null || v.isEmpty)
-                            ? _l10n.moodFormValidationSelectOrSpecifyMood
-                            : null,
+                        initialValue:
+                            _moodLevel > 0 ? _moodLevel.toString() : '',
+                        validator: (v) =>
+                            (v == null || v.isEmpty)
+                                ? _l10n
+                                    .moodFormValidationSelectOrSpecifyMood
+                                : null,
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     _l10n.formLabelNotesOptional,
-                    style: _theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _noteController,
-                    decoration: InputDecoration(hintText: _l10n.moodFormHintNotes),
+                    decoration:
+                        InputDecoration(hintText: _l10n.moodFormHintNotes),
                     maxLines: 3,
                     minLines: 1,
                   ),
@@ -296,14 +276,21 @@ class _MoodFormState extends State<MoodForm> {
                       Btn(
                         title: _l10n.cancelButton,
                         variant: BtnVariant.secondaryOutline,
-                        onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        onPressed: _isSaving
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                       const SizedBox(width: 12),
                       Btn(
-                        title: widget.editingItem != null ? _l10n.updateButton : _l10n.saveButton,
-                        onPressed: _isSaving ? null : _handleSaveMood,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        title: widget.editingItem != null
+                            ? _l10n.updateButton
+                            : _l10n.saveButton,
+                        onPressed:
+                            _isSaving ? null : _handleSaveMood,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                     ],
                   ),
@@ -312,7 +299,7 @@ class _MoodFormState extends State<MoodForm> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

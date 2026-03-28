@@ -10,6 +10,10 @@ import '../../l10n/app_localizations.dart';
 import '../../providers/active_elder_provider.dart';
 import '../../services/auth_service.dart';
 import '../../models/journal_entry.dart';
+// FIX: import EntryType so we can compare entry.type against the enum value
+// rather than a String. The original `entry.type == 'image'` always evaluated
+// to false because entry.type is an EntryType enum, not a String.
+import '../../models/entry_types.dart';
 import '../../providers/journal_service_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_styles.dart';
@@ -67,7 +71,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
           _uploadError = _l10n.imageUploadErrorPicking(e.toString());
         });
       }
-      debugPrint('Error picking image: $e');
+      debugPrint('ImageUploadScreen: error picking image: $e');
     }
   }
 
@@ -165,9 +169,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_l10n.imageUploadSuccess)),
         );
-        _pickedFile = null;
+        setState(() {
+          _pickedFile = null;
+          _imageTitle = null;
+        });
         _titleController.clear();
-        _imageTitle = null;
       }
     } catch (e) {
       if (mounted) {
@@ -175,7 +181,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
           _uploadError = _l10n.imageUploadErrorFailed(e.toString());
         });
       }
-      debugPrint('Error uploading or saving image metadata: $e');
+      debugPrint('ImageUploadScreen: error uploading or saving image: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -189,9 +195,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: Text(imageTitle),
-          ),
+          appBar: AppBar(title: Text(imageTitle)),
           body: Center(
             child: InteractiveViewer(
               child: Image.network(imageUrl, fit: BoxFit.contain),
@@ -233,8 +237,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
           children: [
             Text(
               _l10n.imageUploadForElder(activeElder.profileName),
-              style:
-                  AppStyles.sectionTitle.copyWith(color: AppTheme.primaryColor),
+              style: AppStyles.sectionTitle
+                  .copyWith(color: AppTheme.primaryColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -321,20 +325,22 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
             const SizedBox(height: 32),
             Text(
               _l10n.uploadedImagesSectionTitle,
-              style:
-                  AppStyles.sectionTitle.copyWith(color: AppTheme.primaryColor),
+              style: AppStyles.sectionTitle
+                  .copyWith(color: AppTheme.primaryColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             StreamBuilder<List<JournalEntry>>(
+              // FIX: Pass entryTypeFilter: 'image' so Firestore does the
+              // filtering, rather than fetching all entries and discarding
+              // most of them client-side.
               stream: Provider.of<JournalServiceProvider>(context,
                       listen: false)
                   .getJournalEntriesStream(
                     elderId: activeElder.id,
                     currentUserId: AuthService.currentUserId ?? '',
-                  )
-                  .map((entries) =>
-                      entries.where((entry) => entry.type == 'image').toList()),
+                    entryTypeFilter: 'image',
+                  ),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -342,22 +348,34 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                 if (snapshot.hasError) {
                   return Center(
                     child: Text(
-                      // --- I18N UPDATE ---
-                      // Replaced string concatenation with a parameterized
-                      // localization key for better translation support.
                       _l10n.genericError(snapshot.error.toString()),
-                      style: const TextStyle(color: AppTheme.dangerColor),
+                      style:
+                          const TextStyle(color: AppTheme.dangerColor),
                     ),
                   );
                 }
-                final List<JournalEntry> imageEntries = snapshot.data ?? [];
+
+                // FIX: entry.type is an EntryType enum, not a String.
+                // The original `entry.type == 'image'` always evaluated to
+                // false — Dart does not implicitly convert between enum values
+                // and Strings, so the uploaded images grid was always empty.
+                // Comparing against EntryType.image fixes the bug.
+                //
+                // The .map().where() client-side filter is also removed now
+                // that Firestore returns only image entries via entryTypeFilter.
+                final List<JournalEntry> imageEntries = snapshot.data
+                        ?.where(
+                            (entry) => entry.type == EntryType.image)
+                        .toList() ??
+                    [];
 
                 if (imageEntries.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
                       _l10n.noImagesUploadedYet,
-                      style: AppStyles.emptyStateText.copyWith(fontSize: 16),
+                      style:
+                          AppStyles.emptyStateText.copyWith(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -366,7 +384,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
@@ -375,11 +394,13 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                   itemCount: imageEntries.length,
                   itemBuilder: (context, index) {
                     final entry = imageEntries[index];
-                    final String imageUrl = entry.data?['url'] as String? ?? '';
-                    final String imageTitle = entry.data?['title']
-                            as String? ??
-                        _l10n.imageUploadDefaultTitle;
-                    final DateTime uploadDate = entry.entryTimestamp.toDate();
+                    final String imageUrl =
+                        entry.data?['url'] as String? ?? '';
+                    final String imageTitle =
+                        entry.data?['title'] as String? ??
+                            _l10n.imageUploadDefaultTitle;
+                    final DateTime uploadDate =
+                        entry.entryTimestamp.toDate();
 
                     if (imageUrl.isEmpty) {
                       return Card(
@@ -392,7 +413,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                     }
 
                     return GestureDetector(
-                      onTap: () => _showImageFullScreen(imageUrl, imageTitle),
+                      onTap: () =>
+                          _showImageFullScreen(imageUrl, imageTitle),
                       child: Card(
                         elevation: 2,
                         shape: RoundedRectangleBorder(
@@ -410,44 +432,54 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                                     (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Center(
-                                      child: CircularProgressIndicator(
-                                          value: loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null));
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress
+                                                  .expectedTotalBytes !=
+                                              null
+                                          ? loadingProgress
+                                                  .cumulativeBytesLoaded /
+                                              loadingProgress
+                                                  .expectedTotalBytes!
+                                          : null,
+                                    ),
+                                  );
                                 },
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                        color: AppTheme.backgroundGray,
-                                        child: const Center(
-                                            child: Icon(Icons.broken_image,
-                                                color: AppTheme.textLight,
-                                                size: 40))),
+                                errorBuilder:
+                                    (context, error, stackTrace) =>
+                                        Container(
+                                          color: AppTheme.backgroundGray,
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.broken_image,
+                                              color: AppTheme.textLight,
+                                              size: 40,
+                                            ),
+                                          ),
+                                        ),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(imageTitle,
-                                        style: _theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                                fontWeight: FontWeight.bold),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis),
-                                    const SizedBox(height: 4),
-                                    // --- I18N UPDATE ---
-                                    // Using locale-aware date formatting.
-                                    Text(
-                                        DateFormat.yMMMd(_l10n.localeName)
-                                            .format(uploadDate),
-                                        style: _theme.textTheme.bodySmall)
-                                  ]),
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    imageTitle,
+                                    style: _theme.textTheme.bodyMedium
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.bold),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    DateFormat.yMMMd(_l10n.localeName)
+                                        .format(uploadDate),
+                                    style: _theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

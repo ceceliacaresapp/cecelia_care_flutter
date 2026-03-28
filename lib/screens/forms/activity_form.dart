@@ -5,6 +5,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
+import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/models/activity_entry.dart';
 import 'package:provider/provider.dart';
@@ -31,8 +32,10 @@ class ActivityForm extends StatefulWidget {
 class _ActivityFormState extends State<ActivityForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _activityTypeController = TextEditingController();
-  final TextEditingController _durationController = TextEditingController();
+  final TextEditingController _activityTypeController =
+      TextEditingController();
+  final TextEditingController _durationController =
+      TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
   String _selectedActivityTypeChip = '';
@@ -63,7 +66,8 @@ class _ActivityFormState extends State<ActivityForm> {
     final value = _activityTypeController.text;
     if (mounted) {
       setState(() {
-        if (_activityTypeOptions.contains(value) && value != _otherOption) {
+        if (_activityTypeOptions.contains(value) &&
+            value != _otherOption) {
           _selectedActivityTypeChip = value;
         } else if (value.isNotEmpty) {
           _selectedActivityTypeChip = _otherOption;
@@ -116,7 +120,6 @@ class _ActivityFormState extends State<ActivityForm> {
 
   Future<void> _handleSaveActivity() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSaving = true);
     try {
       final journalService = context.read<JournalServiceProvider>();
@@ -125,7 +128,6 @@ class _ActivityFormState extends State<ActivityForm> {
         _showSnackBar(_l10n.formErrorNotAuthenticated, Colors.red);
         return;
       }
-
       final payload = <String, dynamic>{
         'activityType': _activityTypeController.text.trim(),
         'duration': _durationController.text.trim(),
@@ -135,13 +137,13 @@ class _ActivityFormState extends State<ActivityForm> {
         'date': widget.currentDate,
         'elderId': widget.activeElder.id,
         'loggedByUserId': currentUser.uid,
-        'loggedBy':
-            currentUser.displayName ?? currentUser.email ?? _l10n.formUnknownUser,
+        'loggedBy': currentUser.displayName ??
+            currentUser.email ??
+            _l10n.formUnknownUser,
         'updatedAt': FieldValue.serverTimestamp(),
         'isPublic': true,
         'visibleToUserIds': <String>[],
       };
-
       if (widget.editingItem != null &&
           widget.editingItem!.firestoreId.isNotEmpty) {
         await journalService.updateJournalEntry(
@@ -153,7 +155,6 @@ class _ActivityFormState extends State<ActivityForm> {
             'activity', payload, currentUser.uid);
         _showSnackBar(_l10n.formSuccessActivitySaved, Colors.green);
       }
-
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {
@@ -170,7 +171,6 @@ class _ActivityFormState extends State<ActivityForm> {
       _showSnackBar(_l10n.formErrorNoItemToDelete, Colors.orange);
       return;
     }
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -182,27 +182,28 @@ class _ActivityFormState extends State<ActivityForm> {
             onPressed: () => Navigator.of(ctx).pop(false),
           ),
           TextButton(
-            style:
-                TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
+            style: TextButton.styleFrom(
+                foregroundColor: AppTheme.dangerColor),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(_l10n.deleteButton),
           ),
         ],
       ),
     );
-
     if (confirmed == true) {
       setState(() => _isSaving = true);
       try {
         final journalService = context.read<JournalServiceProvider>();
         await journalService.deleteJournalEntry(
             'activity', widget.editingItem!.firestoreId);
-        _showSnackBar(_l10n.formSuccessActivityDeleted, Colors.green);
+        _showSnackBar(
+            _l10n.formSuccessActivityDeleted, Colors.green);
         Navigator.of(context).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting activity: $e');
-        _showSnackBar(_l10n.formErrorFailedToDeleteActivity, Colors.red);
+        _showSnackBar(
+            _l10n.formErrorFailedToDeleteActivity, Colors.red);
       } finally {
         if (mounted) setState(() => _isSaving = false);
       }
@@ -211,56 +212,38 @@ class _ActivityFormState extends State<ActivityForm> {
 
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: const Duration(seconds: 3),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.editingItem != null
-            ? _l10n.activityFormTitleEdit
-            : _l10n.activityFormTitleNew),
-        actions: [
-          if (widget.editingItem != null)
-            IconButton(
-              icon:
-                  const Icon(Icons.delete_outline, color: AppTheme.dangerColor),
-              tooltip: _l10n.formTooltipDeleteActivity,
-              onPressed: _isSaving ? null : _handleDeleteActivity,
-            ),
-        ],
-      ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _theme.cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FormSheetHeader(
+          title: widget.editingItem != null
+              ? _l10n.activityFormTitleEdit
+              : _l10n.activityFormTitleNew,
+          onDelete: widget.editingItem != null
+              ? _handleDeleteActivity
+              : null,
+          deleteTooltip: _l10n.formTooltipDeleteActivity,
+          isSaving: _isSaving,
+        ),
+        Flexible(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
                   Text(
                     _l10n.activityFormLabelActivityTypeRequired,
                     style: _theme.textTheme.bodyLarge
@@ -271,7 +254,8 @@ class _ActivityFormState extends State<ActivityForm> {
                     spacing: 8,
                     runSpacing: 8,
                     children: _activityTypeOptions.map((opt) {
-                      final isSelected = opt == _selectedActivityTypeChip;
+                      final isSelected =
+                          opt == _selectedActivityTypeChip;
                       return GestureDetector(
                         onTap: () {
                           if (mounted) {
@@ -317,17 +301,19 @@ class _ActivityFormState extends State<ActivityForm> {
                   TextFormField(
                     controller: _activityTypeController,
                     decoration: InputDecoration(
-                      hintText: _l10n.activityFormHintActivityType,
-                    ),
-                    onChanged: (_) => _formKey.currentState?.validate(),
+                        hintText:
+                            _l10n.activityFormHintActivityType),
+                    onChanged: (_) =>
+                        _formKey.currentState?.validate(),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return _l10n.activityFormValidationActivityType;
+                        return _l10n
+                            .activityFormValidationActivityType;
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.activityFormLabelDuration,
                     style: _theme.textTheme.bodyLarge
@@ -337,10 +323,9 @@ class _ActivityFormState extends State<ActivityForm> {
                   TextFormField(
                     controller: _durationController,
                     decoration: InputDecoration(
-                      hintText: _l10n.activityFormHintDuration,
-                    ),
+                        hintText: _l10n.activityFormHintDuration),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     _l10n.formLabelNotesOptional,
                     style: _theme.textTheme.bodyLarge
@@ -352,8 +337,7 @@ class _ActivityFormState extends State<ActivityForm> {
                     maxLines: 3,
                     minLines: 1,
                     decoration: InputDecoration(
-                      hintText: _l10n.activityFormHintNotes,
-                    ),
+                        hintText: _l10n.activityFormHintNotes),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -376,7 +360,8 @@ class _ActivityFormState extends State<ActivityForm> {
                         title: widget.editingItem != null
                             ? _l10n.updateButton
                             : _l10n.saveButton,
-                        onPressed: _isSaving ? null : _handleSaveActivity,
+                        onPressed:
+                            _isSaving ? null : _handleSaveActivity,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),
@@ -387,7 +372,7 @@ class _ActivityFormState extends State<ActivityForm> {
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

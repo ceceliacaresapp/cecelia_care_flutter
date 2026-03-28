@@ -5,7 +5,10 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart' show TimeOfDay, BuildContext;
+// FIX: Removed unused BuildContext from the show clause — was flagged by
+// the analyzer as unused_shown_name. TimeOfDay is still needed for
+// scheduleDailyRepeatingNotification and scheduleMedReminder.
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/providers/notification_prefs_provider.dart';
 
@@ -24,7 +27,8 @@ class NotificationService {
   NotificationService._internal();
   static final NotificationService instance = NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _fln = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _fln =
+      FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   NotificationPrefsProvider? _notificationPrefsProvider;
 
@@ -42,24 +46,22 @@ class NotificationService {
     debugPrint('NotificationService: NotificationPrefsProvider has been set.');
   }
 
-  Future<void> init(BuildContext context) async {
+  Future<void> init() async {
     if (_isInitialized) {
-      debugPrint('NotificationService already initialized.');
+      debugPrint('NotificationService: already initialized.');
       return;
     }
 
-    final l10n = AppLocalizations.of(context)!;
-
     tz.initializeTimeZones();
-    await _initLocalNotifications(l10n);
+    await _initLocalNotifications();
     await _initFirebaseMessaging();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     _isInitialized = true;
-    debugPrint('NotificationService initialized successfully.');
+    debugPrint('NotificationService: initialized successfully.');
   }
 
-  Future<void> _initLocalNotifications(AppLocalizations l10n) async {
+  Future<void> _initLocalNotifications() async {
     const AndroidInitializationSettings androidInit =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initSettings =
@@ -84,45 +86,45 @@ class NotificationService {
       await androidImplementation.requestNotificationsPermission();
     }
 
-    await _createAndroidNotificationChannels(l10n);
+    await _createAndroidNotificationChannels();
   }
 
-  Future<void> _createAndroidNotificationChannels(AppLocalizations l10n) async {
+  Future<void> _createAndroidNotificationChannels() async {
     final List<AndroidNotificationChannel> channelsToCreate = [
-      AndroidNotificationChannel(
+      const AndroidNotificationChannel(
         _androidDefaultChannelId,
-        l10n.notificationChannelDefaultName,
-        description: l10n.notificationChannelDefaultDescription,
+        'General Notifications',
+        description: 'General app notifications.',
         importance: Importance.high,
       ),
-      AndroidNotificationChannel(
+      const AndroidNotificationChannel(
         _androidCalendarEventsChannelId,
-        l10n.notificationChannelCalendarName,
-        description: l10n.notificationChannelCalendarDescription,
+        'Calendar Events',
+        description: 'Reminders for upcoming calendar events.',
         importance: Importance.high,
       ),
-      AndroidNotificationChannel(
+      const AndroidNotificationChannel(
         _androidMedRemindersChannelId,
-        l10n.notificationChannelMedRemindersName,
-        description: l10n.notificationChannelMedRemindersDescription,
+        'Medication Reminders',
+        description: 'Reminders to administer medications.',
         importance: Importance.high,
       ),
-      AndroidNotificationChannel(
+      const AndroidNotificationChannel(
         _androidSelfCareChannelId,
-        l10n.notificationChannelSelfCareName,
-        description: l10n.notificationChannelSelfCareDescription,
+        'Self-Care Reminders',
+        description: 'Reminders for self-care breaks.',
         importance: Importance.high,
       ),
-      AndroidNotificationChannel(
+      const AndroidNotificationChannel(
         _androidChatMessagesChannelId,
-        l10n.notificationChannelChatMessagesName,
-        description: l10n.notificationChannelChatMessagesDescription,
+        'Chat Messages',
+        description: 'Notifications for new chat messages.',
         importance: Importance.high,
       ),
-      AndroidNotificationChannel(
+      const AndroidNotificationChannel(
         _androidHealthRemindersChannelId,
-        l10n.notificationChannelHealthRemindersName,
-        description: l10n.notificationChannelHealthRemindersDescription,
+        'Health Reminders',
+        description: 'General health and wellness reminders.',
         importance: Importance.high,
       ),
     ];
@@ -133,22 +135,26 @@ class NotificationService {
 
     for (final channel in channelsToCreate) {
       await androidPlugin?.createNotificationChannel(channel);
-      debugPrint("Android notification channel '${channel.id}' created/updated.");
+      debugPrint(
+          "NotificationService: channel '${channel.id}' created/updated.");
     }
   }
 
   Future<void> _initFirebaseMessaging() async {
     await _fcm.requestPermission(
-      alert: true, badge: true, sound: true,
+      alert: true,
+      badge: true,
+      sound: true,
     );
     await _saveFcmToken();
     _fcm.onTokenRefresh.listen((_) => _saveFcmToken());
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debugPrint('FCM: Got a message whilst in the foreground!');
-      RemoteNotification? notification = message.notification;
+      final RemoteNotification? notification = message.notification;
       if (notification != null) {
-        String channelId = message.data['channel_id'] as String? ?? _androidDefaultChannelId;
+        final String channelId =
+            message.data['channel_id'] as String? ?? _androidDefaultChannelId;
         await showInstant(
           channelId,
           notification.title ?? 'New Message',
@@ -160,13 +166,15 @@ class NotificationService {
 
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
-        debugPrint('FCM: App opened from terminated by notification: ${message.messageId}');
+        debugPrint(
+            'FCM: App opened from terminated by notification: ${message.messageId}');
         // TODO: Handle navigation
       }
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      debugPrint('FCM: App opened from background by notification: ${message.messageId}');
+      debugPrint(
+          'FCM: App opened from background by notification: ${message.messageId}');
       // TODO: Handle navigation
     });
   }
@@ -179,8 +187,10 @@ class NotificationService {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final userTokensRef = FirebaseFirestore.instance
-            .collection('users').doc(user.uid)
-            .collection('fcmTokens').doc(token);
+            .collection('users')
+            .doc(user.uid)
+            .collection('fcmTokens')
+            .doc(token);
         await userTokensRef.set({
           'token': token,
           'createdAt': FieldValue.serverTimestamp(),
@@ -201,40 +211,56 @@ class NotificationService {
     required DateTime scheduledTime,
     required String channelKey,
   }) async {
-      final String androidChannelId = _getAndroidChannelId(channelKey);
+    final String androidChannelId = _getAndroidChannelId(channelKey);
 
-      if (_notificationPrefsProvider != null &&
-          !await _notificationPrefsProvider!.areNotificationsEnabledForChannel(androidChannelId)) {
-        debugPrint("FLN: One-time notification for channel '$androidChannelId' suppressed.");
-        return;
-      }
+    if (_notificationPrefsProvider != null &&
+        !await _notificationPrefsProvider!
+            .areNotificationsEnabledForChannel(androidChannelId)) {
+      debugPrint(
+          "FLN: One-time notification for channel '$androidChannelId' suppressed.");
+      return;
+    }
 
-      final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-      if (scheduledTime.isBefore(now)) {
-        debugPrint('FLN: Attempted to schedule a notification in the past. Ignoring. Time: $scheduledTime');
-        return;
-      }
-      
-      final tz.TZDateTime scheduledTzTime = tz.TZDateTime.from(scheduledTime, tz.local);
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    if (scheduledTime.isBefore(now)) {
+      debugPrint(
+          'FLN: Attempted to schedule a notification in the past. Ignoring. Time: $scheduledTime');
+      return;
+    }
 
-      await _fln.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledTzTime,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            androidChannelId,
-            androidChannelId,
-          ),
+    final tz.TZDateTime scheduledTzTime =
+        tz.TZDateTime.from(scheduledTime, tz.local);
+
+    await _fln.zonedSchedule(
+      id,
+      title,
+      body,
+      scheduledTzTime,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          androidChannelId,
+          androidChannelId,
         ),
-        payload: payload,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
-      debugPrint('FLN: Scheduled one-time notification. ID: $id, Channel: $androidChannelId at $scheduledTzTime');
+      ),
+      payload: payload,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+    debugPrint(
+        'FLN: Scheduled one-time notification. ID: $id, Channel: $androidChannelId at $scheduledTzTime');
   }
 
-
+  // -------------------------------------------------------------------------
+  // Core scheduling method used by the med reminder UI.
+  //
+  // Parameters for the UI to supply:
+  //   notificationId  — derive with:
+  //                     (elderId.hashCode + medName.hashCode + timeStr.hashCode)
+  //                     .toUnsigned(31)
+  //   time            — TimeOfDay from the time picker
+  //   channelId       — 'med_reminders'
+  //   title / body    — pass through from scheduleMedReminder()
+  //   payload         — 'med_reminder|{elderId}|{medName}|{timeStr}'
+  // -------------------------------------------------------------------------
   Future<void> scheduleDailyRepeatingNotification({
     required int notificationId,
     required TimeOfDay time,
@@ -243,49 +269,78 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    if (_notificationPrefsProvider != null && !await _notificationPrefsProvider!.areNotificationsEnabledForChannel(channelId)) {
-      debugPrint("FLN: Daily repeating notification for channel '$channelId' suppressed.");
+    if (_notificationPrefsProvider != null &&
+        !await _notificationPrefsProvider!
+            .areNotificationsEnabledForChannel(channelId)) {
+      debugPrint(
+          "FLN: Daily repeating notification for channel '$channelId' suppressed.");
       return;
     }
 
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, time.hour, time.minute);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+        tz.local, now.year, now.month, now.day, time.hour, time.minute);
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
     await _fln.zonedSchedule(
-      notificationId, title, body, scheduledDate,
-      NotificationDetails(android: AndroidNotificationDetails(channelId, channelId)),
+      notificationId,
+      title,
+      body,
+      scheduledDate,
+      NotificationDetails(
+          android: AndroidNotificationDetails(channelId, channelId)),
       payload: payload,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
-    debugPrint('FLN: Scheduled daily repeating notification. ID: $notificationId, Channel: $channelId');
+    debugPrint(
+        'FLN: Scheduled daily repeating notification. ID: $notificationId, Channel: $channelId');
   }
 
-  Future<void> showInstant(String channelId, String title, String body, String? payload) async {
-    if (_notificationPrefsProvider != null && !await _notificationPrefsProvider!.areNotificationsEnabledForChannel(channelId)) {
-      debugPrint("FLN: Instant notification for channel '$channelId' suppressed.");
+  Future<void> showInstant(
+      String channelId, String title, String body, String? payload) async {
+    if (_notificationPrefsProvider != null &&
+        !await _notificationPrefsProvider!
+            .areNotificationsEnabledForChannel(channelId)) {
+      debugPrint(
+          "FLN: Instant notification for channel '$channelId' suppressed.");
       return;
     }
     await _fln.show(
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title, body,
-      NotificationDetails(android: AndroidNotificationDetails(channelId, channelId)),
+      title,
+      body,
+      NotificationDetails(
+          android: AndroidNotificationDetails(channelId, channelId)),
       payload: payload,
     );
     debugPrint('FLN: Showing instant notification on channel $channelId.');
   }
 
-  Future<void> scheduleMedReminder(AppLocalizations l10n, Map<String, dynamic> reminderArgs) async {
+  // -------------------------------------------------------------------------
+  // High-level wrapper called by the scheduling UI.
+  //
+  // Accepts a reminderArgs map with keys:
+  //   elderId, elderName, medName, dosage, time (HH:mm string)
+  //
+  // Derives a stable notification ID from those values so cancel() is
+  // always reliable for the same medication.
+  // -------------------------------------------------------------------------
+  Future<void> scheduleMedReminder(
+      AppLocalizations l10n, Map<String, dynamic> reminderArgs) async {
     final String? elderId = reminderArgs['elderId'] as String?;
     final String? elderName = reminderArgs['elderName'] as String?;
     final String? medName = reminderArgs['medName'] as String?;
     final String? dosage = reminderArgs['dosage'] as String?;
     final String? timeStr = reminderArgs['time'] as String?;
 
-    if (medName == null || dosage == null || timeStr == null || elderId == null || elderName == null) {
+    if (medName == null ||
+        dosage == null ||
+        timeStr == null ||
+        elderId == null ||
+        elderName == null) {
       debugPrint('Medication reminder scheduling failed: Missing arguments.');
       return;
     }
@@ -298,10 +353,13 @@ class NotificationService {
       if (hour == null || minute == null) return;
 
       final time = TimeOfDay(hour: hour, minute: minute);
-      final int notificationId = (elderId.hashCode + medName.hashCode + timeStr.hashCode).toUnsigned(31);
+      final int notificationId =
+          (elderId.hashCode + medName.hashCode + timeStr.hashCode)
+              .toUnsigned(31);
 
       final String notificationTitle = l10n.medicationReminderTitle(medName);
-      final String notificationBody = l10n.medicationReminderBody(dosage, elderName);
+      final String notificationBody =
+          l10n.medicationReminderBody(dosage, elderName);
 
       await scheduleDailyRepeatingNotification(
         notificationId: notificationId,
@@ -311,15 +369,33 @@ class NotificationService {
         body: notificationBody,
         payload: 'med_reminder|$elderId|$medName|$timeStr',
       );
-      debugPrint('Medication reminder scheduled for $medName at $timeStr for elder $elderId.');
+      debugPrint(
+          'Medication reminder scheduled for $medName at $timeStr for elder $elderId.');
     } catch (e) {
       debugPrint('Error scheduling medication reminder: $e');
     }
   }
 
+  /// Cancels a notification by its raw ID.
   Future<void> cancel(int id) async {
     await _fln.cancel(id);
     debugPrint('FLN: Cancelled notification with ID: $id');
+  }
+
+  // NEW: Convenience cancel by med identity — the UI calls this when the
+  // reminder toggle is turned off. Uses the same hash as scheduleMedReminder
+  // so the IDs always match.
+  Future<void> cancelMedReminder({
+    required String elderId,
+    required String medName,
+    required String timeStr,
+  }) async {
+    final int id =
+        (elderId.hashCode + medName.hashCode + timeStr.hashCode)
+            .toUnsigned(31);
+    await cancel(id);
+    debugPrint(
+        'FLN: Cancelled med reminder for $medName at $timeStr (ID: $id)');
   }
 
   String _getAndroidChannelId(String key) {

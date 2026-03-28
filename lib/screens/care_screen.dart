@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
-import 'package:cecelia_care_flutter/providers/active_elder_provider.dart'; // Import provider
-import 'package:cecelia_care_flutter/screens/budget_screen.dart'; // Import the new BudgetScreen
+import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
+import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
 import 'package:cecelia_care_flutter/screens/resources_screen.dart';
-import 'package:go_router/go_router.dart'; // Import GoRouter
-import 'package:provider/provider.dart'; // Import Provider
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-// A new data class to hold the information for each tile.
 class _CareAction {
   final String title;
   final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
-  _CareAction({required this.title, required this.icon, required this.onTap});
+  _CareAction({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 }
 
 class CareScreen extends StatelessWidget {
@@ -22,25 +27,19 @@ class CareScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
-    // Define the list of actions to display in the grid.
     final List<_CareAction> careActions = [
       _CareAction(
         title: l10n.manageMedications,
         icon: Icons.medication_liquid_outlined,
+        color: const Color(0xFF1E88E5), // blue
         onTap: () {
-          // Get the active care recipient from the provider.
           final activeElder =
               Provider.of<ActiveElderProvider>(context, listen: false)
                   .activeElder;
-
           if (activeElder != null) {
-            // Use GoRouter to navigate, passing the elderId as an 'extra' parameter.
-            // This ensures the Provider is created correctly by the router.
             context.push('/medications', extra: activeElder.id);
           } else {
-            // Show a message if no care recipient is selected.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n.settingsNoActiveElderSelected)),
             );
@@ -50,28 +49,25 @@ class CareScreen extends StatelessWidget {
       _CareAction(
         title: l10n.imageUploadScreenTitle,
         icon: Icons.document_scanner_outlined,
+        color: const Color(0xFF5C6BC0), // indigo
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const ImageUploadScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const ImageUploadScreen()),
         ),
       ),
       _CareAction(
         title: l10n.helpfulResourcesTitle,
         icon: Icons.menu_book_outlined,
+        color: const Color(0xFF00897B), // teal
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => ResourcesScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => ResourcesScreen()),
         ),
       ),
-      // --- I18N UPDATE ---
-      // Replaced the hardcoded "Budget Tracker" string.
       _CareAction(
-        title: l10n.budgetTrackerTitle, // Changed from "Budget Tracker"
+        title: l10n.budgetTrackerTitle,
         icon: Icons.account_balance_wallet_outlined,
+        color: const Color(0xFFF57C00), // amber-orange
         onTap: () {
           final activeElder =
               Provider.of<ActiveElderProvider>(context, listen: false)
@@ -80,10 +76,8 @@ class CareScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => BudgetScreen(
-                  careRecipientId:
-                      activeElder.id, // Pass the active recipient's ID
-                ),
+                builder: (context) =>
+                    BudgetScreen(careRecipientId: activeElder.id),
               ),
             );
           } else {
@@ -100,61 +94,68 @@ class CareScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
+          crossAxisSpacing: 14.0,
+          mainAxisSpacing: 14.0,
           childAspectRatio: 1.0,
         ),
         itemCount: careActions.length,
         itemBuilder: (context, index) {
           final action = careActions[index];
-          return _buildCareActionTile(
-            context: context,
-            icon: action.icon,
-            title: action.title,
-            onTap: action.onTap,
-          );
+          return _CareActionTile(action: action);
         },
       ),
     );
   }
+}
 
-  /// A reusable widget to create a consistent look for each action tile.
-  Widget _buildCareActionTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 2.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 48.0,
-                color: theme.primaryColor,
+class _CareActionTile extends StatelessWidget {
+  const _CareActionTile({required this.action});
+  final _CareAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: action.onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: action.color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: action.color.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: action.color.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: action.color.withOpacity(0.12),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 12.0),
-              Text(
-                title,
+              child: Icon(action.icon, size: 32, color: action.color),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                action.title,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
+                  color: action.color,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

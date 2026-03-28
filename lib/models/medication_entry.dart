@@ -1,15 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MedicationEntry {
-  final String firestoreId; // Firestore docId
-  final String name; // Display name
-  final String rxCui; // RxNorm ID for interaction lookup
-  final String dose; // “10 mg”, “5 mL”, …
-  final String schedule; // “AM”, “BID”, …
-  final String? time; // Actual time taken, e.g., "08:05" (optional)
-  final bool taken; // Was the medication taken?
-  final String loggedByUserId; // UID of the user who logged this entry
-  final String loggedByDisplayName; // Display name of the user who logged this entry
+  final String firestoreId;
+  final String name;
+  final String rxCui;
+  final String dose;
+  final String schedule;
+  final String? time;
+  final bool taken;
+  // NEW: records when the dose was marked taken or skipped.
+  // null means the entry hasn't been actioned yet (e.g. scheduled but
+  // not yet confirmed). Used by the adherence history strip to show
+  // taken (green) / skipped (red) / pending (grey) per dose.
+  final Timestamp? takenAt;
+  final String loggedByUserId;
+  final String loggedByDisplayName;
   final Timestamp createdAt;
   final Timestamp updatedAt;
 
@@ -21,44 +26,46 @@ class MedicationEntry {
     required this.schedule,
     this.time,
     required this.taken,
+    this.takenAt,
     required this.loggedByUserId,
     required this.loggedByDisplayName,
     required this.createdAt,
     required this.updatedAt,
   });
 
-  // Getter to allow access via 'id' as expected by MedicationProvider
   String get id => firestoreId;
 
-  /// Creates a MedicationEntry from a Firestore data map and document ID.
   static MedicationEntry fromJson(Map<String, dynamic> data, String id) {
     return MedicationEntry(
       firestoreId: id,
-      // Apply trim and specific default for name
-      name: (data['name'] as String?)?.trim().nullIfEmpty ?? 'Unknown Medication',
+      name: (data['name'] as String?)?.trim().nullIfEmpty ??
+          'Unknown Medication',
       rxCui: data['rxCui'] as String? ?? '',
-      dose: data['dose'] as String? ?? '', // Keep N/A or '' based on your preference for empty
-      schedule: data['schedule'] as String? ?? '', // Keep N/A or ''
-      time: (data['time'] as String?)?.trim().nullIfEmpty, // Allow null time
-      taken: data['taken'] as bool? ?? false, // Default to false if missing
-      loggedByUserId: data['loggedByUserId'] as String? ?? '', // Default to empty if missing
+      dose: data['dose'] as String? ?? '',
+      schedule: data['schedule'] as String? ?? '',
+      time: (data['time'] as String?)?.trim().nullIfEmpty,
+      taken: data['taken'] as bool? ?? false,
+      takenAt: data['takenAt'] as Timestamp?,
+      loggedByUserId: data['loggedByUserId'] as String? ?? '',
       loggedByDisplayName:
           (data['loggedByDisplayName'] as String?)?.trim().nullIfEmpty ??
-          (data['loggedByUserId'] as String?)?.trim().nullIfEmpty ??
-          'Unknown User',
+              (data['loggedByUserId'] as String?)?.trim().nullIfEmpty ??
+              'Unknown User',
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp? ?? Timestamp.now(),
     );
   }
 
-  factory MedicationEntry.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snap, [SnapshotOptions? options]) {
+  factory MedicationEntry.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snap, [
+    SnapshotOptions? options,
+  ]) {
     final data = snap.data();
     if (data == null) {
       throw StateError(
-        'Missing data for MedicationEntry from snapshot ${snap.id}',
-      );
+          'Missing data for MedicationEntry from snapshot ${snap.id}');
     }
-    return MedicationEntry.fromJson(data, snap.id); // Call the static fromJson method
+    return MedicationEntry.fromJson(data, snap.id);
   }
 
   Map<String, dynamic> toFirestore() {
@@ -67,16 +74,16 @@ class MedicationEntry {
       'rxCui': rxCui,
       'dose': dose,
       'schedule': schedule,
-      if (time != null) 'time': time, // Only include if not null
+      if (time != null) 'time': time,
       'taken': taken,
+      if (takenAt != null) 'takenAt': takenAt,
       'loggedByUserId': loggedByUserId,
-      'loggedByDisplayName': loggedByDisplayName, // Save as 'loggedByDisplayName'
-      'createdAt': createdAt, // Uses the existing createdAt field value
-      'updatedAt': FieldValue.serverTimestamp(), // Always update on save
+      'loggedByDisplayName': loggedByDisplayName,
+      'createdAt': createdAt,
+      'updatedAt': FieldValue.serverTimestamp(),
     };
   }
 
-  // Optional: A copyWith method can be useful for updating instances
   MedicationEntry copyWith({
     String? firestoreId,
     String? name,
@@ -85,6 +92,7 @@ class MedicationEntry {
     String? schedule,
     String? time,
     bool? taken,
+    Timestamp? takenAt,
     String? loggedByUserId,
     String? loggedByDisplayName,
     Timestamp? createdAt,
@@ -98,6 +106,7 @@ class MedicationEntry {
       schedule: schedule ?? this.schedule,
       time: time ?? this.time,
       taken: taken ?? this.taken,
+      takenAt: takenAt ?? this.takenAt,
       loggedByUserId: loggedByUserId ?? this.loggedByUserId,
       loggedByDisplayName: loggedByDisplayName ?? this.loggedByDisplayName,
       createdAt: createdAt ?? this.createdAt,
@@ -106,14 +115,6 @@ class MedicationEntry {
   }
 }
 
-// Note on fromJson/toJson:
-// The fromFirestore and toFirestore methods serve the purpose of deserialization
-// from Firestore and serialization to Firestore, respectively.
-// If you need generic fromJson(Map<String, dynamic>) and toJson() methods
-// that are not tied to Firestore's specific types (like Timestamp vs. String for dates),
-// For direct Firestore usage with converters, these names are conventional.
-
-// Helper extension for String to return null if empty after trimming
 extension StringNullIfEmptyExtension on String {
   String? get nullIfEmpty => isEmpty ? null : this;
 }
