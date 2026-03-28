@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/elder_profile.dart';
+import '../models/caregiver_role.dart';
 import '../models/user_profile.dart';
 import '../services/firestore_service.dart';
 
@@ -48,6 +49,28 @@ class ActiveElderProvider with ChangeNotifier {
   // --- I18N UPDATE ---
   // Getter returns the new error object. The UI can use this to show a localized message.
   ActiveElderError? get errorInfo => _errorInfo;
+
+  /// The current Firebase Auth user's role on the active elder profile.
+  ///
+  /// Returns [CaregiverRole.unknown] when there is no active elder or no
+  /// signed-in user. Components should call this instead of checking
+  /// primaryAdminUserId directly — it accounts for caregiverRoles and the
+  /// backwards-compat caregiver fallback in ElderProfile.roleForUser().
+  CaregiverRole get currentUserRole {
+    final elder = _activeElder;
+    if (elder == null) return CaregiverRole.unknown;
+    final uid = _initializedForUid;
+    return elder.roleForUser(uid);
+  }
+
+  /// Convenience — true when the current user is an admin on the active elder.
+  bool get isAdmin => currentUserRole == CaregiverRole.admin;
+
+  /// Convenience — true when the current user can log entries.
+  bool get canLog => currentUserRole.canLog;
+
+  /// Convenience — true when the current user can send messages.
+  bool get canMessage => currentUserRole.canMessage;
 
   ActiveElderProvider(this._firestoreService, this._prefs) {
     _authSubscription =

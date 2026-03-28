@@ -11,6 +11,7 @@ import 'package:cecelia_care_flutter/screens/settings/my_account_screen.dart';
 import 'package:cecelia_care_flutter/screens/notification_settings_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/inclusive_language_guide_screen.dart';
 import 'package:cecelia_care_flutter/screens/export_screen.dart';
+import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -107,6 +108,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final bool isPrimaryAdmin = activeElder != null && userProfile != null &&
         activeElder.primaryAdminUserId == userProfile.uid;
 
+    final role = activeElderProvider.currentUserRole;
+    final canExport = role.canExport;
+    final canManageProfiles = role.canManageProfiles;
+
     if (_selectedLocale == null || !AppLocalizations.supportedLocales.contains(_selectedLocale)) {
       _selectedLocale = AppLocalizations.supportedLocales.firstWhere(
         (sl) => _selectedLocale != null && sl.languageCode == _selectedLocale!.languageCode,
@@ -126,7 +131,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
           avatarChild: userProfile != null ? _avatarChild(userProfile, Colors.white) : null,
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+
+        // Role indicator — shown to non-admin users so they know their access level
+        if (!isPrimaryAdmin && activeElder != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundGray,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.textLight.withOpacity(0.4)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    role == CaregiverRole.viewer
+                        ? Icons.visibility_outlined
+                        : Icons.favorite_border,
+                    size: 16,
+                    color: role == CaregiverRole.viewer
+                        ? const Color(0xFF8E24AA)
+                        : const Color(0xFF00897B),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      role == CaregiverRole.viewer
+                          ? 'View-only access to \${activeElder.profileName}\'s care log'
+                          : 'Caregiver for \${activeElder.profileName}',
+                      style: textTheme.bodySmall
+                          ?.copyWith(color: AppTheme.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+        const SizedBox(height: 8),
 
         // Account
         _SectionHeader(label: l10n.settingsTitleMyAccount),
@@ -199,48 +243,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         const SizedBox(height: 20),
 
-        // Export & Reports
-        const _SectionHeader(label: "Export & Reports"),
-        _SettingsTile(
-          icon: Icons.download_outlined,
-          iconColor: const Color(0xFF5C6BC0),
-          title: "Export care logs",
-          onTap: () {
-            if (activeElder == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Please select a care recipient first.")));
-              return;
-            }
-            Navigator.push(context,
-              MaterialPageRoute(builder: (_) => ExportScreen(activeElder: activeElder)));
-          },
-        ),
-
-        const SizedBox(height: 20),
-
-        // Care recipient
-        _SectionHeader(label: l10n.settingsTitleCareRecipientManagement),
-        if (activeElder != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-            child: Text(l10n.settingsActiveCareRecipient(activeElder.profileName),
-              style: textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
-          )
-        else
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-            child: Text(l10n.settingsNoActiveCareRecipient,
-              style: textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
+        // Export & Reports — hidden for viewer role
+        if (canExport) ...[
+          const _SectionHeader(label: "Export & Reports"),
+          _SettingsTile(
+            icon: Icons.download_outlined,
+            iconColor: const Color(0xFF5C6BC0),
+            title: "Export care logs",
+            onTap: () {
+              if (activeElder == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please select a care recipient first.")));
+                return;
+              }
+              Navigator.push(context,
+                MaterialPageRoute(builder: (_) => ExportScreen(activeElder: activeElder)));
+            },
           ),
-        _SettingsTile(
-          icon: Icons.group_outlined,
-          iconColor: const Color(0xFF1E88E5),
-          title: l10n.settingsItemManageProfiles,
-          onTap: widget.navigateToManageCareRecipientProfiles ?? () {
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.settingsErrorCouldNotNavigateToProfiles)));
-          },
-        ),
+          const SizedBox(height: 20),
+        ],
+
+        // Care recipient — admin only
+        if (canManageProfiles) ...[
+          _SectionHeader(label: l10n.settingsTitleCareRecipientManagement),
+          if (activeElder != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Text(l10n.settingsActiveCareRecipient(activeElder.profileName),
+                style: textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Text(l10n.settingsNoActiveCareRecipient,
+                style: textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
+            ),
+          _SettingsTile(
+            icon: Icons.group_outlined,
+            iconColor: const Color(0xFF1E88E5),
+            title: l10n.settingsItemManageProfiles,
+            onTap: widget.navigateToManageCareRecipientProfiles ?? () {
+              if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.settingsErrorCouldNotNavigateToProfiles)));
+            },
+          ),
+        ], // end canManageProfiles
 
         const SizedBox(height: 24),
 

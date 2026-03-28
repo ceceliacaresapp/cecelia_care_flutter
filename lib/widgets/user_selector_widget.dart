@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
-import 'package:cecelia_care_flutter/l10n/app_localizations.dart'; // For l10n
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 enum MessageAudience { all, specific }
+
+// Message accent color — blue-grey, matching the message card/tile color.
+const _kMsgColor = Color(0xFF546E7A);
 
 class UserSelectorWidget extends StatefulWidget {
   final List<UserProfile> allUsers;
@@ -40,15 +44,11 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
   @override
   void didUpdateWidget(covariant UserSelectorWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If the initial props change from the parent, re-evaluate.
-    // This might happen if the parent resets the form.
     if (widget.initialIsPublic != oldWidget.initialIsPublic ||
-        !Set<String>.from(
-          widget.initialSelectedUserIds,
-        ).containsAll(_selectedUserIds) ||
-        !_selectedUserIds.containsAll(
-          Set<String>.from(widget.initialSelectedUserIds),
-        )) {
+        !Set<String>.from(widget.initialSelectedUserIds)
+            .containsAll(_selectedUserIds) ||
+        !_selectedUserIds
+            .containsAll(Set<String>.from(widget.initialSelectedUserIds))) {
       setState(() {
         _selectedUserIds = Set<String>.from(widget.initialSelectedUserIds);
         _audience = widget.initialIsPublic
@@ -59,19 +59,15 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
   }
 
   void _handleAudienceChange(MessageAudience? newAudience) {
-    if (newAudience != null) {
-      setState(() {
-        _audience = newAudience;
-        if (_audience == MessageAudience.all) {
-          _selectedUserIds
-              .clear(); // Clear specific selections if "All" is chosen
-        }
-        widget.onSelectionChanged(
-          _selectedUserIds.toList(),
-          _audience == MessageAudience.all,
-        );
-      });
-    }
+    if (newAudience == null) return;
+    setState(() {
+      _audience = newAudience;
+      if (_audience == MessageAudience.all) _selectedUserIds.clear();
+      widget.onSelectionChanged(
+        _selectedUserIds.toList(),
+        _audience == MessageAudience.all,
+      );
+    });
   }
 
   void _handleUserSelection(UserProfile user, bool? isSelected) {
@@ -82,7 +78,6 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
       } else {
         _selectedUserIds.remove(user.uid);
       }
-      // Ensure audience is specific if individual users are selected
       if (_selectedUserIds.isNotEmpty && _audience == MessageAudience.all) {
         _audience = MessageAudience.specific;
       }
@@ -96,76 +91,111 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isSpecific = _audience == MessageAudience.specific;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── Send to label ───────────────────────────────────────
         Text(
           l10n.userSelectorSendToLabel,
-          style: Theme.of(context).textTheme.titleSmall,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
         const SizedBox(height: 8),
+
+        // ── Audience segmented button ───────────────────────────
         SegmentedButton<MessageAudience>(
-          segments: <ButtonSegment<MessageAudience>>[
+          segments: [
             ButtonSegment<MessageAudience>(
               value: MessageAudience.all,
               label: Text(l10n.userSelectorAudienceAll),
-              icon: const Icon(Icons.people_alt_outlined),
+              icon: const Icon(Icons.people_alt_outlined, size: 16),
             ),
             ButtonSegment<MessageAudience>(
               value: MessageAudience.specific,
               label: Text(l10n.userSelectorAudienceSpecific),
-              icon: const Icon(Icons.person_outline),
+              icon: const Icon(Icons.lock_outline, size: 16),
             ),
           ],
-          selected: <MessageAudience>{_audience},
-          onSelectionChanged: (Set<MessageAudience> newSelection) {
-            _handleAudienceChange(newSelection.first);
-          },
+          selected: {_audience},
+          onSelectionChanged: (newSelection) =>
+              _handleAudienceChange(newSelection.first),
           showSelectedIcon: false,
           style: SegmentedButton.styleFrom(
-            // side: BorderSide(color: Theme.of(context).colorScheme.outline),
+            selectedBackgroundColor: _kMsgColor.withOpacity(0.12),
+            selectedForegroundColor: _kMsgColor,
+            foregroundColor: AppTheme.textSecondary,
+            side: BorderSide(color: _kMsgColor.withOpacity(0.3)),
+            textStyle: const TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),
-        if (_audience == MessageAudience.specific) ...[
-          const SizedBox(height: 12),
-          if (widget.isLoadingUsers)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            )
-          else if (widget.allUsers.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                l10n.userSelectorNoUsersAvailable,
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            )
-          else
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 150), // Limit height
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: widget.allUsers.length,
-                itemBuilder: (context, index) {
-                  final user = widget.allUsers[index];
-                  return CheckboxListTile(
-                    title: Text(user.displayName),
-                    value: _selectedUserIds.contains(user.uid),
-                    onChanged: (bool? selected) =>
-                        _handleUserSelection(user, selected),
-                    dense: true,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                },
-              ),
+
+        // ── Specific user list ──────────────────────────────────
+        if (isSpecific) ...[
+          const SizedBox(height: 10),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 160),
+            decoration: BoxDecoration(
+              color: _kMsgColor.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _kMsgColor.withOpacity(0.2)),
             ),
+            child: widget.isLoadingUsers
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  )
+                : widget.allUsers.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          l10n.userSelectorNoUsersAvailable,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: widget.allUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = widget.allUsers[index];
+                          final isChecked =
+                              _selectedUserIds.contains(user.uid);
+                          return CheckboxListTile(
+                            title: Text(
+                              user.displayName,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: isChecked
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isChecked
+                                    ? _kMsgColor
+                                    : AppTheme.textPrimary,
+                              ),
+                            ),
+                            value: isChecked,
+                            onChanged: (bool? selected) =>
+                                _handleUserSelection(user, selected),
+                            activeColor: _kMsgColor,
+                            checkColor: Colors.white,
+                            dense: true,
+                            controlAffinity:
+                                ListTileControlAffinity.leading,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8),
+                          );
+                        },
+                      ),
+          ),
         ],
       ],
     );

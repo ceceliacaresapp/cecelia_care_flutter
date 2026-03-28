@@ -7,6 +7,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
 
+import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
@@ -50,70 +51,45 @@ class _ManageCareRecipientProfilesScreenState
     super.dispose();
   }
 
-  void _startCreateNewProfile() {
-    setState(() {
-      _isCreatingNewProfile = true;
-      _editingProfile = null;
-    });
-  }
+  void _startCreateNewProfile() => setState(() {
+        _isCreatingNewProfile = true;
+        _editingProfile = null;
+      });
 
-  void _startEditProfile(ElderProfile profile) {
-    setState(() {
-      _isCreatingNewProfile = true;
-      _editingProfile = profile;
-    });
-  }
+  void _startEditProfile(ElderProfile profile) => setState(() {
+        _isCreatingNewProfile = true;
+        _editingProfile = profile;
+      });
 
-  void _cancelCreateOrEdit() {
-    setState(() {
-      _isCreatingNewProfile = false;
-      _editingProfile = null;
-    });
-  }
+  void _cancelCreateOrEdit() => setState(() {
+        _isCreatingNewProfile = false;
+        _editingProfile = null;
+      });
 
-  Future<void> _handleModalSubmit(Map<String, dynamic> dataFromModal) async {
+  Future<void> _handleModalSubmit(Map<String, dynamic> data) async {
     final firestoreService = context.read<FirestoreService>();
-
-    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(_l10n.errorNotLoggedIn)));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_l10n.errorNotLoggedIn)));
       return;
     }
-
     try {
       if (_editingProfile != null) {
         if (_editingProfile!.id.isEmpty) {
           throw Exception('Care Recipient ID is missing, cannot update.');
         }
-        await firestoreService.updateElderProfile(
-          _editingProfile!.id,
-          dataFromModal,
-        );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                _l10n.profileUpdatedSnackbar(_editingProfile!.profileName),
-              ),
-            ),
-          );
-        }
+        await firestoreService.updateElderProfile(_editingProfile!.id, data);
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                _l10n.profileUpdatedSnackbar(_editingProfile!.profileName))));
       } else {
         final newElderId =
-            await firestoreService.createElderProfile(dataFromModal);
+            await firestoreService.createElderProfile(data);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                _l10n.profileCreatedSnackbar(
-                  dataFromModal['profileName'] as String,
-                ),
-              ),
-            ),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(_l10n
+                  .profileCreatedSnackbar(data['profileName'] as String))));
           final newProfile =
               await firestoreService.getElderProfile(newElderId);
           if (newProfile != null && mounted) {
@@ -124,51 +100,113 @@ class _ManageCareRecipientProfilesScreenState
       }
       _cancelCreateOrEdit();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(_l10n.errorSavingProfile(e.toString()))),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_l10n.errorSavingProfile(e.toString()))));
     }
   }
 
-  Future<void> _handleInviteCaregiver() async {
-    final firestoreService = context.read<FirestoreService>();
-    if (_selectedElderIdForInvite == null ||
-        _inviteEmailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Please select a care recipient and enter an email.')));
-      return;
-    }
+  // ---------------------------------------------------------------------------
+  // Invite caregiver — writes both caregiverUserIds AND caregiverRoles
+  // ---------------------------------------------------------------------------
 
+  Future<void> _handleInviteCaregiver(
+    String elderId,
+    String email,
+    CaregiverRole role,
+  ) async {
+    final firestoreService = context.read<FirestoreService>();
     setState(() => _isInviting = true);
     try {
-      await firestoreService.inviteCaregiverToElderProfile(
-        _selectedElderIdForInvite!,
-        _inviteEmailController.text.trim(),
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_l10n.invitationSentSnackbar(
-                _inviteEmailController.text.trim())),
-          ),
-        );
+      // Invite via FirestoreService (adds to caregiverUserIds)
+      await firestoreService.inviteCaregiverToElderProfile(elderId, email);
+
+      // Look up the invited user's UID so we can set their role
+      final QuerySnapshot userSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email.trim().toLowerCase())
+          .limit(1)
+          .get();
+
+      if (userSnap.docs.isNotEmpty) {
+        final invitedUid = userSnap.docs.first.id;
+        // Write the role to caregiverRoles map
+        await FirebaseFirestore.instance
+            .collection('elderProfiles')
+            .doc(elderId)
+            .update({
+          'caregiverRoles.$invitedUid': role.firestoreValue,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
       }
-      _inviteEmailController.clear();
-      _selectedElderIdForInvite = null;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(_l10n.invitationSentSnackbar(email))));
+        _inviteEmailController.clear();
+        _selectedElderIdForInvite = null;
+      }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text(_l10n.errorSendingInvitation(e.toString()))),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_l10n.errorSendingInvitation(e.toString()))));
     } finally {
       if (mounted) setState(() => _isInviting = false);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Change role of an existing caregiver
+  // ---------------------------------------------------------------------------
+
+  Future<void> _handleChangeRole(
+    String elderId,
+    String uid,
+    String displayName,
+    CaregiverRole currentRole,
+  ) async {
+    CaregiverRole newRole = currentRole == CaregiverRole.caregiver
+        ? CaregiverRole.viewer
+        : CaregiverRole.caregiver;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Change role'),
+        content: Text(
+          'Change $displayName from ${currentRole.label} to ${newRole.label}?\n\n'
+          '${newRole.description}',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(_l10n.cancelButton)),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Change role'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('elderProfiles')
+          .doc(elderId)
+          .update({
+        'caregiverRoles.$uid': newRole.firestoreValue,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              '$displayName is now a ${newRole.label.toLowerCase()}'),
+        ));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Could not change role: $e'),
+          backgroundColor: AppTheme.dangerColor));
     }
   }
 
@@ -182,13 +220,12 @@ class _ManageCareRecipientProfilesScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(_l10n.removeCaregiverDialogTitle),
-        content: Text(
-            _l10n.removeCaregiverDialogContent(caregiverIdentifier)),
+        content:
+            Text(_l10n.removeCaregiverDialogContent(caregiverIdentifier)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(_l10n.cancelButton),
-          ),
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(_l10n.cancelButton)),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(
@@ -202,25 +239,21 @@ class _ManageCareRecipientProfilesScreenState
     if (confirm == true) {
       try {
         await firestoreService.removeCaregiverFromElderProfile(
-          elderId,
-          caregiverIdToRemove,
-        );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  _l10n.caregiverRemovedSnackbar(caregiverIdentifier)),
-            ),
-          );
-        }
+            elderId, caregiverIdToRemove);
+        // Also remove the role entry
+        await FirebaseFirestore.instance
+            .collection('elderProfiles')
+            .doc(elderId)
+            .update({
+          'caregiverRoles.$caregiverIdToRemove': FieldValue.delete(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(_l10n.caregiverRemovedSnackbar(caregiverIdentifier))));
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    _l10n.errorRemovingCaregiver(e.toString()))),
-          );
-        }
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(_l10n.errorRemovingCaregiver(e.toString()))));
       }
     }
   }
@@ -230,14 +263,9 @@ class _ManageCareRecipientProfilesScreenState
     if (userIds.isEmpty) return {};
     Map<String, String> identifiers = {};
     try {
-      if (userIds.length > 10) {
-        debugPrint(
-            'Warning: Fetching more than 10 caregiver identifiers at once. Consider batching.');
-      }
       QuerySnapshot userDocs = await FirebaseFirestore.instance
           .collection('users')
-          .where(FieldPath.documentId,
-              whereIn: userIds.isNotEmpty ? userIds : [' '])
+          .where(FieldPath.documentId, whereIn: userIds)
           .get();
       for (var doc in userDocs.docs) {
         final data = doc.data() as Map<String, dynamic>?;
@@ -253,6 +281,10 @@ class _ManageCareRecipientProfilesScreenState
     }
     return identifiers;
   }
+
+  // ---------------------------------------------------------------------------
+  // Profile card
+  // ---------------------------------------------------------------------------
 
   Widget _buildCareRecipientProfileCard(
     ElderProfile profile,
@@ -272,8 +304,7 @@ class _ManageCareRecipientProfilesScreenState
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color:
-              isActive ? AppTheme.accentColor : Colors.transparent,
+          color: isActive ? AppTheme.accentColor : Colors.transparent,
           width: 2,
         ),
       ),
@@ -282,30 +313,31 @@ class _ManageCareRecipientProfilesScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // FIX: Show elder photo avatar next to name
-                Row(
-                  children: [
-                    _ElderAvatar(
-                      profileName: profile.profileName,
-                      photoUrl: profile.photoUrl,
-                      radius: 22,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        profile.profileName,
-                        style: AppStyles.sectionTitle.copyWith(
-                          color: isActive
-                              ? AppTheme.accentColor
-                              : AppTheme.primaryColor,
+                // Avatar + name — Expanded so the actions Row gets remaining space
+                Expanded(
+                  child: Row(
+                    children: [
+                      _ElderAvatar(
+                          profileName: profile.profileName,
+                          photoUrl: profile.photoUrl,
+                          radius: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          profile.profileName,
+                          style: AppStyles.sectionTitle.copyWith(
+                            color: isActive
+                                ? AppTheme.accentColor
+                                : AppTheme.primaryColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -319,23 +351,20 @@ class _ManageCareRecipientProfilesScreenState
                       ),
                     if (isPrimaryAdmin)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4.0),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 4.0),
                         child: ElevatedButton.icon(
-                          icon: const Icon(
-                              Icons.person_add_alt_1_outlined,
+                          icon: const Icon(Icons.person_add_alt_1_outlined,
                               size: 16),
                           label: Text(_l10n.inviteButton),
-                          onPressed: () =>
-                              _showInviteDialog(profile),
+                          onPressed: () => _showInviteDialog(profile),
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 AppTheme.accentColor.withOpacity(0.8),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 6),
-                            textStyle: const TextStyle(
-                                fontSize: 12,
-                                fontFamily: 'Poppins'),
+                            textStyle:
+                                const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
                           ),
                         ),
                       ),
@@ -344,14 +373,10 @@ class _ManageCareRecipientProfilesScreenState
                         Provider.of<ActiveElderProvider>(context,
                                 listen: false)
                             .setActive(profile);
-                        if (mounted) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(
-                            content: Text(
-                                _l10n.profileSetActiveSnackbar(
-                                    profile.profileName)),
-                          ));
-                        }
+                        if (mounted)
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(_l10n.profileSetActiveSnackbar(
+                                  profile.profileName))));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isActive
@@ -359,59 +384,49 @@ class _ManageCareRecipientProfilesScreenState
                             : AppTheme.primaryColor,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
-                        textStyle: const TextStyle(
-                            fontSize: 12, fontFamily: 'Poppins'),
+                        textStyle:
+                            const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
                       ),
-                      child: Text(isActive
-                          ? _l10n.activeButton
-                          : _l10n.setActiveButton),
+                      child: Text(
+                          isActive ? _l10n.activeButton : _l10n.setActiveButton),
                     ),
                   ],
                 ),
               ],
             ),
+
             const SizedBox(height: 8),
             if (profile.dateOfBirth.isNotEmpty)
-              Text(
-                '${_l10n.dobLabelPrefix} ${profile.dateOfBirth}',
-                style: _theme.textTheme.bodyLarge,
-              ),
+              Text('${_l10n.dobLabelPrefix} ${profile.dateOfBirth}',
+                  style: _theme.textTheme.bodyLarge),
             if (profile.allergies.isNotEmpty)
               Text(
-                '${_l10n.allergiesLabelPrefix} ${profile.allergies.join(", ")}',
-                style: _theme.textTheme.bodyLarge,
-              ),
+                  '${_l10n.allergiesLabelPrefix} ${profile.allergies.join(", ")}',
+                  style: _theme.textTheme.bodyLarge),
             if (profile.dietaryRestrictions.isNotEmpty)
               Text(
-                '${_l10n.dietLabelPrefix} ${profile.dietaryRestrictions}',
-                style: _theme.textTheme.bodyLarge,
-              ),
+                  '${_l10n.dietLabelPrefix} ${profile.dietaryRestrictions}',
+                  style: _theme.textTheme.bodyLarge),
             if ((profile.emergencyContactName?.isNotEmpty ?? false) ||
                 (profile.emergencyContactPhone?.isNotEmpty ?? false) ||
-                (profile.emergencyContactRelationship?.isNotEmpty ??
-                    false))
+                (profile.emergencyContactRelationship?.isNotEmpty ?? false))
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _l10n.emergencyContactSectionTitle,
-                      style: _theme.textTheme.bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    if (profile.emergencyContactName?.isNotEmpty ??
-                        false)
+                    Text(_l10n.emergencyContactSectionTitle,
+                        style: _theme.textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    if (profile.emergencyContactName?.isNotEmpty ?? false)
                       Text(
                           '${_l10n.emergencyContactNameLabel}: ${profile.emergencyContactName}',
                           style: _theme.textTheme.bodyLarge),
-                    if (profile.emergencyContactPhone?.isNotEmpty ??
-                        false)
+                    if (profile.emergencyContactPhone?.isNotEmpty ?? false)
                       Text(
                           '${_l10n.emergencyContactPhoneLabel}: ${profile.emergencyContactPhone}',
                           style: _theme.textTheme.bodyLarge),
-                    if (profile.emergencyContactRelationship
-                            ?.isNotEmpty ??
+                    if (profile.emergencyContactRelationship?.isNotEmpty ??
                         false)
                       Text(
                           '${_l10n.emergencyContactRelationshipLabel}: ${profile.emergencyContactRelationship}',
@@ -419,12 +434,13 @@ class _ManageCareRecipientProfilesScreenState
                   ],
                 ),
               ),
+
             const SizedBox(height: 12),
-            Text(
-              _l10n.primaryAdminLabel,
-              style: _theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
+
+            // Primary admin
+            Text(_l10n.primaryAdminLabel,
+                style: _theme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.bold)),
             FutureBuilder<DocumentSnapshot>(
               future: profile.primaryAdminUserId.isNotEmpty
                   ? FirebaseFirestore.instance
@@ -433,98 +449,100 @@ class _ManageCareRecipientProfilesScreenState
                       .get()
                   : Future.value(null),
               builder: (context, snapshot) {
-                if (profile.primaryAdminUserId.isEmpty) {
+                if (profile.primaryAdminUserId.isEmpty)
                   return Text(_l10n.adminNotAssigned,
                       style: _theme.textTheme.bodyLarge);
-                }
-                if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting)
                   return Text(_l10n.loadingAdminInfo,
                       style: _theme.textTheme.bodyLarge);
-                }
                 if (snapshot.hasError ||
                     !snapshot.hasData ||
-                    (snapshot.data != null &&
-                        !snapshot.data!.exists)) {
+                    (snapshot.data != null && !snapshot.data!.exists))
                   return Text(profile.primaryAdminUserId,
                       style: _theme.textTheme.bodyLarge
                           ?.copyWith(fontStyle: FontStyle.italic));
-                }
                 final adminData =
                     snapshot.data!.data() as Map<String, dynamic>?;
                 final adminName = adminData?['displayName'] as String? ??
                     adminData?['email'] as String? ??
                     profile.primaryAdminUserId;
-                return Text(adminName ?? 'N/A',
-                    style: _theme.textTheme.bodyLarge);
+                return Row(
+                  children: [
+                    Text(adminName, style: _theme.textTheme.bodyLarge),
+                    const SizedBox(width: 6),
+                    _RoleBadge(role: CaregiverRole.admin),
+                  ],
+                );
               },
             ),
+
             const SizedBox(height: 12),
-            Text(
-              _l10n.caregiversLabel(profile.caregiverUserIds.length),
-              style: _theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
+
+            // Caregivers list with role badges
+            Text(_l10n.caregiversLabel(profile.caregiverUserIds.length),
+                style: _theme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.bold)),
             if (profile.caregiverUserIds.isEmpty)
-              Text(_l10n.noCaregiversYet,
-                  style: _theme.textTheme.bodyLarge)
+              Text(_l10n.noCaregiversYet, style: _theme.textTheme.bodyLarge)
             else
               FutureBuilder<Map<String, String>>(
-                future: _fetchCaregiverIdentifiers(
-                    profile.caregiverUserIds),
+                future: _fetchCaregiverIdentifiers(profile.caregiverUserIds),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                       child: Center(
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2)),
+                          child: CircularProgressIndicator(strokeWidth: 2)),
                     );
                   }
-                  if (snapshot.hasError || !snapshot.hasData) {
+                  if (snapshot.hasError || !snapshot.hasData)
                     return Text(_l10n.errorLoadingCaregiverNames,
-                        style: const TextStyle(
-                            color: AppTheme.dangerColor));
-                  }
-                  final caregiverIdentifiers = snapshot.data!;
+                        style:
+                            const TextStyle(color: AppTheme.dangerColor));
+
+                  final identifiers = snapshot.data!;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: profile.caregiverUserIds.map((uid) {
-                      final String identifier =
-                          caregiverIdentifiers[uid] ?? uid;
-                      final bool isThisCaregiverThePrimaryAdmin =
-                          uid == profile.primaryAdminUserId;
+                      final identifier = identifiers[uid] ?? uid;
+                      final isAdmin = uid == profile.primaryAdminUserId;
+                      final role = profile.roleForUser(uid);
                       return Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
+                        padding: const EdgeInsets.only(top: 6.0),
                         child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Text(
-                                '• $identifier ${isThisCaregiverThePrimaryAdmin ? _l10n.caregiverAdminSuffix : ""}',
+                                '• $identifier',
                                 style: _theme.textTheme.bodyLarge,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (isPrimaryAdmin &&
-                                !isThisCaregiverThePrimaryAdmin)
+                            const SizedBox(width: 6),
+                            _RoleBadge(role: role),
+                            // Admin can change role or remove (not self)
+                            if (isPrimaryAdmin && !isAdmin) ...[
                               IconButton(
-                                icon: const Icon(
-                                    Icons.remove_circle_outline,
-                                    color: AppTheme.dangerColor,
-                                    size: 20),
-                                tooltip: _l10n
-                                    .tooltipRemoveCaregiver(
-                                        identifier),
-                                onPressed: () =>
-                                    _handleRemoveCaregiver(
-                                  profile.id,
-                                  uid,
-                                  identifier,
-                                ),
+                                icon: const Icon(Icons.swap_horiz_outlined,
+                                    size: 18, color: AppTheme.primaryColor),
+                                tooltip: 'Change role',
+                                onPressed: () => _handleChangeRole(
+                                    profile.id, uid, identifier, role),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
                               ),
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline,
+                                    color: AppTheme.dangerColor, size: 18),
+                                tooltip:
+                                    _l10n.tooltipRemoveCaregiver(identifier),
+                                onPressed: () => _handleRemoveCaregiver(
+                                    profile.id, uid, identifier),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
                           ],
                         ),
                       );
@@ -538,59 +556,150 @@ class _ManageCareRecipientProfilesScreenState
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Invite dialog — now includes a role picker
+  // ---------------------------------------------------------------------------
+
   void _showInviteDialog(ElderProfile profile) {
     _selectedElderIdForInvite = profile.id;
     _inviteEmailController.clear();
+    CaregiverRole selectedRole = CaregiverRole.caregiver;
+
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(_l10n.inviteDialogTitle(profile.profileName)),
-          content: TextField(
-            controller: _inviteEmailController,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: _l10n.caregiversEmailLabel,
-              hintText: _l10n.enterEmailHint,
-              icon: const Icon(Icons.email_outlined),
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(_l10n.inviteDialogTitle(profile.profileName)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _inviteEmailController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: _l10n.caregiversEmailLabel,
+                      hintText: _l10n.enterEmailHint,
+                      icon: const Icon(Icons.email_outlined),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Role picker
+                  const Text(
+                    'ROLE',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...[CaregiverRole.caregiver, CaregiverRole.viewer]
+                      .map((role) {
+                    final isSelected = selectedRole == role;
+                    return GestureDetector(
+                      onTap: () =>
+                          setDialogState(() => selectedRole = role),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 130),
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.primaryColor.withOpacity(0.06)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.textLight.withOpacity(0.5),
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            _RoleBadge(role: role),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(role.label,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        color: isSelected
+                                            ? AppTheme.primaryColor
+                                            : AppTheme.textPrimary,
+                                      )),
+                                  Text(role.description,
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppTheme.textSecondary)),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(Icons.check_circle,
+                                  size: 18,
+                                  color: AppTheme.primaryColor),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
             ),
-            keyboardType: TextInputType.emailAddress,
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(_l10n.cancelButton),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _selectedElderIdForInvite = null;
-              },
-            ),
-            ElevatedButton(
-              onPressed: _isInviting
-                  ? null
-                  : () {
-                      Navigator.of(context).pop();
-                      _handleInviteCaregiver();
-                    },
-              child: _isInviting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppTheme.textOnPrimary),
-                    )
-                  : Text(_l10n.sendInviteButton),
-            ),
-          ],
-        );
+            actions: [
+              TextButton(
+                child: Text(_l10n.cancelButton),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _selectedElderIdForInvite = null;
+                },
+              ),
+              ElevatedButton(
+                onPressed: _isInviting
+                    ? null
+                    : () {
+                        Navigator.of(dialogContext).pop();
+                        _handleInviteCaregiver(
+                          profile.id,
+                          _inviteEmailController.text.trim(),
+                          selectedRole,
+                        );
+                      },
+                child: _isInviting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.textOnPrimary))
+                    : Text(_l10n.sendInviteButton),
+              ),
+            ],
+          );
+        });
       },
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-    final String? currentUserId =
-        FirebaseAuth.instance.currentUser?.uid;
+    final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     final activeElder =
         Provider.of<ActiveElderProvider>(context).activeElder;
     final currentUserProfile =
@@ -599,24 +708,18 @@ class _ManageCareRecipientProfilesScreenState
     if (_isCreatingNewProfile) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(
-            _editingProfile == null
-                ? 'Create Care Recipient Profile'
-                : _l10n.editProfileTitle(
-                    _editingProfile?.profileName ?? 'Profile'),
-          ),
+          title: Text(_editingProfile == null
+              ? 'Create Care Recipient Profile'
+              : _l10n.editProfileTitle(
+                  _editingProfile?.profileName ?? 'Profile')),
           leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _cancelCreateOrEdit,
-          ),
+              icon: const Icon(Icons.close), onPressed: _cancelCreateOrEdit),
         ),
         body: ElderProfileFormModal(
           visible: true,
           onClose: _cancelCreateOrEdit,
           onSubmit: _handleModalSubmit,
-          // FIX: pass elderId so the photo upload uses the correct storage path
           elderId: _editingProfile?.id,
-          // FIX: include photoUrl in initialData so the picker pre-fills it
           initialData: _editingProfile != null
               ? {
                   'profileName': _editingProfile!.profileName,
@@ -628,15 +731,14 @@ class _ManageCareRecipientProfilesScreenState
                   'sexualOrientation':
                       _editingProfile!.sexualOrientation,
                   'genderIdentity': _editingProfile!.genderIdentity,
-                  'preferredPronouns':
-                      _editingProfile!.preferredPronouns,
+                  'preferredPronouns': _editingProfile!.preferredPronouns,
                   'emergencyContactName':
                       _editingProfile!.emergencyContactName,
                   'emergencyContactPhone':
                       _editingProfile!.emergencyContactPhone,
                   'emergencyContactRelationship':
                       _editingProfile!.emergencyContactRelationship,
-                  'photoUrl': _editingProfile!.photoUrl, // NEW
+                  'photoUrl': _editingProfile!.photoUrl,
                 }
               : null,
           mode: _editingProfile != null ? 'edit' : 'create',
@@ -645,25 +747,20 @@ class _ManageCareRecipientProfilesScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Care Recipient Profiles'),
-      ),
+      appBar: AppBar(title: const Text('Manage Care Recipient Profiles')),
       body: StreamBuilder<List<ElderProfile>>(
         stream: context
             .read<FirestoreService>()
             .getMyEldersStream(currentUserId),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
+          if (snapshot.hasError)
             return Center(
-              child: Text(
-                '${_l10n.errorPrefix}${snapshot.error}',
-                style: const TextStyle(color: AppTheme.dangerColor),
-              ),
-            );
-          }
+                child: Text('${_l10n.errorPrefix}${snapshot.error}',
+                    style:
+                        const TextStyle(color: AppTheme.dangerColor)));
+
           final profiles = snapshot.data ?? [];
 
           if (profiles.isEmpty && currentUserId != null) {
@@ -698,24 +795,15 @@ class _ManageCareRecipientProfilesScreenState
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.no_accounts_outlined,
-                        size: 60, color: AppTheme.textSecondary),
-                    const SizedBox(height: 16),
-                    Text(_l10n.pleaseLogInToManageProfiles,
-                        style: AppStyles.emptyStateText,
-                        textAlign: TextAlign.center),
-                  ],
-                ),
+                child: Text(_l10n.pleaseLogInToManageProfiles,
+                    style: AppStyles.emptyStateText,
+                    textAlign: TextAlign.center),
               ),
             );
           }
 
           profiles.sort((a, b) =>
-              (a.priorityIndex ?? 9999)
-                  .compareTo(b.priorityIndex ?? 9999));
+              (a.priorityIndex ?? 9999).compareTo(b.priorityIndex ?? 9999));
           _displayedProfiles = List.from(profiles);
 
           return ReorderableListView.builder(
@@ -725,38 +813,26 @@ class _ManageCareRecipientProfilesScreenState
             itemBuilder: (context, index) {
               final profile = _displayedProfiles[index];
               return _buildCareRecipientProfileCard(
-                profile,
-                activeElder,
-                currentUserProfile,
-              );
+                  profile, activeElder, currentUserProfile);
             },
             onReorder: (oldIndex, newIndex) async {
               setState(() {
                 if (newIndex > oldIndex) newIndex -= 1;
-                final ElderProfile item =
-                    _displayedProfiles.removeAt(oldIndex);
+                final item = _displayedProfiles.removeAt(oldIndex);
                 _displayedProfiles.insert(newIndex, item);
               });
-
-              final firestoreService =
-                  context.read<FirestoreService>();
-              List<Future<void>> updateFutures = [];
+              final fs = context.read<FirestoreService>();
+              List<Future<void>> futures = [];
               for (var i = 0; i < _displayedProfiles.length; i++) {
                 if (_displayedProfiles[i].priorityIndex != i) {
                   _displayedProfiles[i].priorityIndex = i;
-                  updateFutures.add(
-                    firestoreService.updateElderPriority(
-                      elderId: _displayedProfiles[i].id,
-                      priorityIndex: i,
-                    ),
-                  );
+                  futures.add(fs.updateElderPriority(
+                      elderId: _displayedProfiles[i].id, priorityIndex: i));
                 }
               }
-              await Future.wait(updateFutures);
-
+              await Future.wait(futures);
               if (_displayedProfiles.isNotEmpty) {
-                Provider.of<ActiveElderProvider>(context,
-                        listen: false)
+                Provider.of<ActiveElderProvider>(context, listen: false)
                     .setActive(_displayedProfiles.first);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(_l10n.profileSetActiveSnackbar(
@@ -780,9 +856,72 @@ class _ManageCareRecipientProfilesScreenState
 }
 
 // ---------------------------------------------------------------------------
-// Reusable elder avatar — shows photo if available, initials if not.
-// Used here in the card and can be imported anywhere else that needs it.
+// Role badge chip
 // ---------------------------------------------------------------------------
+
+class _RoleBadge extends StatelessWidget {
+  const _RoleBadge({required this.role});
+  final CaregiverRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _colorForRole(role);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_iconForRole(role), size: 11, color: color),
+          const SizedBox(width: 4),
+          Text(
+            role.label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _colorForRole(CaregiverRole r) {
+    switch (r) {
+      case CaregiverRole.admin:
+        return const Color(0xFF1E88E5);
+      case CaregiverRole.caregiver:
+        return const Color(0xFF00897B);
+      case CaregiverRole.viewer:
+        return const Color(0xFF8E24AA);
+      default:
+        return AppTheme.textSecondary;
+    }
+  }
+
+  IconData _iconForRole(CaregiverRole r) {
+    switch (r) {
+      case CaregiverRole.admin:
+        return Icons.shield_outlined;
+      case CaregiverRole.caregiver:
+        return Icons.favorite_border;
+      case CaregiverRole.viewer:
+        return Icons.visibility_outlined;
+      default:
+        return Icons.help_outline;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Elder avatar
+// ---------------------------------------------------------------------------
+
 class _ElderAvatar extends StatelessWidget {
   const _ElderAvatar({
     required this.profileName,
@@ -796,14 +935,12 @@ class _ElderAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = profileName.isNotEmpty
-        ? profileName[0].toUpperCase()
-        : '?';
+    final initial =
+        profileName.isNotEmpty ? profileName[0].toUpperCase() : '?';
     return CircleAvatar(
       radius: radius,
       backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
-      backgroundImage:
-          photoUrl != null ? NetworkImage(photoUrl!) : null,
+      backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
       child: photoUrl == null
           ? Text(
               initial,

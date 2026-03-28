@@ -1,13 +1,6 @@
 // lib/screens/dashboard_screen.dart
 //
 // The home dashboard — first tab the user lands on.
-// Shows: elder greeting card, today's entry summary by type,
-// badges earned, and quick-action shortcuts to log common entries.
-//
-// Quick log buttons open the same modal bottom sheets used by the Care/
-// Timeline screens. Each form is wrapped in a ChangeNotifierProvider.value
-// that injects the scoped JournalServiceProvider so saves work identically
-// to logging from any other screen.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
+import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
@@ -29,12 +23,12 @@ import 'package:cecelia_care_flutter/screens/forms/activity_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/pain_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/med_form.dart';
+import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
 
 // ---------------------------------------------------------------------------
-// Helper — opens a form as a modal bottom sheet, identical to how the Care
-// and Timeline screens open forms. No dialog to dismiss from the dashboard,
-// so we don't call Navigator.pop() before showing the sheet.
+// Helper — opens a form as a modal bottom sheet.
 // ---------------------------------------------------------------------------
 void _openFormSheet(BuildContext context, Widget form) {
   showModalBottomSheet(
@@ -45,8 +39,7 @@ void _openFormSheet(BuildContext context, Widget form) {
     builder: (sheetContext) {
       return Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-        ),
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
         child: Container(
           decoration: BoxDecoration(
             color: Theme.of(sheetContext).scaffoldBackgroundColor,
@@ -54,27 +47,23 @@ void _openFormSheet(BuildContext context, Widget form) {
                 const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.12),
-                blurRadius: 20,
-                offset: const Offset(0, -4),
-              ),
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 20,
+                  offset: const Offset(0, -4)),
             ],
           ),
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(sheetContext).size.height * 0.92,
-          ),
+              maxHeight: MediaQuery.of(sheetContext).size.height * 0.92),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.textLight,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                    color: AppTheme.textLight,
+                    borderRadius: BorderRadius.circular(2)),
               ),
               Flexible(child: form),
             ],
@@ -82,6 +71,28 @@ void _openFormSheet(BuildContext context, Widget form) {
         ),
       );
     },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Opens the message composer as a modal bottom sheet.
+// Mirrors the inline composer from TimelineScreen but works from the dashboard.
+// ---------------------------------------------------------------------------
+void _openMessageSheet(
+  BuildContext context, {
+  required ElderProfile activeElder,
+}) {
+  final firestoreService = context.read<FirestoreService>();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => _MessageComposerSheet(
+      activeElder: activeElder,
+      firestoreService: firestoreService,
+    ),
   );
 }
 
@@ -110,21 +121,16 @@ class DashboardScreen extends StatelessWidget {
       );
     }
 
-    final currentUserId =
-        FirebaseAuth.instance.currentUser?.uid ?? '';
-
-    final elderDisplayName =
-        (activeElder.preferredName?.isNotEmpty == true)
-            ? activeElder.preferredName!
-            : activeElder.profileName;
-
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final elderDisplayName = (activeElder.preferredName?.isNotEmpty == true)
+        ? activeElder.preferredName!
+        : activeElder.profileName;
     final greeting = _buildGreeting(
         userProfile?.displayName ?? 'Caregiver', elderDisplayName);
 
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay =
-        DateTime(now.year, now.month, now.day, 23, 59, 59);
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
     final currentDateStr = DateFormat('yyyy-MM-dd').format(now);
 
     return RefreshIndicator(
@@ -132,7 +138,6 @@ class DashboardScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
-          // ── Greeting card ───────────────────────────────────────
           _GreetingCard(
             greeting: greeting,
             elderName: elderDisplayName,
@@ -141,45 +146,41 @@ class DashboardScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ── Today's activity ────────────────────────────────────
           const _SectionLabel(label: "Today's care log"),
           const SizedBox(height: 10),
           StreamBuilder<List<JournalEntry>>(
-            stream: context
-                .read<JournalServiceProvider>()
-                .getJournalEntriesStream(
+            stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
                   elderId: activeElder.id,
                   currentUserId: currentUserId,
                   startDate: startOfDay,
                   endDate: endOfDay,
                 ),
             builder: (context, snapshot) {
-              if (snapshot.connectionState ==
-                      ConnectionState.waiting &&
+              if (snapshot.connectionState == ConnectionState.waiting &&
                   !snapshot.hasData) {
                 return const _TodayLoadingCard();
               }
-              final entries = snapshot.data ?? [];
-              return _TodaySummaryGrid(entries: entries);
+              return _TodaySummaryGrid(entries: snapshot.data ?? []);
             },
           ),
 
           const SizedBox(height: 20),
 
-          // ── Badges ──────────────────────────────────────────────
           const _SectionLabel(label: 'Achievements'),
           const SizedBox(height: 10),
           const _BadgesRow(),
 
           const SizedBox(height: 20),
 
-          // ── Quick log ───────────────────────────────────────────
-          const _SectionLabel(label: 'Quick log'),
-          const SizedBox(height: 10),
-          _QuickActionsGrid(
-            activeElder: activeElder,
-            currentDateStr: currentDateStr,
-          ),
+          // Quick Log — hidden for viewers (read-only role)
+          if (context.watch<ActiveElderProvider>().canLog) ...[
+            const _SectionLabel(label: 'Quick log'),
+            const SizedBox(height: 10),
+            _QuickActionsGrid(
+              activeElder: activeElder,
+              currentDateStr: currentDateStr,
+            ),
+          ],
         ],
       ),
     );
@@ -187,20 +188,17 @@ class DashboardScreen extends StatelessWidget {
 
   String _buildGreeting(String userName, String elderName) {
     final hour = DateTime.now().hour;
-    final String timeGreeting;
-    if (hour < 12) {
-      timeGreeting = 'Good morning';
-    } else if (hour < 17) {
-      timeGreeting = 'Good afternoon';
-    } else {
-      timeGreeting = 'Good evening';
-    }
-    return '$timeGreeting, $userName';
+    final String t = hour < 12
+        ? 'Good morning'
+        : hour < 17
+            ? 'Good afternoon'
+            : 'Good evening';
+    return '$t, $userName';
   }
 }
 
 // ---------------------------------------------------------------------------
-// Quick actions grid — opens real form sheets
+// Quick actions grid
 // ---------------------------------------------------------------------------
 
 class _QuickActionsGrid extends StatelessWidget {
@@ -226,10 +224,9 @@ class _QuickActionsGrid extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: journalService,
             child: MoodForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
       ),
@@ -248,10 +245,9 @@ class _QuickActionsGrid extends StatelessWidget {
               ),
             ],
             child: MedForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
       ),
@@ -264,10 +260,9 @@ class _QuickActionsGrid extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: journalService,
             child: VitalForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
       ),
@@ -280,10 +275,9 @@ class _QuickActionsGrid extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: journalService,
             child: SleepForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
       ),
@@ -296,10 +290,9 @@ class _QuickActionsGrid extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: journalService,
             child: MealForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
       ),
@@ -312,10 +305,9 @@ class _QuickActionsGrid extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: journalService,
             child: ActivityForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
       ),
@@ -328,12 +320,18 @@ class _QuickActionsGrid extends StatelessWidget {
           ChangeNotifierProvider.value(
             value: journalService,
             child: PainForm(
-              onClose: () {},
-              currentDate: currentDateStr,
-              activeElder: activeElder,
-            ),
+                onClose: () {},
+                currentDate: currentDateStr,
+                activeElder: activeElder),
           ),
         ),
+      ),
+      // NEW: Message tile — opens inline message composer sheet
+      _QuickAction(
+        label: 'Message',
+        icon: Icons.chat_bubble_outline,
+        color: const Color(0xFF546E7A),
+        onTap: () => _openMessageSheet(context, activeElder: activeElder),
       ),
     ];
 
@@ -393,6 +391,257 @@ class _QuickAction {
 }
 
 // ---------------------------------------------------------------------------
+// Message composer sheet
+//
+// Mirrors TimelineScreen's inline message composer. Lets the caregiver
+// send a public (visible to all) or private (specific caregivers) message
+// directly from the dashboard. The message lands on the timeline exactly as
+// if it were posted from there.
+// ---------------------------------------------------------------------------
+
+class _MessageComposerSheet extends StatefulWidget {
+  const _MessageComposerSheet({
+    required this.activeElder,
+    required this.firestoreService,
+  });
+
+  final ElderProfile activeElder;
+  final FirestoreService firestoreService;
+
+  @override
+  State<_MessageComposerSheet> createState() =>
+      _MessageComposerSheetState();
+}
+
+class _MessageComposerSheetState extends State<_MessageComposerSheet> {
+  static const _kColor = Color(0xFF546E7A);
+
+  final TextEditingController _ctrl = TextEditingController();
+  bool _isPublic = true;
+  List<String> _selectedUserIds = [];
+  List<UserProfile> _associatedUsers = [];
+  bool _isLoadingUsers = false;
+  bool _isPosting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAssociatedUsers();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchAssociatedUsers() async {
+    if (widget.activeElder.id.isEmpty) return;
+    setState(() => _isLoadingUsers = true);
+    try {
+      final users = await widget.firestoreService
+          .getAssociatedUsersForElder(widget.activeElder.id);
+      if (mounted) setState(() => _associatedUsers = users);
+    } catch (e) {
+      debugPrint('_MessageComposerSheet: error fetching users: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingUsers = false);
+    }
+  }
+
+  Future<void> _post() async {
+    final text = _ctrl.text.trim();
+    if (text.isEmpty) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setState(() => _isPosting = true);
+    try {
+      List<String> visibleToUserIds = [];
+      if (_isPublic) {
+        visibleToUserIds.add('all');
+      } else {
+        visibleToUserIds.addAll(_selectedUserIds);
+        if (!visibleToUserIds.contains(user.uid)) {
+          visibleToUserIds.add(user.uid);
+        }
+      }
+
+      await widget.firestoreService.addJournalEntry(
+        elderId: widget.activeElder.id,
+        type: EntryType.message,
+        creatorId: user.uid,
+        text: text,
+        visibleToUserIds: visibleToUserIds,
+        isPublic: _isPublic,
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Message posted to timeline.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('_MessageComposerSheet._post error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not post message: ${e.toString()}'),
+            backgroundColor: AppTheme.dangerColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isPosting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final elderName = (widget.activeElder.preferredName?.isNotEmpty == true)
+        ? widget.activeElder.preferredName!
+        : widget.activeElder.profileName;
+
+    return Container(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _kColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.chat_bubble_outline,
+                    color: _kColor, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'New message for $elderName\'s timeline',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Audience selector
+          UserSelectorWidget(
+            allUsers: _associatedUsers,
+            isLoadingUsers: _isLoadingUsers,
+            initialSelectedUserIds: _selectedUserIds,
+            initialIsPublic: _isPublic,
+            onSelectionChanged: (ids, isPublic) {
+              setState(() {
+                _selectedUserIds = ids;
+                _isPublic = isPublic;
+              });
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          // Audience hint
+          Text(
+            _isPublic
+                ? 'Posting to all caregivers'
+                : 'Private — visible only to selected people',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontStyle: FontStyle.italic,
+              color: _isPublic ? AppTheme.textSecondary : _kColor,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Text field
+          TextField(
+            controller: _ctrl,
+            maxLines: 4,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText:
+                  'Write a message for $elderName\'s timeline...',
+              filled: true,
+              fillColor: _kColor.withOpacity(0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: _kColor.withOpacity(0.3)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: _kColor.withOpacity(0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: _kColor),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Action row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed:
+                    _isPosting ? null : () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: _isPosting ? null : _post,
+                icon: _isPosting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white))
+                    : const Icon(Icons.send_outlined, size: 16),
+                label: const Text('Post'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _kColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Greeting card
 // ---------------------------------------------------------------------------
 
@@ -438,26 +687,23 @@ class _GreetingCard extends StatelessWidget {
                 Text(
                   greeting,
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Caring for $elderName today',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.85),
-                  ),
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.85)),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   DateFormat('EEEE, MMMM d').format(DateTime.now()),
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.7)),
                 ),
               ],
             ),
@@ -468,10 +714,9 @@ class _GreetingCard extends StatelessWidget {
             child: Text(
               elderInitial,
               style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
           ),
         ],
@@ -501,10 +746,7 @@ class _TodaySummaryGrid extends StatelessWidget {
           child: Text(
             'No entries logged today yet.\nTap a quick log button below to get started.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
           ),
         ),
       );
@@ -530,11 +772,8 @@ class _TodaySummaryGrid extends StatelessWidget {
         mainAxisSpacing: 10,
       ),
       itemCount: items.length,
-      itemBuilder: (context, i) {
-        final type = items[i].key;
-        final count = items[i].value;
-        return _EntryTypeChip(type: type, count: count);
-      },
+      itemBuilder: (context, i) =>
+          _EntryTypeChip(type: items[i].key, count: items[i].value),
     );
   }
 }
@@ -548,7 +787,6 @@ class _EntryTypeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _colorForType(type);
     final icon = _iconForType(type);
-
     return Container(
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
@@ -560,24 +798,15 @@ class _EntryTypeChip extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(height: 4),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(
-            _labelForType(type),
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppTheme.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text('$count',
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+          Text(_labelForType(type),
+              style: const TextStyle(
+                  fontSize: 10, color: AppTheme.textSecondary),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
         ],
       ),
     );
@@ -585,76 +814,46 @@ class _EntryTypeChip extends StatelessWidget {
 
   Color _colorForType(EntryType t) {
     switch (t) {
-      case EntryType.mood:
-        return const Color(0xFFE91E63);
-      case EntryType.medication:
-        return const Color(0xFF1E88E5);
-      case EntryType.sleep:
-        return const Color(0xFF5C6BC0);
-      case EntryType.meal:
-        return const Color(0xFF43A047);
-      case EntryType.pain:
-        return const Color(0xFFE53935);
-      case EntryType.activity:
-        return const Color(0xFF00897B);
-      case EntryType.vital:
-        return const Color(0xFFF57C00);
-      case EntryType.expense:
-        return const Color(0xFF8E24AA);
-      case EntryType.message:
-        return const Color(0xFF546E7A);
-      default:
-        return AppTheme.textSecondary;
+      case EntryType.mood: return const Color(0xFFE91E63);
+      case EntryType.medication: return const Color(0xFF1E88E5);
+      case EntryType.sleep: return const Color(0xFF5C6BC0);
+      case EntryType.meal: return const Color(0xFF43A047);
+      case EntryType.pain: return const Color(0xFFE53935);
+      case EntryType.activity: return const Color(0xFF00897B);
+      case EntryType.vital: return const Color(0xFFF57C00);
+      case EntryType.expense: return const Color(0xFF8E24AA);
+      case EntryType.message: return const Color(0xFF546E7A);
+      default: return AppTheme.textSecondary;
     }
   }
 
   IconData _iconForType(EntryType t) {
     switch (t) {
-      case EntryType.mood:
-        return Icons.sentiment_satisfied_outlined;
-      case EntryType.medication:
-        return Icons.medication_outlined;
-      case EntryType.sleep:
-        return Icons.bedtime_outlined;
-      case EntryType.meal:
-        return Icons.restaurant_outlined;
-      case EntryType.pain:
-        return Icons.healing_outlined;
-      case EntryType.activity:
-        return Icons.directions_walk_outlined;
-      case EntryType.vital:
-        return Icons.monitor_heart_outlined;
-      case EntryType.expense:
-        return Icons.receipt_long_outlined;
-      case EntryType.message:
-        return Icons.chat_bubble_outline;
-      default:
-        return Icons.note_outlined;
+      case EntryType.mood: return Icons.sentiment_satisfied_outlined;
+      case EntryType.medication: return Icons.medication_outlined;
+      case EntryType.sleep: return Icons.bedtime_outlined;
+      case EntryType.meal: return Icons.restaurant_outlined;
+      case EntryType.pain: return Icons.healing_outlined;
+      case EntryType.activity: return Icons.directions_walk_outlined;
+      case EntryType.vital: return Icons.monitor_heart_outlined;
+      case EntryType.expense: return Icons.receipt_long_outlined;
+      case EntryType.message: return Icons.chat_bubble_outline;
+      default: return Icons.note_outlined;
     }
   }
 
   String _labelForType(EntryType t) {
     switch (t) {
-      case EntryType.mood:
-        return 'Mood';
-      case EntryType.medication:
-        return 'Meds';
-      case EntryType.sleep:
-        return 'Sleep';
-      case EntryType.meal:
-        return 'Meals';
-      case EntryType.pain:
-        return 'Pain';
-      case EntryType.activity:
-        return 'Activity';
-      case EntryType.vital:
-        return 'Vitals';
-      case EntryType.expense:
-        return 'Expenses';
-      case EntryType.message:
-        return 'Messages';
-      default:
-        return t.name;
+      case EntryType.mood: return 'Mood';
+      case EntryType.medication: return 'Meds';
+      case EntryType.sleep: return 'Sleep';
+      case EntryType.meal: return 'Meals';
+      case EntryType.pain: return 'Pain';
+      case EntryType.activity: return 'Activity';
+      case EntryType.vital: return 'Vitals';
+      case EntryType.expense: return 'Expenses';
+      case EntryType.message: return 'Messages';
+      default: return t.name;
     }
   }
 }
@@ -662,16 +861,13 @@ class _EntryTypeChip extends StatelessWidget {
 class _TodayLoadingCard extends StatelessWidget {
   const _TodayLoadingCard();
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundGray,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Center(child: CircularProgressIndicator()),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+        height: 80,
+        decoration: BoxDecoration(
+            color: AppTheme.backgroundGray,
+            borderRadius: BorderRadius.circular(12)),
+        child: const Center(child: CircularProgressIndicator()),
+      );
 }
 
 // ---------------------------------------------------------------------------
@@ -684,12 +880,9 @@ class _BadgesRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final badges = context.watch<BadgeProvider>().badges;
-    final unlocked =
-        badges.values.where((b) => b.unlocked == true).toList();
-    final locked =
-        badges.values.where((b) => b.unlocked != true).toList();
+    final unlocked = badges.values.where((b) => b.unlocked == true).toList();
+    final locked = badges.values.where((b) => b.unlocked != true).toList();
     final all = [...unlocked, ...locked];
-
     if (all.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
@@ -711,18 +904,15 @@ class _BadgesRow extends StatelessWidget {
                     : AppTheme.backgroundGray,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isUnlocked
-                      ? const Color(0xFFFFC107)
-                      : Colors.transparent,
-                ),
+                    color: isUnlocked
+                        ? const Color(0xFFFFC107)
+                        : Colors.transparent),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isUnlocked
-                        ? Icons.emoji_events
-                        : Icons.lock_outline,
+                    isUnlocked ? Icons.emoji_events : Icons.lock_outline,
                     size: 28,
                     color: isUnlocked
                         ? const Color(0xFFFFC107)

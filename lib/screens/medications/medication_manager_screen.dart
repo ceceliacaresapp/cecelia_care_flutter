@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../l10n/app_localizations.dart';
 import '../../locator.dart';
 import '../../providers/active_elder_provider.dart';
+import '../../models/caregiver_role.dart';
 import '../../providers/medication_definitions_provider.dart';
 import '../../providers/medication_provider.dart';
 import '../../services/notification_service.dart';
@@ -97,6 +98,46 @@ class _MedicationManagerScreenState extends State<MedicationManagerScreen>
   }
 
   Widget _buildFab(BuildContext context, dynamic activeElder) {
+    final role = Provider.of<ActiveElderProvider>(context, listen: false)
+        .currentUserRole;
+
+    // Viewer: no FABs at all
+    if (!role.canMarkMedications) return const SizedBox.shrink();
+
+    // Caregiver: only the Cecelia chat FAB, no add-medication FAB
+    if (!role.canManageMedicationDefinitions) {
+      return FloatingActionButton(
+        heroTag: 'chatWithCeceliaFab',
+        backgroundColor: AppTheme.primaryColor,
+        onPressed: () async {
+          final medList =
+              await context.read<MedicationProvider>().medsStream().first;
+          final medsJsonList = medList
+              .map((med) => {
+                    'name': med.name,
+                    'rxCui': med.rxCui,
+                    'dose': med.dose,
+                    'schedule': med.schedule,
+                  })
+              .toList();
+          final contextForAI = {
+            'elderId': activeElder.id,
+            'currentMedications': medsJsonList,
+          };
+          if (!context.mounted) return;
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => CeceliaBotSheet(contextForAI: contextForAI),
+          );
+        },
+        tooltip: _l10n.medicationsTooltipAskCecelia,
+        child: const Icon(Icons.chat_bubble_outline,
+            color: AppTheme.textOnPrimary),
+      );
+    }
+
+    // Admin: both FABs
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -289,7 +330,11 @@ class _MedicationAdherenceCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
+                if (context
+                    .read<ActiveElderProvider>()
+                    .currentUserRole
+                    .canManageMedicationDefinitions)
+                  IconButton(
                   icon: const Icon(Icons.delete_outline,
                       color: AppTheme.dangerColor),
                   tooltip: l10n.medicationsTooltipDelete,

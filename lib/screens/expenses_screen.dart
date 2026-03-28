@@ -529,6 +529,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     return Scaffold(
       body: screenContent,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'expensesAddFab',
         onPressed: () =>
             showEntryDialog(context, onNewMessage: () {}),
         tooltip: _l10n.careScreenButtonAddExpense,

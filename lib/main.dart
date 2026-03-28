@@ -13,6 +13,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/providers/locale_provider.dart';
+import 'package:cecelia_care_flutter/providers/message_provider.dart'; // NEW
 import 'package:cecelia_care_flutter/providers/notification_prefs_provider.dart';
 import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
@@ -192,6 +193,27 @@ class _AppRootState extends State<AppRoot> {
                 } else {
                   return DayEntriesProvider(journalSvc: journalSvc);
                 }
+              },
+            ),
+
+            // NEW: MessageProvider — tracks unread message count for the
+            // Timeline nav tab badge. Registered as a ProxyProvider listening
+            // to ActiveElderProvider so it re-subscribes automatically when
+            // the active elder changes, exactly mirroring the pattern used by
+            // MedicationDefinitionsProvider above.
+            //
+            // create: builds the provider once with no elder yet. Auth state
+            //   changes are handled internally via FirebaseAuth.authStateChanges.
+            //
+            // update: called whenever ActiveElderProvider rebuilds. Calls
+            //   updateForElder() which cancels the old Firestore stream and
+            //   opens a new one scoped to the new elder's journalEntries.
+            ChangeNotifierProxyProvider<ActiveElderProvider, MessageProvider>(
+              create: (_) => MessageProvider(),
+              update: (context, activeElderProv, previousMsgProvider) {
+                previousMsgProvider!
+                    .updateForElder(activeElderProv.activeElder);
+                return previousMsgProvider;
               },
             ),
           ],

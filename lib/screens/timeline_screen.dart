@@ -1,6 +1,7 @@
 // lib/screens/timeline_screen.dart
 
 import 'package:cecelia_care_flutter/widgets/show_entry_dialog.dart';
+import 'package:cecelia_care_flutter/providers/message_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -123,6 +124,14 @@ class TimelineScreenState extends State<TimelineScreen> {
       _fetchElderAssociatedUsers(currentElderId);
       _loadHiddenMessageIds(currentElderId);
     }
+    // Mark messages as read when the Timeline screen first becomes visible.
+    // This handles the case where the user navigates here directly (not via
+    // the nav tab tap, which already calls markRead in home_screen.dart).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Provider.of<MessageProvider>(context, listen: false).markRead();
+      }
+    });
   }
 
   @override
@@ -622,17 +631,20 @@ class TimelineScreenState extends State<TimelineScreen> {
     }
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () =>
-            showEntryDialog(context, onNewMessage: showNewMessageInput),
+      floatingActionButton: Provider.of<ActiveElderProvider>(context, listen: false).canLog
+          ? FloatingActionButton.extended(
+              heroTag: 'timelineLogFab',
+              onPressed: () =>
+                  showEntryDialog(context, onNewMessage: showNewMessageInput),
         tooltip: _l10n.timelineAddNewLogTooltip,
         icon: const Icon(Icons.add_comment_outlined),
-        label: Text(_l10n.dialogTitleAddNewLog.split(' ').last),
-      ),
+            label: Text(_l10n.dialogTitleAddNewLog.split(' ').last),
+            )
+          : null,
       body: Column(
         children: [
           if (activeElder != null) _buildFilterBar(context),
-          if (_showMessageInput)
+          if (_showMessageInput && Provider.of<ActiveElderProvider>(context, listen: false).canMessage)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Container(
@@ -1022,14 +1034,46 @@ class TimelineScreenState extends State<TimelineScreen> {
                                 (type == EntryType.message ||
                                     type ==
                                         EntryType.caregiverJournal)) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                _l10n.timelinePrivateMessageIndicator,
-                                style:
-                                    AppStyles.timelineItemMeta.copyWith(
-                                  fontStyle: FontStyle.italic,
-                                  color: AppTheme.textSecondary,
-                                ),
+                              const SizedBox(height: 6),
+                              // NEW: lock icon + colored tag replacing
+                              // the plain italic "Private Message" text.
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF546E7A)
+                                          .withOpacity(0.12),
+                                      borderRadius:
+                                          BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: const Color(0xFF546E7A)
+                                            .withOpacity(0.35),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.lock_outline,
+                                          size: 11,
+                                          color: Color(0xFF546E7A),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _l10n
+                                              .timelinePrivateMessageIndicator,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF546E7A),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                             const SizedBox(height: 6),

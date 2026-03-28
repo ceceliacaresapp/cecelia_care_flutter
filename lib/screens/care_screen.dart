@@ -4,6 +4,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
 import 'package:cecelia_care_flutter/screens/resources_screen.dart';
+import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -28,6 +29,7 @@ class CareScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final role = context.watch<ActiveElderProvider>().currentUserRole;
     final List<_CareAction> careActions = [
       _CareAction(
         title: l10n.manageMedications,
@@ -64,29 +66,30 @@ class CareScreen extends StatelessWidget {
           MaterialPageRoute(builder: (context) => ResourcesScreen()),
         ),
       ),
-      _CareAction(
-        title: l10n.budgetTrackerTitle,
-        icon: Icons.account_balance_wallet_outlined,
-        color: const Color(0xFFF57C00), // amber-orange
-        onTap: () {
-          final activeElder =
-              Provider.of<ActiveElderProvider>(context, listen: false)
-                  .activeElder;
-          if (activeElder != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    BudgetScreen(careRecipientId: activeElder.id),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.settingsNoActiveElderSelected)),
-            );
-          }
-        },
-      ),
+      if (role.canAccessBudget)
+        _CareAction(
+          title: l10n.budgetTrackerTitle,
+          icon: Icons.account_balance_wallet_outlined,
+          color: const Color(0xFFF57C00),
+          onTap: () {
+            final activeElder =
+                Provider.of<ActiveElderProvider>(context, listen: false)
+                    .activeElder;
+            if (activeElder != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      BudgetScreen(careRecipientId: activeElder.id),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.settingsNoActiveElderSelected)),
+              );
+            }
+          },
+        ),
     ];
 
     return Scaffold(

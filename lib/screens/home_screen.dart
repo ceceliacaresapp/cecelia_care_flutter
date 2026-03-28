@@ -6,6 +6,8 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
 import '../providers/active_elder_provider.dart';
+import '../providers/message_provider.dart';
+import '../models/caregiver_role.dart';
 import '../providers/user_profile_provider.dart';
 import 'dashboard_screen.dart';
 import 'timeline_screen.dart';
@@ -28,6 +30,8 @@ const _kNavColors = [
   Color(0xFF546E7A), // Settings  — blue-grey
   Color(0xFF8E24AA), // Self Care — purple
 ];
+
+const _kTimelineIndex = 1;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -55,22 +59,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
+
+    // Mark messages read when the user taps the Timeline tab.
+    if (index == _kTimelineIndex) {
+      context.read<MessageProvider>().markRead();
+    }
   }
 
   void _showWelcomeGreeting() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _greetingShown) return;
 
-      final userProfileProvider =
-          Provider.of<UserProfileProvider>(context, listen: false);
-      final activeElderProvider =
-          Provider.of<ActiveElderProvider>(context, listen: false);
-
-      final userProfile = userProfileProvider.userProfile;
-      final activeElder = activeElderProvider.activeElder;
+      final userProfile =
+          Provider.of<UserProfileProvider>(context, listen: false).userProfile;
+      final activeElder =
+          Provider.of<ActiveElderProvider>(context, listen: false).activeElder;
 
       if (userProfile != null && activeElder != null) {
         final userName = userProfile.displayName.isNotEmpty
@@ -80,11 +84,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ? activeElder.preferredName!
             : activeElder.profileName;
 
-        final greeting = _l10n.homeScreenWelcomeGreeting(userName, elderName);
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(greeting),
+            content:
+                Text(_l10n.homeScreenWelcomeGreeting(userName, elderName)),
             duration: const Duration(seconds: 5),
           ),
         );
@@ -94,32 +97,77 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Builds a nav icon that uses the tab-specific accent color when selected
-  // and a muted version of the same color when unselected.
+  // Nav icon with optional unread badge.
+  // For the Timeline tab, wraps the icon in a Stack with a red count bubble
+  // when unreadCount > 0. All other tabs pass unreadCount = 0.
   // ---------------------------------------------------------------------------
   Widget _navIcon({
     required IconData icon,
     required IconData activeIcon,
     required int index,
+    int unreadCount = 0,
   }) {
     final bool selected = _selectedIndex == index;
     final Color color = _kNavColors[index];
-    return Icon(
+    final Widget iconWidget = Icon(
       selected ? activeIcon : icon,
       color: selected ? color : color.withOpacity(0.45),
+    );
+
+    if (unreadCount <= 0) return iconWidget;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        iconWidget,
+        Positioned(
+          right: -6,
+          top: -4,
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: AppTheme.dangerColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+            constraints:
+                const BoxConstraints(minWidth: 16, minHeight: 16),
+            child: Text(
+              unreadCount > 99 ? '99+' : '$unreadCount',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final userProfile = Provider.of<UserProfileProvider>(context).userProfile;
+    final userProfile =
+        Provider.of<UserProfileProvider>(context).userProfile;
     final String preferredTerm =
         userProfile?.preferredTerm ?? _l10n.termElderDefault;
 
-    final activeElderProvider = Provider.of<ActiveElderProvider>(context);
+    final activeElderProvider =
+        Provider.of<ActiveElderProvider>(context);
     final activeElder = activeElderProvider.activeElder;
     final bool isActiveElderLoading = activeElderProvider.isLoading;
     final currentUser = FirebaseAuth.instance.currentUser;
+
+    // Watch MessageProvider so badge rebuilds on count change.
+    final int unreadMessages =
+        context.watch<MessageProvider>().unreadCount;
+
+    // Role — used to hide tabs and nav items for viewer/caregiver.
+    final role = context.watch<ActiveElderProvider>().currentUserRole;
+    final bool isViewer = role == CaregiverRole.viewer;
 
     final List<String> baseTitles = [
       'Home',
@@ -133,17 +181,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     String appBarTitle = baseTitles[_selectedIndex];
     if (activeElder != null && _selectedIndex > 0 && _selectedIndex < 5) {
-      final String elderDisplayName = (activeElder.preferredName != null &&
-              activeElder.preferredName!.isNotEmpty)
-          ? activeElder.preferredName!
-          : activeElder.profileName;
+      final String elderDisplayName =
+          (activeElder.preferredName != null &&
+                  activeElder.preferredName!.isNotEmpty)
+              ? activeElder.preferredName!
+              : activeElder.profileName;
       appBarTitle = '$elderDisplayName - ${baseTitles[_selectedIndex]}';
     }
 
     final List<Widget> pages = [
       const DashboardScreen(),
       const TimelineScreen(),
-      const CareScreen(),
+      // Care tab — hidden for viewer (they see a locked placeholder)
+      if (!isViewer) const CareScreen() else _ViewerLockedTab(label: 'Care'),
       if (activeElder != null)
         CalendarScreen(
           activeElder: activeElder,
@@ -156,11 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.calendar_today_outlined,
-                  size: 60,
-                  color: AppTheme.textLight,
-                ),
+                const Icon(Icons.calendar_today_outlined,
+                    size: 60, color: AppTheme.textLight),
                 const SizedBox(height: 16),
                 Text(
                   _l10n.selectTermToViewCalendar(preferredTerm),
@@ -171,18 +218,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-      const ExpensesScreen(),
+      if (!isViewer) const ExpensesScreen() else _ViewerLockedTab(label: 'Expenses'),
       SettingsScreen(
         navigateToManageCareRecipientProfiles: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const ManageCareRecipientProfilesScreen(),
+              builder: (context) =>
+                  const ManageCareRecipientProfilesScreen(),
             ),
           );
         },
       ),
-      const SelfCareScreen(),
+      if (!isViewer) const SelfCareScreen() else _ViewerLockedTab(label: 'Self Care'),
     ];
 
     return Scaffold(
@@ -198,17 +246,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ? const Center(child: CircularProgressIndicator())
             : IndexedStack(index: _selectedIndex, children: pages),
       ),
-      // -----------------------------------------------------------------------
-      // FIX: Each nav item now uses its own accent color instead of a single
-      // selectedItemColor. We build custom icon widgets per-tab and set
-      // selectedItemColor/unselectedItemColor to transparent so Flutter's
-      // default tinting doesn't override the custom colors.
-      // -----------------------------------------------------------------------
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        // Transparent so the custom _navIcon colors show through unmodified.
         selectedItemColor: _kNavColors[_selectedIndex],
         unselectedItemColor: AppTheme.textSecondary,
         selectedLabelStyle: TextStyle(
@@ -230,7 +271,8 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: _navIcon(
               icon: Icons.timeline_outlined,
               activeIcon: Icons.timeline,
-              index: 1,
+              index: _kTimelineIndex,
+              unreadCount: unreadMessages, // ← badge here
             ),
             label: _l10n.bottomNavTimeline,
           ),
@@ -275,6 +317,45 @@ class _HomeScreenState extends State<HomeScreen> {
             label: _l10n.selfCareScreenTitle,
           ),
         ],
+      ),
+    );
+  }
+
+} // end _HomeScreenState
+
+// ---------------------------------------------------------------------------
+// Locked placeholder shown on tabs that viewers cannot access
+// ---------------------------------------------------------------------------
+class _ViewerLockedTab extends StatelessWidget {
+  const _ViewerLockedTab({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.lock_outline, size: 48, color: Color(0xFF8E24AA)),
+            const SizedBox(height: 16),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF8E24AA),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'You have view-only access.\nThis section is not available for your role.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF546E7A), fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }
