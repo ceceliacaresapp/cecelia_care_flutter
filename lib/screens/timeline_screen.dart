@@ -80,6 +80,19 @@ Color _avatarColorForInitial(String initial) {
   return palette[initial.codeUnitAt(0) % palette.length];
 }
 
+/// Cosmetic display-name sanitizer.
+///
+/// Old journal entries may have the raw email stored in loggedByDisplayName.
+/// Until backfillDisplayNames() migrates them in Firestore, this strips the
+/// domain so the UI shows "jane.doe" instead of "jane.doe@gmail.com".
+String _sanitizeDisplayName(String name) {
+  if (name.contains('@')) {
+    final prefix = name.split('@').first;
+    return prefix.isNotEmpty ? prefix : name;
+  }
+  return name;
+}
+
 class TimelineScreen extends StatefulWidget {
   const TimelineScreen({super.key});
 
@@ -856,8 +869,8 @@ class TimelineScreenState extends State<TimelineScreen> {
     final type = entry.type;
     final timestamp = entry.entryTimestamp;
     final messageText = entry.text;
-    final loggedBy =
-        entry.loggedByDisplayName ?? _l10n.timelineUnknownUser;
+    final loggedBy = _sanitizeDisplayName(
+        entry.loggedByDisplayName ?? _l10n.timelineUnknownUser);
     final avatarUrl = entry.loggedByUserAvatarUrl;
     final data = entry.data;
     final isPublic = entry.isPublic ?? true;
@@ -1030,6 +1043,14 @@ class TimelineScreenState extends State<TimelineScreen> {
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            // Image thumbnail — shown inline on image entries
+                            if (type == EntryType.image) ...[  
+                              const SizedBox(height: 8),
+                              _ImageThumbnail(
+                                imageUrl: data?['url'] as String? ?? '',
+                                imageTitle: data?['title'] as String? ?? '',
+                              ),
+                            ],
                             if (!isPublic &&
                                 (type == EntryType.message ||
                                     type ==
@@ -1314,6 +1335,67 @@ class TimelineScreenState extends State<TimelineScreen> {
       debugPrint('Stack trace: $s');
       return l10n.timelineSummaryErrorProcessing;
     }
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// _ImageThumbnail — shown on image-type timeline cards
+// ---------------------------------------------------------------------------
+
+class _ImageThumbnail extends StatelessWidget {
+  const _ImageThumbnail({
+    required this.imageUrl,
+    required this.imageTitle,
+  });
+  final String imageUrl;
+  final String imageTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => Scaffold(
+            appBar: AppBar(title: Text(imageTitle)),
+            body: Center(
+              child: InteractiveViewer(
+                child: Image.network(imageUrl, fit: BoxFit.contain),
+              ),
+            ),
+          ),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 160),
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            loadingBuilder: (_, child, progress) {
+              if (progress == null) return child;
+              return Container(
+                height: 100,
+                color: AppTheme.backgroundGray,
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            },
+            errorBuilder: (_, __, ___) => Container(
+              height: 80,
+              color: AppTheme.backgroundGray,
+              child: const Center(
+                child: Icon(Icons.broken_image,
+                    color: AppTheme.textLight, size: 32),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

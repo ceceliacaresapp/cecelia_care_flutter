@@ -137,15 +137,26 @@ class AppTheme {
       ),
 
       // --- COMPONENT THEMES ---
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,
-        elevation: 1,
-        iconTheme: IconThemeData(color: textOnPrimary),
-        titleTextStyle: TextStyle(
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.35),
+        scrolledUnderElevation: 6,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: textOnPrimary),
+        actionsIconTheme: const IconThemeData(color: textOnPrimary),
+        titleTextStyle: const TextStyle(
           color: textOnPrimary,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           fontFamily: 'Poppins',
+        ),
+        // Subtle bottom border to separate bar from content
+        shape: const Border(
+          bottom: BorderSide(
+            color: Color(0x22000000),
+            width: 1,
+          ),
         ),
       ),
 

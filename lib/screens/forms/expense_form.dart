@@ -10,6 +10,9 @@ import 'package:cecelia_care_flutter/models/expense_entry.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
+import 'package:cecelia_care_flutter/models/journal_entry.dart';
+import 'package:cecelia_care_flutter/models/entry_types.dart';
+import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 
 class ExpenseForm extends StatefulWidget {
@@ -43,6 +46,11 @@ class _ExpenseFormState extends State<ExpenseForm> {
   String _otherCategoryOption = '';
 
   bool _isSaving = false;
+
+  // Attached image — optional link to an uploaded image entry
+  String? _attachedImageEntryId;
+  String? _attachedImageUrl;
+  String? _attachedImageTitle;
 
   late AppLocalizations _l10n;
   late ThemeData _theme;
@@ -83,6 +91,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
               ? editing.category!
               : _otherCategoryOption;
       _noteController.text = editing.note ?? '';
+      // Pre-fill attached image if editing an entry that had one
+      // (stored in the Firestore document alongside the expense fields)
     } else {
       _descriptionController.clear();
       _amountController.clear();
@@ -127,6 +137,12 @@ class _ExpenseFormState extends State<ExpenseForm> {
         'updatedAt': FieldValue.serverTimestamp(),
         'isPublic': true,
         'visibleToUserIds': <String>[],
+        if (_attachedImageEntryId != null)
+          'attachedImageEntryId': _attachedImageEntryId,
+        if (_attachedImageUrl != null)
+          'attachedImageUrl': _attachedImageUrl,
+        if (_attachedImageTitle != null)
+          'attachedImageTitle': _attachedImageTitle,
       };
       if (widget.editingItem != null) {
         await journal.updateJournalEntry(
@@ -321,6 +337,30 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     decoration: InputDecoration(
                         hintText: _l10n.expenseFormHintNotes),
                   ),
+                  const SizedBox(height: 20),
+                  // Attach image section
+                  Text(
+                    'Attach Image (optional)',
+                    style: _theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _ImageAttachPicker(
+                    elderId: widget.activeElder.id,
+                    selectedImageEntryId: _attachedImageEntryId,
+                    selectedImageUrl: _attachedImageUrl,
+                    selectedImageTitle: _attachedImageTitle,
+                    onSelected: (id, url, title) => setState(() {
+                      _attachedImageEntryId = id;
+                      _attachedImageUrl = url;
+                      _attachedImageTitle = title;
+                    }),
+                    onCleared: () => setState(() {
+                      _attachedImageEntryId = null;
+                      _attachedImageUrl = null;
+                      _attachedImageTitle = null;
+                    }),
+                  ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -355,6 +395,222 @@ class _ExpenseFormState extends State<ExpenseForm> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// _ImageAttachPicker — lets the user select an uploaded image to attach
+// to an expense entry.
+// ---------------------------------------------------------------------------
+
+class _ImageAttachPicker extends StatelessWidget {
+  const _ImageAttachPicker({
+    required this.elderId,
+    required this.selectedImageEntryId,
+    required this.selectedImageUrl,
+    required this.selectedImageTitle,
+    required this.onSelected,
+    required this.onCleared,
+  });
+
+  final String elderId;
+  final String? selectedImageEntryId;
+  final String? selectedImageUrl;
+  final String? selectedImageTitle;
+  final void Function(String id, String url, String title) onSelected;
+  final VoidCallback onCleared;
+
+  static const _kColor = Color(0xFF5C6BC0); // indigo
+
+  @override
+  Widget build(BuildContext context) {
+    // If an image is already attached, show it with a clear button
+    if (selectedImageUrl != null && selectedImageUrl!.isNotEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _kColor.withOpacity(0.3)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            Image.network(
+              selectedImageUrl!,
+              height: 120,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                height: 80,
+                color: const Color(0xFFE8EAF6),
+                child: const Center(
+                    child: Icon(Icons.broken_image, color: _kColor)),
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 6,
+              child: GestureDetector(
+                onTap: onCleared,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, size: 16, color: _kColor),
+                ),
+              ),
+            ),
+            if (selectedImageTitle != null)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  color: Colors.black45,
+                  child: Text(
+                    selectedImageTitle!,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // Show a picker button that opens a bottom sheet of uploaded images
+    return GestureDetector(
+      onTap: () => _showImagePicker(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        decoration: BoxDecoration(
+          color: _kColor.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: _kColor.withOpacity(0.25), style: BorderStyle.solid),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.attach_file_outlined, color: _kColor, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Choose from uploaded images',
+              style: TextStyle(
+                  fontSize: 13,
+                  color: _kColor,
+                  fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImagePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(sheetCtx).size.height * 0.7),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Select an image',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: StreamBuilder<List<JournalEntry>>(
+                stream: Provider.of<JournalServiceProvider>(
+                        sheetCtx, listen: false)
+                    .getJournalEntriesStream(
+                  elderId: elderId,
+                  currentUserId: AuthService.currentUserId ?? '',
+                  entryTypeFilter: 'image',
+                ),
+                builder: (_, snapshot) {
+                  final entries = snapshot.data
+                          ?.where((e) => e.type == EntryType.image)
+                          .toList() ??
+                      [];
+                  if (entries.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Text('No images uploaded yet.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Color(0xFF757575))),
+                      ),
+                    );
+                  }
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: entries.length,
+                    itemBuilder: (_, i) {
+                      final e = entries[i];
+                      final url = e.data?['url'] as String? ?? '';
+                      final title =
+                          e.data?['title'] as String? ?? 'Image';
+                      if (url.isEmpty) return const SizedBox.shrink();
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(sheetCtx).pop();
+                          onSelected(e.id ?? '', url, title);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(url, fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                    color: const Color(0xFFE8EAF6),
+                                    child: const Icon(Icons.broken_image,
+                                        color: _kColor),
+                                  )),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

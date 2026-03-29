@@ -5,7 +5,12 @@ import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
 import 'package:cecelia_care_flutter/screens/resources_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
-import 'package:go_router/go_router.dart';
+import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
+import 'package:cecelia_care_flutter/providers/medication_provider.dart';
+import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
+import 'package:cecelia_care_flutter/services/firestore_service.dart';
+import 'package:cecelia_care_flutter/services/rxnav_service.dart';
+import 'package:cecelia_care_flutter/locator.dart';
 import 'package:provider/provider.dart';
 
 class _CareAction {
@@ -40,7 +45,31 @@ class CareScreen extends StatelessWidget {
               Provider.of<ActiveElderProvider>(context, listen: false)
                   .activeElder;
           if (activeElder != null) {
-            context.push('/medications', extra: activeElder.id);
+            // Use Navigator.push (not GoRouter) so the bottom nav stays visible.
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider<MedicationDefinitionsProvider>(
+                      create: (_) => MedicationDefinitionsProvider()
+                        ..updateForElder(activeElder),
+                    ),
+                    ChangeNotifierProvider<MedicationProvider>(
+                      create: (ctx) => MedicationProvider(
+                        elderId: activeElder.id,
+                        firestoreService: ctx.read<FirestoreService>(),
+                        rxNavService: locator<RxNavService>(),
+                        medDefsProvider:
+                            ctx.read<MedicationDefinitionsProvider>(),
+                        elderName: activeElder.profileName,
+                      ),
+                    ),
+                  ],
+                  child: const MedicationManagerScreen(),
+                ),
+              ),
+            );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n.settingsNoActiveElderSelected)),

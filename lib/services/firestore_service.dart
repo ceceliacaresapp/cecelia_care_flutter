@@ -25,6 +25,18 @@ class FirestoreService {
 
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  // ---------------------------------------------------------------------------
+  // Display name cache
+  //
+  // addJournalEntry() is called on every log action. Rather than re-fetching
+  // the Firestore user profile on every write, we cache the resolved name
+  // keyed by UID and clear it when a new UID is seen (i.e. after sign-in).
+  // This is safe for single-user sessions and cheap for multi-user scenarios.
+  // ---------------------------------------------------------------------------
+  static String? _cachedDisplayName;
+  static String? _cachedDisplayNameUid;
+
+
   // --- Collection Names ---
   static const String _elderProfilesCollection = 'elderProfiles';
   static const String _usersCollection = 'users';
@@ -513,6 +525,124 @@ class FirestoreService {
   // Journal Entries
   // ---------------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------------
+  // _getDisplayName — resolves the current user's human-readable name.
+  //
+  // Priority:
+  //   1. Cached value from a previous call for the same UID.
+  //   2. Firebase Auth displayName (set at registration or via updateProfile).
+  //   3. Firestore users/{uid}.displayName (updated by MyAccountScreen).
+  //   4. Email prefix (everything before @).
+  //   5. Full email as last resort.
+  // ---------------------------------------------------------------------------
+  Future<String> _getDisplayName(String uid) async {
+    if (uid.isNotEmpty &&
+        _cachedDisplayNameUid == uid &&
+        _cachedDisplayName != null &&
+        _cachedDisplayName!.isNotEmpty) {
+      return _cachedDisplayName!;
+    }
+
+    // 1. Firebase Auth displayName
+    final authName = AuthService.currentUser?.displayName ?? '';
+    if (authName.isNotEmpty) {
+      _cachedDisplayNameUid = uid;
+      _cachedDisplayName = authName;
+      return authName;
+    }
+
+    // 2. Firestore user profile displayName
+    try {
+      final doc = await _usersRef.doc(uid).get();
+      final firestoreName = doc.data()?.displayName ?? '';
+      if (firestoreName.isNotEmpty) {
+        _cachedDisplayNameUid = uid;
+        _cachedDisplayName = firestoreName;
+        return firestoreName;
+      }
+    } catch (e) {
+      debugPrint('FirestoreService._getDisplayName Firestore lookup error: $e');
+    }
+
+    // 3. Email prefix / full email fallback
+    final email = AuthService.currentUser?.email ?? '';
+    if (email.contains('@')) {
+      final prefix = email.split('@').first;
+      return prefix.isNotEmpty ? prefix : email;
+    }
+    return email.isNotEmpty ? email : 'Anonymous';
+  }
+
+  // ---------------------------------------------------------------------------
+  // backfillDisplayNames — one-time migration for old entries.
+  //
+  // Entries created before the _getDisplayName fix stored the raw email
+  // address in loggedByDisplayName. This method:
+  //   1. Fetches all journalEntries for [elderId].
+  //   2. Identifies entries whose loggedByDisplayName looks like an email.
+  //   3. Resolves the proper display name for each unique UID (cached).
+  //   4. Batch-updates them in Firestore-safe 500-doc chunks.
+  //
+  // Safe to call multiple times — entries that already have a non-email
+  // display name are skipped. Call from SettingsScreen or a startup hook.
+  // ---------------------------------------------------------------------------
+  Future<int> backfillDisplayNames(String elderId) async {
+    if (elderId.isEmpty) return 0;
+
+    // 1. Fetch all entries for this elder.
+    final snapshot = await _journalEntriesRef
+        .where('elderId', isEqualTo: elderId)
+        .get();
+
+    // 2. Filter to entries where displayName looks like an email.
+    final needsFix = snapshot.docs.where((doc) {
+      final name = doc.data().loggedByDisplayName ?? '';
+      return name.contains('@');
+    }).toList();
+
+    if (needsFix.isEmpty) return 0;
+
+    // 3. Resolve display names per unique UID (uses cache after first lookup).
+    final Map<String, String> resolvedNames = {};
+    for (final doc in needsFix) {
+      final uid = doc.data().loggedByUserId;
+      if (!resolvedNames.containsKey(uid)) {
+        resolvedNames[uid] = await _getDisplayName(uid);
+      }
+    }
+
+    // 4. Batch update — skip entries whose resolved name is still an email
+    //    (i.e. the user genuinely has no display name set anywhere).
+    final List<DocumentReference> refs = [];
+    final List<String> names = [];
+    for (final doc in needsFix) {
+      final uid = doc.data().loggedByUserId;
+      final resolved = resolvedNames[uid] ?? '';
+      if (resolved.isNotEmpty && !resolved.contains('@')) {
+        refs.add(doc.reference);
+        names.add(resolved);
+      }
+    }
+
+    const int batchSize = 500;
+    int updated = 0;
+    for (int i = 0; i < refs.length; i += batchSize) {
+      final end = (i + batchSize).clamp(0, refs.length);
+      final WriteBatch batch = _db.batch();
+      for (int j = i; j < end; j++) {
+        batch.update(refs[j], {'loggedByDisplayName': names[j]});
+      }
+      await batch.commit();
+      updated += end - i;
+    }
+
+    debugPrint(
+      'FirestoreService.backfillDisplayNames: updated $updated of '
+      '${needsFix.length} email-name entries for elder $elderId.',
+    );
+    return updated;
+  }
+
   Future<void> addJournalEntry({
     String? elderId,
     required EntryType type,
@@ -558,6 +688,9 @@ class FirestoreService {
     }
     visibleToUserIds0 = visibleToUserIds0.toSet().toList();
 
+    final String loggedByDisplayName =
+        await _getDisplayName(creatorId0);
+
     final newEntry = JournalEntry(
       id: null,
       elderId: elderId,
@@ -565,9 +698,7 @@ class FirestoreService {
       text: text,
       data: data,
       loggedByUserId: creatorId0,
-      loggedByDisplayName: AuthService.currentUser?.displayName ??
-          AuthService.currentUser?.email ??
-          'Anonymous',
+      loggedByDisplayName: loggedByDisplayName,
       loggedByUserAvatarUrl: AuthService.currentUser?.photoURL,
       entryTimestamp: Timestamp.fromDate(timestamp0),
       dateString: dateOnly,
@@ -892,6 +1023,56 @@ class FirestoreService {
           'error ($detailedEntryPath): $e');
       return false;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Image Folders (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  /// Streams all image folders for an elder, ordered by name.
+  Stream<List<Map<String, dynamic>>> getImageFoldersStream(String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection('imageFolders')
+        .orderBy('name')
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getImageFoldersStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  /// Creates a new image folder and returns its Firestore ID.
+  Future<String> createImageFolder(String elderId, String name) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    final String? uid = AuthService.currentUserId;
+    if (uid == null) throw Exception('User not logged in.');
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection('imageFolders')
+        .add({
+      'name': name.trim(),
+      'createdBy': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    return ref.id;
+  }
+
+  /// Deletes an image folder (does NOT delete the images inside it).
+  Future<void> deleteImageFolder(String elderId, String folderId) async {
+    if (elderId.isEmpty || folderId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection('imageFolders')
+        .doc(folderId)
+        .delete();
   }
 
   // ---------------------------------------------------------------------------

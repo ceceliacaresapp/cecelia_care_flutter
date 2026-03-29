@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/screens/settings/inclusive_language_guide_s
 import 'package:cecelia_care_flutter/screens/export_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? navigateToManageCareRecipientProfiles;
@@ -111,6 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final role = activeElderProvider.currentUserRole;
     final canExport = role.canExport;
     final canManageProfiles = role.canManageProfiles;
+    final canAccessProfilesScreen = role.canAccessProfilesScreen;
 
     if (_selectedLocale == null || !AppLocalizations.supportedLocales.contains(_selectedLocale)) {
       _selectedLocale = AppLocalizations.supportedLocales.firstWhere(
@@ -159,8 +161,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Expanded(
                     child: Text(
                       role == CaregiverRole.viewer
-                          ? 'View-only access to \${activeElder.profileName}\'s care log'
-                          : 'Caregiver for \${activeElder.profileName}',
+                          ? 'View-only access to ${activeElder.profileName}\'s care log'
+                          : 'Caregiver for ${activeElder.profileName}',
                       style: textTheme.bodySmall
                           ?.copyWith(color: AppTheme.textSecondary),
                     ),
@@ -264,7 +266,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
 
         // Care recipient — admin only
-        if (canManageProfiles) ...[
+        // All roles can access to create their own care recipient.
+        if (canAccessProfilesScreen) ...[
           _SectionHeader(label: l10n.settingsTitleCareRecipientManagement),
           if (activeElder != null)
             Padding(
@@ -283,8 +286,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             iconColor: const Color(0xFF1E88E5),
             title: l10n.settingsItemManageProfiles,
             onTap: widget.navigateToManageCareRecipientProfiles ?? () {
-              if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.settingsErrorCouldNotNavigateToProfiles)));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const ManageCareRecipientProfilesScreen(),
+                ),
+              );
             },
           ),
         ], // end canManageProfiles

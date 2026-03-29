@@ -1,17 +1,178 @@
+rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 7, 1);
+    // --- Helper Functions ---
+    // Checks if the user is listed in the 'caregiverUserIds' array of the elderProfile
+    function isCaregiver(elderId) {
+      // Safe check: prevents crashes if elderId is null (e.g., personal caregiver journals)
+      return elderId != null && 
+             request.auth != null &&
+             exists(/databases/$(database)/documents/elderProfiles/$(elderId)) &&
+             request.auth.uid in get(/databases/$(database)/documents/elderProfiles/$(elderId)).data.caregiverUserIds;
+    }
+
+    // --- NEW: Role-based helpers ---
+    // Returns the role string for the current user on this elder.
+    // Primary admin → "admin". In caregiverRoles map → that value.
+    // In caregiverUserIds but not in map → "caregiver" (backwards-compat).
+    function roleOf(elderId) {
+      let data = get(/databases/$(database)/documents/elderProfiles/$(elderId)).data;
+      let roles = data.get('caregiverRoles', {});
+      return data.primaryAdminUserId == request.auth.uid
+        ? 'admin'
+        : roles.get(request.auth.uid, 'caregiver');
+    }
+
+    // True for admin only (profile management, med definitions, etc.)
+    function isAdminRole(elderId) {
+      return isCaregiver(elderId) && roleOf(elderId) == 'admin';
+    }
+
+    // True for admin or caregiver — excludes viewer (viewer is read-only)
+    function canWrite(elderId) {
+      return isCaregiver(elderId) &&
+        (roleOf(elderId) == 'admin' || roleOf(elderId) == 'caregiver');
+    }
+    // --- END NEW ---
+
+    // --- Website-specific Collections ---
+    match /waitlist/{entry} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+    match /suggestions/{suggestionId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // --- Users Collection ---
+    // ADDED: any signed-in user can read other users' profiles so that
+    // getAssociatedUsersForElder() can resolve display names for caregiver
+    // lists, messaging, and the timeline "Logged by" field.
+    // Write remains restricted to the document owner only.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      match /{document=**} {
+         allow read: if request.auth != null;
+         allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // --- Elder Profiles (Metadata) ---
+    match /elderProfiles/{elderId} {
+      // Safely covers both 'get' and 'list' as long as the Flutter query uses arrayContains
+      allow read: if request.auth != null && request.auth.uid in resource.data.caregiverUserIds;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == resource.data.primaryAdminUserId; 
+      allow delete: if request.auth != null && request.auth.uid == resource.data.primaryAdminUserId;
+      
+      match /medications/{medId} {
+        allow read: if isCaregiver(elderId);
+        // NEW: caregiver and admin can write (mark taken/skipped); viewer cannot
+        allow write: if canWrite(elderId);
+      }
+
+      // ADDED: Image folders — all members can read, admin only can create/delete.
+      // Deleting a folder does NOT delete images; they become unfiled.
+      match /imageFolders/{folderId} {
+        allow read: if isCaregiver(elderId);
+        allow create, delete: if isAdminRole(elderId);
+        allow update: if false;
+      }
+    }
+
+    // --- Elders Data (Timeline, Days, Meals) ---
+    match /elders/{elderId} {
+       allow read, write: if isCaregiver(elderId);
+       
+       match /{document=**} {
+          allow read, write: if isCaregiver(elderId);
+       }
+    }
+
+    // --- Medication Definitions ---
+    // NEW: read still open to any caregiver (needed for reminder display).
+    // Write now restricted to admin only — caregiver cannot add/edit/delete
+    // prescription records.
+    match /medicationDefinitions/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && isAdminRole(request.resource.data.elderId);
+      allow update, delete: if request.auth != null && isAdminRole(resource.data.elderId);
+    }
+
+    // --- Collection Groups & Shared Collections ---
+    
+    // Journal Entries (Standalone collection)
+    match /journalEntries/{entryId} {
+      allow read: if request.auth != null;
+      
+      // NEW: create now also requires canWrite() — viewer role is blocked from logging.
+      // Existing caregiver and admin flows are unaffected.
+      allow create: if request.auth != null && (
+        canWrite(request.resource.data.elderId) || 
+        (request.resource.data.elderId == null && request.resource.data.loggedByUserId == request.auth.uid)
+      );
+      allow update: if request.auth != null && (
+        isCaregiver(resource.data.elderId) || 
+        (resource.data.elderId == null && resource.data.loggedByUserId == request.auth.uid)
+      );
+      allow delete: if request.auth != null && (
+        isCaregiver(resource.data.elderId) || 
+        (resource.data.elderId == null && resource.data.loggedByUserId == request.auth.uid)
+      );
+    }
+
+    // Calendar Events
+    match /calendarEvents/{eventId} {
+      allow read: if request.auth != null;
+      allow create: if isCaregiver(request.resource.data.elderId);
+      allow update, delete: if isCaregiver(resource.data.elderId);
+    }
+    
+    // Health Reminders
+    match /healthReminders/{reminderId} {
+      allow read: if request.auth != null;
+      allow create: if isCaregiver(request.resource.data.elderId);
+      allow update, delete: if isCaregiver(resource.data.elderId);
+    }
+
+    // Financial Data
+    match /budget_entries/{docId} {
+      allow read, write: if request.auth != null; 
+    }
+    match /income_entries/{docId} {
+      allow read, write: if request.auth != null;
+    }
+    match /financial_assets/{docId} {
+      allow read, write: if request.auth != null;
+    }
+    match /financial_liabilities/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // --- Collection Group Queries ---
+    match /{path=**}/expenses/{expenseId} {
+      allow read, write: if request.auth != null;
+    }
+    match /{path=**}/expense/{expenseId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // --- Caregiver Journal (private, author-only) ---
+    // ADDED: Personal journal entries written by a caregiver for themselves.
+    // Completely separate from the main journalEntries collection —
+    // never appears on the timeline. Only the author can read or write.
+    match /caregiverJournalEntries/{entryId} {
+      allow read, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
     }
   }
 }

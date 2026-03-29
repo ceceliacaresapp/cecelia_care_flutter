@@ -25,6 +25,8 @@ import 'providers/journal_service_provider.dart';
 import 'providers/medication_definitions_provider.dart';
 import 'providers/self_care_provider.dart';
 import 'providers/user_profile_provider.dart';
+import 'providers/wellness_provider.dart';
+import 'providers/gamification_provider.dart';
 import 'routing/app_router.dart';
 import 'utils/app_theme.dart';
 import 'screens/splash_screen.dart';
@@ -158,6 +160,8 @@ class _AppRootState extends State<AppRoot> {
             ChangeNotifierProvider(create: (_) => LocaleProvider()),
             ChangeNotifierProvider(create: (_) => BadgeProvider()),
             ChangeNotifierProvider(create: (_) => SelfCareProvider()),
+            ChangeNotifierProvider(create: (_) => WellnessProvider()),
+            ChangeNotifierProvider(create: (_) => GamificationProvider()),
             ChangeNotifierProvider(create: (_) => NotificationPrefsProvider()),
 
             // FIX: On elder switch, mutate the existing JournalServiceProvider

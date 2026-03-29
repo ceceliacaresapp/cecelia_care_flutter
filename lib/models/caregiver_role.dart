@@ -95,8 +95,14 @@ extension CaregiverRoleX on CaregiverRole {
   /// Can add, edit, or delete medication *definitions* (the prescription record).
   bool get canManageMedicationDefinitions => this == CaregiverRole.admin;
 
-  /// Can manage elder profiles — create, edit, invite, remove caregivers.
+  /// Can manage an existing elder profile — edit, invite, remove caregivers.
+  /// Only admins of that profile can do this.
   bool get canManageProfiles => this == CaregiverRole.admin;
+
+  /// Can access the Manage Care Recipients screen.
+  /// ALL roles can access this screen because any user should be able to
+  /// create their own care recipient profile (becoming admin of it).
+  bool get canAccessProfilesScreen => true;
 
   /// Can access the Budget screen.
   bool get canAccessBudget => this == CaregiverRole.admin;

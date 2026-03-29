@@ -23,6 +23,8 @@ import 'package:cecelia_care_flutter/screens/forms/activity_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/pain_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/med_form.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal_screen.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
@@ -94,6 +96,211 @@ void _openMessageSheet(
       firestoreService: firestoreService,
     ),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Shows a bottom sheet listing individual entries for a given EntryType.
+// Launched when the user taps a summary chip on the dashboard.
+// ---------------------------------------------------------------------------
+void _showEntriesSheet(
+  BuildContext context, {
+  required EntryType type,
+  required List<JournalEntry> entries,
+  required Color color,
+  required IconData icon,
+  required String label,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(sheetContext).size.height * 0.65,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(sheetContext).scaffoldBackgroundColor,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.textLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Header row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    "Today's $label",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Divider(height: 1),
+
+            // Entry list
+            Flexible(
+              child: entries.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text(
+                        'No entries found.',
+                        style: TextStyle(color: AppTheme.textSecondary),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      itemCount: entries.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1),
+                      itemBuilder: (context, i) {
+                        final entry = entries[i];
+                        final time = DateFormat('h:mm a')
+                            .format(entry.entryTimestamp.toDate());
+                        final loggedBy =
+                            entry.loggedByDisplayName ?? 'Unknown';
+                        final summary = _entrySummary(entry);
+
+                        return Padding(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              // Time column
+                              SizedBox(
+                                width: 64,
+                                child: Text(
+                                  time,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: color,
+                                  ),
+                                ),
+                              ),
+                              // Details column
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    if (summary.isNotEmpty)
+                                      Text(
+                                        summary,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: AppTheme.textPrimary,
+                                          height: 1.3,
+                                        ),
+                                        maxLines: 3,
+                                        overflow:
+                                            TextOverflow.ellipsis,
+                                      ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Logged by $loggedBy',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color:
+                                            AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// Produces a short human-readable summary line for a journal entry.
+String _entrySummary(JournalEntry entry) {
+  // The entry's `text` field is the most universal summary.
+  // If it's empty, fall back to a type-specific one-liner from `data`.
+  if (entry.text != null && entry.text!.trim().isNotEmpty) {
+    return entry.text!.trim();
+  }
+  switch (entry.type) {
+    case EntryType.mood:
+      return entry.data?['mood'] ?? 'Mood logged';
+    case EntryType.medication:
+      return entry.data?['medicationName'] ?? 'Medication logged';
+    case EntryType.sleep:
+      final hrs = entry.data?['hours'];
+      return hrs != null ? '$hrs hours of sleep' : 'Sleep logged';
+    case EntryType.meal:
+      return entry.data?['mealType'] ?? 'Meal logged';
+    case EntryType.pain:
+      final level = entry.data?['level'];
+      return level != null ? 'Pain level $level/10' : 'Pain logged';
+    case EntryType.activity:
+      return entry.data?['activityType'] ?? 'Activity logged';
+    case EntryType.vital:
+      return entry.data?['vitalType'] ?? 'Vital logged';
+    case EntryType.expense:
+      final amt = entry.data?['amount'];
+      return amt != null ? 'Expense: \$$amt' : 'Expense logged';
+    case EntryType.message:
+      return 'Message';
+    default:
+      return 'Entry logged';
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -169,6 +376,13 @@ class DashboardScreen extends StatelessWidget {
           const _SectionLabel(label: 'Achievements'),
           const SizedBox(height: 10),
           const _BadgesRow(),
+
+          const SizedBox(height: 20),
+
+          // Caregiver Journal preview — personal, not shared
+          const _SectionLabel(label: 'My Journal'),
+          const SizedBox(height: 10),
+          _JournalPreviewCard(currentUserId: currentUserId),
 
           const SizedBox(height: 20),
 
@@ -772,42 +986,62 @@ class _TodaySummaryGrid extends StatelessWidget {
         mainAxisSpacing: 10,
       ),
       itemCount: items.length,
-      itemBuilder: (context, i) =>
-          _EntryTypeChip(type: items[i].key, count: items[i].value),
+      itemBuilder: (context, i) => _EntryTypeChip(
+        type: items[i].key,
+        count: items[i].value,
+        entries: entries.where((e) => e.type == items[i].key).toList(),
+      ),
     );
   }
 }
 
 class _EntryTypeChip extends StatelessWidget {
-  const _EntryTypeChip({required this.type, required this.count});
+  const _EntryTypeChip({
+    required this.type,
+    required this.count,
+    required this.entries,
+  });
   final EntryType type;
   final int count;
+  final List<JournalEntry> entries;
 
   @override
   Widget build(BuildContext context) {
     final color = _colorForType(type);
     final icon = _iconForType(type);
-    return Container(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.25)),
+    final label = _labelForType(type);
+
+    return GestureDetector(
+      onTap: () => _showEntriesSheet(
+        context,
+        type: type,
+        entries: entries,
+        color: color,
+        icon: icon,
+        label: label,
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 4),
-          Text('$count',
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-          Text(_labelForType(type),
-              style: const TextStyle(
-                  fontSize: 10, color: AppTheme.textSecondary),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.25)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 4),
+            Text('$count',
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 10, color: AppTheme.textSecondary),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+          ],
+        ),
       ),
     );
   }
@@ -855,6 +1089,145 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.message: return 'Messages';
       default: return t.name;
     }
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Journal preview card — shows the most recent caregiverJournalEntry for
+// the current user, with a button to open the full journal screen.
+// ---------------------------------------------------------------------------
+
+class _JournalPreviewCard extends StatelessWidget {
+  const _JournalPreviewCard({required this.currentUserId});
+  final String currentUserId;
+
+  static const _kColor = Color(0xFF8E24AA);
+
+  @override
+  Widget build(BuildContext context) {
+    if (currentUserId.isEmpty) return const SizedBox.shrink();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('caregiverJournalEntries')
+          .where('userId', isEqualTo: currentUserId)
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .snapshots(),
+      builder: (context, snapshot) {
+        final hasEntry =
+            snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+        final doc =
+            hasEntry ? snapshot.data!.docs.first : null;
+        final note = hasEntry
+            ? (doc!.data() as Map<String, dynamic>)['note'] as String? ?? ''
+            : '';
+        final ts = hasEntry
+            ? (doc!.data() as Map<String, dynamic>)['createdAt']
+                as Timestamp?
+            : null;
+        final dateStr = ts != null
+            ? DateFormat('MMM d').format(ts.toDate())
+            : '';
+
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => const CareGiverJournalScreen()),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: _kColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _kColor.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: _kColor.withOpacity(0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left icon
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _kColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.menu_book_outlined,
+                      color: _kColor, size: 18),
+                ),
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: hasEntry
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  dateStr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: _kColor.withOpacity(0.8),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  'View all →',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: _kColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              note,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.textPrimary,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'No entries yet — tap to write your first journal entry.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.add_circle_outline,
+                                color: _kColor, size: 20),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

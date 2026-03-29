@@ -1,23 +1,26 @@
+// lib/providers/badge_provider.dart
+//
+// Manages badge/achievement state for the current user.
+//
+// BACKWARD COMPATIBLE: Reads the existing users/{uid}/achievements/badges
+// document (Map<String, bool>) for legacy unlocked status. Adds tier
+// progression data in users/{uid}/achievements/badgeTiers (Map<String, Map>).
+//
+// Tier upgrades are checked whenever GamificationProvider counters change.
+// The UI calls [checkTierProgress] after awarding points or on provider init.
+
 import 'dart:async';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cecelia_care_flutter/models/badge.dart';
 
-/// Manages badge/achievement state for the current user.
-///
-/// This is a standard [ChangeNotifier] — its lifecycle is managed entirely
-/// by the Provider package registered in main.dart. There is no manual
-/// singleton here; use [context.read<BadgeProvider>()] or
-/// [context.watch<BadgeProvider>()] to access it.
 class BadgeProvider with ChangeNotifier {
   // ---------------------------------------------------------------------------
   // Construction
   // ---------------------------------------------------------------------------
 
   BadgeProvider() {
-    // Listen to auth state so badges reload automatically when the user signs
-    // in or out without requiring a full app restart.
     _authSubscription =
         FirebaseAuth.instance.authStateChanges().listen(_onAuthStateChanged);
   }
@@ -30,12 +33,13 @@ class BadgeProvider with ChangeNotifier {
 
   StreamSubscription<User?>? _authSubscription;
   StreamSubscription<DocumentSnapshot>? _badgeSubscription;
+  StreamSubscription<DocumentSnapshot>? _tierSubscription;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  // All badges the app knows about, with their metadata.
-  final Map<String, Badge> _definedBadges = {
+  // Legacy badge definitions (kept for backward compat with existing entries).
+  final Map<String, Badge> _legacyBadges = {
     'first_mood_log': const Badge(
       id: 'first_mood_log',
       label: 'Mood Monitor',
@@ -71,42 +75,44 @@ class BadgeProvider with ChangeNotifier {
   // Unlocked status per badge for the currently signed-in user.
   final Map<String, Badge> _userBadges = {};
 
+  // Tiered badge state from BadgeCatalog.
+  final Map<String, Badge> _tieredBadges = {};
+
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
 
-  /// Returns every defined badge merged with the current user's unlock status.
+  /// Returns all badges — legacy (unlocked booleans) merged with
+  /// tiered catalog badges. Tiered badges come first.
   Map<String, Badge> get badges {
-    return _definedBadges.map((id, definedBadge) {
-      final userBadge = _userBadges[id];
-      return MapEntry(
-        id,
-        definedBadge.copyWith(unlocked: userBadge?.unlocked ?? false),
-      );
-    });
-  }
+    final Map<String, Badge> merged = {};
 
-  void clearErrorMessage() {
-    _errorMessage = null;
-    notifyListeners();
-  }
-
-  /// Unlocks a badge for [userId] both optimistically in memory and
-  /// persistently in Firestore. No-ops if the badge is already unlocked
-  /// or does not exist.
-  Future<void> unlockBadge(String badgeId, String userId) async {
-    if (userId.isEmpty) return;
-    if (!_definedBadges.containsKey(badgeId)) {
-      debugPrint(
-        'BadgeProvider: Attempted to unlock unknown badge "$badgeId". '
-        'Add it to _definedBadges first.',
-      );
-      return;
+    // Tiered badges from BadgeCatalog
+    for (final entry in _tieredBadges.entries) {
+      merged[entry.key] = entry.value;
     }
-    if (_userBadges[badgeId]?.unlocked == true) return; // Already unlocked.
 
-    // Optimistic update so the UI responds instantly.
-    _userBadges[badgeId] = _definedBadges[badgeId]!.copyWith(unlocked: true);
+    // Legacy badges — only add if not already covered by a tiered badge.
+    for (final entry in _legacyBadges.entries) {
+      if (!merged.containsKey(entry.key)) {
+        final userVersion = _userBadges[entry.key];
+        merged[entry.key] = userVersion ?? entry.value;
+      }
+    }
+
+    return Map.unmodifiable(merged);
+  }
+
+  /// Just the tiered badges for display on the Self Care tab.
+  Map<String, Badge> get tieredBadges => Map.unmodifiable(_tieredBadges);
+
+  /// Unlocks a legacy badge by ID.
+  Future<void> unlockBadge(String badgeId, String userId) async {
+    if (userId.isEmpty || !_legacyBadges.containsKey(badgeId)) return;
+    if (_userBadges[badgeId]?.unlocked == true) return;
+
+    // Optimistic update
+    _userBadges[badgeId] = _legacyBadges[badgeId]!.copyWith(unlocked: true);
     notifyListeners();
 
     try {
@@ -117,17 +123,15 @@ class BadgeProvider with ChangeNotifier {
           .doc('badges')
           .set({badgeId: true}, SetOptions(merge: true));
     } catch (e) {
-      // Revert the optimistic update on failure.
       _userBadges[badgeId] =
-          _definedBadges[badgeId]!.copyWith(unlocked: false);
+          _legacyBadges[badgeId]!.copyWith(unlocked: false);
       _errorMessage = 'Failed to save badge progress for "$badgeId".';
       debugPrint('BadgeProvider.unlockBadge error: $e');
       notifyListeners();
     }
   }
 
-  /// Called by [JournalServiceProvider] (or similar) after an entry is saved.
-  /// Checks whether the entry qualifies the user for any new badges.
+  /// Called after a journal/care entry is saved. Checks legacy first-log badges.
   Future<void> checkForNewBadgesAfterEntry(
     String entryType,
     String userId,
@@ -135,26 +139,111 @@ class BadgeProvider with ChangeNotifier {
   ) async {
     if (userId.isEmpty) return;
 
-    // --- First-log badges ---
     if (entryType == 'mood' &&
         !(_userBadges['first_mood_log']?.unlocked ?? false)) {
       await unlockBadge('first_mood_log', userId);
     }
-
     if (entryType == 'medication' &&
         !(_userBadges['first_medication_log']?.unlocked ?? false)) {
       await unlockBadge('first_medication_log', userId);
     }
-
     if (entryType == 'activity' &&
         !(_userBadges['first_activity_log']?.unlocked ?? false)) {
       await unlockBadge('first_activity_log', userId);
     }
+  }
 
-    // --- Count-based badges ---
-    // TODO: Query the actual entry count from Firestore or DayEntriesProvider
-    // and unlock 'medication_maestro_10' / 'daily_activity_champion_10' when
-    // the thresholds are reached.
+  // ---------------------------------------------------------------------------
+  // Tier progression — call this with current counts from GamificationProvider.
+  //
+  // Usage in a screen or another provider:
+  //   final gam = context.read<GamificationProvider>();
+  //   context.read<BadgeProvider>().checkTierProgress(
+  //     streakDays: gam.longestStreak,
+  //     journalCount: gam.lifetimeJournals,
+  //     breathingCount: gam.lifetimeBreathingSessions,
+  //     careLogCount: gam.lifetimeCareLogs,
+  //     challengeCount: gam.lifetimeChallengesCompleted,
+  //     totalPoints: gam.totalPoints,
+  //     moodDays: gam.lifetimeCheckins,
+  //   );
+  // ---------------------------------------------------------------------------
+
+  Future<void> checkTierProgress({
+    int streakDays = 0,
+    int journalCount = 0,
+    int breathingCount = 0,
+    int careLogCount = 0,
+    int challengeCount = 0,
+    int totalPoints = 0,
+    int moodDays = 0,
+    int selfCareActions = 0,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final counts = {
+      'streak': streakDays,
+      'journal': journalCount,
+      'breathing': breathingCount,
+      'care_log': careLogCount,
+      'challenges': challengeCount,
+      'points': totalPoints,
+      'mood_tracker': moodDays,
+      'self_care': selfCareActions,
+    };
+
+    bool changed = false;
+    final Map<String, dynamic> tierUpdates = {};
+
+    for (final template in BadgeCatalog.all) {
+      if (template.thresholds == null) continue;
+
+      final count = counts[template.id] ?? 0;
+      final newTier = template.thresholds!.tierForCount(count);
+      final current = _tieredBadges[template.id];
+      final currentTier = current?.tier ?? BadgeTier.none;
+
+      if (newTier.index > currentTier.index) {
+        // Tier upgraded!
+        _tieredBadges[template.id] = template.copyWith(
+          tier: newTier,
+          unlocked: true,
+          progressCount: count,
+        );
+        tierUpdates[template.id] = {
+          'tier': newTier.name,
+          'progressCount': count,
+          'unlockedAt': FieldValue.serverTimestamp(),
+        };
+        changed = true;
+      } else if (count != (current?.progressCount ?? 0)) {
+        // Progress updated but no tier change.
+        _tieredBadges[template.id] = (current ?? template).copyWith(
+          progressCount: count,
+        );
+        tierUpdates[template.id] = {
+          'tier': (current?.tier ?? newTier).name,
+          'progressCount': count,
+        };
+        changed = true;
+      }
+    }
+
+    if (tierUpdates.isNotEmpty) {
+      try {
+        await _db
+            .collection('users')
+            .doc(uid)
+            .collection('achievements')
+            .doc('badgeTiers')
+            .set(tierUpdates, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('BadgeProvider.checkTierProgress save error: $e');
+      }
+    }
+
+    if (changed) notifyListeners();
   }
 
   // ---------------------------------------------------------------------------
@@ -165,6 +254,7 @@ class BadgeProvider with ChangeNotifier {
   void dispose() {
     _authSubscription?.cancel();
     _badgeSubscription?.cancel();
+    _tierSubscription?.cancel();
     super.dispose();
   }
 
@@ -172,24 +262,25 @@ class BadgeProvider with ChangeNotifier {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  /// Reacts to sign-in / sign-out events.
   void _onAuthStateChanged(User? user) {
-    // Cancel any existing Firestore listener before switching users.
     _badgeSubscription?.cancel();
+    _tierSubscription?.cancel();
     _badgeSubscription = null;
+    _tierSubscription = null;
     _userBadges.clear();
+    _tieredBadges.clear();
     _errorMessage = null;
 
     if (user == null) {
-      // User signed out — nothing more to do.
       notifyListeners();
       return;
     }
 
     _listenToBadges(user.uid);
+    _listenToTiers(user.uid);
   }
 
-  /// Opens a real-time Firestore listener for the given user's badges document.
+  /// Listens to the legacy badges document (Map<String, bool>).
   void _listenToBadges(String uid) {
     _badgeSubscription = _db
         .collection('users')
@@ -205,9 +296,9 @@ class BadgeProvider with ChangeNotifier {
         if (docSnapshot.exists && docSnapshot.data() != null) {
           final data = docSnapshot.data()!;
           data.forEach((badgeId, isUnlocked) {
-            if (_definedBadges.containsKey(badgeId) && isUnlocked is bool) {
+            if (_legacyBadges.containsKey(badgeId) && isUnlocked is bool) {
               _userBadges[badgeId] =
-                  _definedBadges[badgeId]!.copyWith(unlocked: isUnlocked);
+                  _legacyBadges[badgeId]!.copyWith(unlocked: isUnlocked);
             }
           });
         }
@@ -218,6 +309,54 @@ class BadgeProvider with ChangeNotifier {
         _errorMessage = 'Failed to load badge achievements.';
         debugPrint('BadgeProvider._listenToBadges error: $error');
         notifyListeners();
+      },
+    );
+  }
+
+  /// Listens to the tiered badge document.
+  void _listenToTiers(String uid) {
+    _tierSubscription = _db
+        .collection('users')
+        .doc(uid)
+        .collection('achievements')
+        .doc('badgeTiers')
+        .snapshots()
+        .listen(
+      (docSnapshot) {
+        // Initialize all catalog badges with defaults.
+        for (final template in BadgeCatalog.all) {
+          _tieredBadges.putIfAbsent(template.id, () => template);
+        }
+
+        if (docSnapshot.exists && docSnapshot.data() != null) {
+          final data = docSnapshot.data()!;
+          for (final template in BadgeCatalog.all) {
+            final saved = data[template.id];
+            if (saved is Map<String, dynamic>) {
+              final tierName = saved['tier'] as String? ?? 'none';
+              final count = (saved['progressCount'] as num?)?.toInt() ?? 0;
+              BadgeTier tier;
+              try {
+                tier = BadgeTier.values.firstWhere(
+                  (t) => t.name == tierName,
+                  orElse: () => BadgeTier.none,
+                );
+              } catch (_) {
+                tier = BadgeTier.none;
+              }
+              _tieredBadges[template.id] = template.copyWith(
+                tier: tier,
+                unlocked: tier != BadgeTier.none,
+                progressCount: count,
+              );
+            }
+          }
+        }
+
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('BadgeProvider._listenToTiers error: $error');
       },
     );
   }

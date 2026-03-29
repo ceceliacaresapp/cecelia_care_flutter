@@ -1,1 +1,62 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"ceceliacareflutter","appId":"1:536641137148:android:0e566778a078b5f40e6a79","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"ceceliacareflutter","configurations":{"android":"1:536641137148:android:0e566778a078b5f40e6a79","ios":"1:536641137148:ios:0e7cc0924838d5d60e6a79","macos":"1:536641137148:ios:0e7cc0924838d5d60e6a79","web":"1:536641137148:web:20171286b8d0f9680e6a79","windows":"1:536641137148:web:5391123c228887de0e6a79"}}}}},"functions":[{"source":"functions","codebase":"default","region":"us-central1","ignore":["node_modules",".git","firebase-debug.log","firebase-debug.*.log","*.local"]}],"firestore":{"rules":"firestore.rules"},"extensions":{"firestore-genai-chatbot":"googlecloud/firestore-genai-chatbot@0.0.14"},"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "ceceliacareflutter",
+          "appId": "1:536641137148:android:0e566778a078b5f40e6a79",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "ceceliacareflutter",
+          "configurations": {
+            "android": "1:536641137148:android:0e566778a078b5f40e6a79",
+            "ios": "1:536641137148:ios:0e7cc0924838d5d60e6a79",
+            "macos": "1:536641137148:ios:0e7cc0924838d5d60e6a79",
+            "web": "1:536641137148:web:20171286b8d0f9680e6a79",
+            "windows": "1:536641137148:web:5391123c228887de0e6a79"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "region": "us-central1",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "extensions": {
+    "firestore-genai-chatbot": "googlecloud/firestore-genai-chatbot@0.0.14"
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

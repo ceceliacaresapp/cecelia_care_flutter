@@ -43,6 +43,9 @@ class Transaction {
   });
 }
 
+// Accent color for the budget screen — amber-orange matching the Care tab tile.
+const _kBudgetColor = Color(0xFFF57C00);
+
 class BudgetScreen extends StatefulWidget {
   final String careRecipientId;
   const BudgetScreen({super.key, required this.careRecipientId});
@@ -269,9 +272,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'budgetAddFab',
         onPressed: () => _showAddEntryMenu(activeElder?.id),
-        child: const Icon(Icons.add),
+        backgroundColor: _kBudgetColor,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Add'),
       ),
     );
   }
@@ -308,10 +315,30 @@ class _BudgetScreenState extends State<BudgetScreen> {
       builder: (context, snapshot) {
         final netWorth = snapshot.data ?? 0.0;
         final formattedNetWorth = NumberFormat.simpleCurrency(decimalDigits: 2).format(netWorth);
-        return Card(
-          child: ListTile(
-            title: const Text('Net Worth'),
-            trailing: Text(formattedNetWorth, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        final color = netWorth >= 0 ? const Color(0xFF43A047) : AppTheme.dangerColor;
+        return _StyledCard(
+          color: _kBudgetColor,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _kBudgetColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.account_balance_outlined,
+                      color: _kBudgetColor, size: 18),
+                ),
+                const SizedBox(width: 10),
+                const Text('Net Worth',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              ]),
+              Text(formattedNetWorth,
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            ],
           ),
         );
       },
@@ -334,11 +361,32 @@ class _BudgetScreenState extends State<BudgetScreen> {
       builder: (context, snapshot) {
         final cashFlow = snapshot.data ?? 0.0;
         final formattedCashFlow = NumberFormat.simpleCurrency(decimalDigits: 2).format(cashFlow);
-        final color = cashFlow >= 0 ? Colors.green.shade700 : Colors.red.shade700;
-        return Card(
-          child: ListTile(
-            title: Text('Cash Flow (${DateFormat.yMMMM().format(_selectedMonth)})'),
-            trailing: Text(formattedCashFlow, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        final isPositive = cashFlow >= 0;
+        final color = isPositive ? const Color(0xFF43A047) : AppTheme.dangerColor;
+        return _StyledCard(
+          color: _kBudgetColor,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _kBudgetColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isPositive ? Icons.trending_up : Icons.trending_down,
+                    color: _kBudgetColor, size: 18),
+                ),
+                const SizedBox(width: 10),
+                Text('Cash Flow · ${DateFormat.yMMM().format(_selectedMonth)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              ]),
+              Text(formattedCashFlow,
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            ],
           ),
         );
       },
@@ -468,7 +516,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         final transactions = snapshot.data!;
 
         return ListView.builder(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           itemCount: transactions.length,
           itemBuilder: (context, index) {
             final transaction = transactions[index];
@@ -478,51 +526,139 @@ class _BudgetScreenState extends State<BudgetScreen> {
             final icon = transaction.isIncome ? Icons.add : Icons.remove;
             final amountPrefix = transaction.isIncome ? '+\$' : '-\$';
 
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: ListTile(
-                leading: CircleAvatar(backgroundColor: color, child: Icon(icon, color: Colors.white)),
-                title: Text(transaction.description),
-                subtitle: Text('${transaction.category} - ${DateFormat.yMd().format(transaction.date)}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$amountPrefix${transaction.amount.toStringAsFixed(2)}',
-                      style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    // Add an edit button here
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined, color: Colors.grey, size: 20),
-                      tooltip: 'Edit',
-                      onPressed: () {
-                        if (transaction.isIncome) {
-                          _showIncomeEntryForm(transaction.originalEntry as IncomeEntry, (transaction.originalEntry as IncomeEntry).careRecipientId);
-                        } else {
-                          _showBudgetEntryForm(transaction.originalEntry as BudgetEntry, (transaction.originalEntry as BudgetEntry).careRecipientId);
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.grey),
-                      tooltip: 'Delete',
-                      onPressed: () => _deleteTransaction(transaction),
-                    )
+            final entryColor = transaction.isIncome
+                ? const Color(0xFF43A047)
+                : AppTheme.dangerColor;
+            return GestureDetector(
+              onTap: () {
+                if (transaction.isIncome) {
+                  _showIncomeEntryForm(transaction.originalEntry as IncomeEntry,
+                      (transaction.originalEntry as IncomeEntry).careRecipientId);
+                } else {
+                  _showBudgetEntryForm(transaction.originalEntry as BudgetEntry,
+                      (transaction.originalEntry as BudgetEntry).careRecipientId);
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: entryColor.withOpacity(0.2)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: entryColor.withOpacity(0.06),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2)),
                   ],
                 ),
-                onTap: () {
-                  // This is the fix for the missing edit functionality
-                  if (transaction.isIncome) {
-                    _showIncomeEntryForm(transaction.originalEntry as IncomeEntry, (transaction.originalEntry as IncomeEntry).careRecipientId);
-                  } else {
-                    _showBudgetEntryForm(transaction.originalEntry as BudgetEntry, (transaction.originalEntry as BudgetEntry).careRecipientId);
-                  }
-                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(width: 4, color: entryColor),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: entryColor.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(icon,
+                                      color: entryColor, size: 16),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Text(transaction.description,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${transaction.category} · ${DateFormat.MMMd().format(transaction.date)}',
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppTheme.textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  '$amountPrefix${transaction.amount.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                      color: entryColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: AppTheme.textLight,
+                                      size: 18),
+                                  tooltip: 'Delete',
+                                  onPressed: () =>
+                                      _deleteTransaction(transaction),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             );
           },
         );
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Styled card — matches the app's left-accent-strip card pattern.
+// ---------------------------------------------------------------------------
+class _StyledCard extends StatelessWidget {
+  const _StyledCard({required this.child, required this.color});
+  final Widget child;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 2),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

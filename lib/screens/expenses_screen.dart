@@ -10,6 +10,8 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
+import 'package:cecelia_care_flutter/screens/forms/expense_form.dart';
+import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/widgets/show_entry_dialog.dart';
 
 // Expenses accent color — amber, matching the nav tab.
@@ -530,8 +532,70 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       body: screenContent,
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'expensesAddFab',
-        onPressed: () =>
-            showEntryDialog(context, onNewMessage: () {}),
+        onPressed: () {
+          final activeElder = _elderProv.activeElder;
+          if (activeElder == null) return;
+          final journalService =
+              context.read<JournalServiceProvider>();
+          final currentDateStr =
+              DateFormat('yyyy-MM-dd').format(DateTime.now());
+          // Open the expense form directly as a bottom sheet —
+          // bypasses the entry-type picker dialog entirely.
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            backgroundColor: Colors.transparent,
+            builder: (sheetContext) {
+              return Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(sheetContext).scaffoldBackgroundColor,
+                    borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 20,
+                        offset: const Offset(0, -4),
+                      ),
+                    ],
+                  ),
+                  constraints: BoxConstraints(
+                    maxHeight:
+                        MediaQuery.of(sheetContext).size.height * 0.92,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 12),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Flexible(
+                        child: ChangeNotifierProvider.value(
+                          value: journalService,
+                          child: ExpenseForm(
+                            onClose: () => Navigator.of(sheetContext).pop(),
+                            currentDate: currentDateStr,
+                            activeElder: activeElder,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
         tooltip: _l10n.careScreenButtonAddExpense,
         icon: const Icon(Icons.add),
         label: Text(_l10n.careScreenButtonAddExpense),

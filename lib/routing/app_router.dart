@@ -16,7 +16,6 @@ import '../screens/login_screen.dart';
 import '../screens/medications/medication_manager_screen.dart';
 import '../screens/medications_screen.dart';
 import '../screens/route_error_screen.dart';
-import '../screens/settings_screen.dart';
 import '../services/firestore_service.dart';
 import '../services/rxnav_service.dart';
 
@@ -104,6 +103,9 @@ class AppRouter {
           );
         },
       ),
+      // NOTE: The medications route is a GoRouter fallback for deep-links.
+      // Normal in-app navigation should use Navigator.push directly from
+      // care_screen.dart so the bottom navigation bar stays visible.
       GoRoute(
         path: '/medications',
         pageBuilder: (context, state) {
@@ -136,15 +138,9 @@ class AppRouter {
           );
         },
       ),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) {
-          return SettingsScreen(
-            navigateToManageCareRecipientProfiles: () =>
-                context.push('/manage-profiles'),
-          );
-        },
-      ),
+      // NOTE: caregiver-journal is also navigated to via context.pushNamed
+      // from self_care_screen.dart. This replaces HomeScreen so the bottom
+      // nav disappears. Fix: change self_care_screen to use Navigator.push.
       GoRoute(
         path: '/caregiver-journal',
         name: 'caregiver-journal',
