@@ -14,6 +14,8 @@ import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/export_service.dart';
+import 'package:cecelia_care_flutter/models/wellness_checkin.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // ---------------------------------------------------------------------------
@@ -66,6 +68,7 @@ class _ExportScreenState extends State<ExportScreen> {
   late Set<EntryType> _selectedTypes;
 
   _ExportFormat _format = _ExportFormat.pdf;
+  bool _includeWellness = false;
   bool _isExporting = false;
   String? _lastExportPath;
 
@@ -122,8 +125,8 @@ class _ExportScreenState extends State<ExportScreen> {
 
   Future<void> _handleExport() async {
     if (_isExporting) return;
-    if (_selectedTypes.isEmpty) {
-      _showError('Please select at least one entry type to export.');
+    if (_selectedTypes.isEmpty && !_includeWellness) {
+      _showError('Please select at least one entry type or include wellness data.');
       return;
     }
 
@@ -165,7 +168,41 @@ class _ExportScreenState extends State<ExportScreen> {
           .where((e) => _selectedTypes.contains(e.type))
           .toList();
 
-      if (entries.isEmpty) {
+      // Fetch wellness check-ins if requested
+      List<WellnessCheckin>? wellnessCheckins;
+      if (_includeWellness) {
+        try {
+          final wellnessSnap = await FirebaseFirestore.instance
+              .collection('wellnessCheckins')
+              .where('userId', isEqualTo: currentUserId)
+              .where('dateString',
+                  isGreaterThanOrEqualTo:
+                      DateFormat('yyyy-MM-dd').format(_startDate))
+              .where('dateString',
+                  isLessThanOrEqualTo:
+                      DateFormat('yyyy-MM-dd').format(_endDate))
+              .orderBy('dateString', descending: false)
+              .get();
+          wellnessCheckins = wellnessSnap.docs.map((doc) {
+            final data = doc.data();
+            return WellnessCheckin(
+              id: doc.id,
+              userId: data['userId'] as String,
+              dateString: data['dateString'] as String,
+              mood: (data['mood'] as num).toInt(),
+              sleepQuality: (data['sleepQuality'] as num).toInt(),
+              exercise: (data['exercise'] as num).toInt(),
+              socialConnection: (data['socialConnection'] as num).toInt(),
+              meTime: (data['meTime'] as num).toInt(),
+              note: data['note'] as String?,
+            );
+          }).toList();
+        } catch (e) {
+          debugPrint('ExportScreen: error fetching wellness data: $e');
+        }
+      }
+
+      if (entries.isEmpty && (wellnessCheckins == null || wellnessCheckins.isEmpty)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
@@ -194,7 +231,8 @@ class _ExportScreenState extends State<ExportScreen> {
       );
 
       if (_format == _ExportFormat.csv) {
-        final csv = _exportService.generateCsv(entries, meta: meta);
+        final csv = _exportService.generateCsv(entries,
+            meta: meta, wellnessCheckins: wellnessCheckins);
         final file = File(
             '${tempDir.path}/${elderSlug}_care_log_$rangeLabel.csv');
         await file.writeAsString(csv);
@@ -203,8 +241,8 @@ class _ExportScreenState extends State<ExportScreen> {
           await _shareFile(file.path, 'text/csv');
         }
       } else {
-        final pdfBytes =
-            await _exportService.generatePdf(entries, meta: meta);
+        final pdfBytes = await _exportService.generatePdf(entries,
+            meta: meta, wellnessCheckins: wellnessCheckins);
         final file = File(
             '${tempDir.path}/${elderSlug}_care_report_$rangeLabel.pdf');
         await file.writeAsBytes(pdfBytes);
@@ -455,6 +493,82 @@ class _ExportScreenState extends State<ExportScreen> {
           const Divider(height: 1),
           const SizedBox(height: 20),
 
+          // ── Wellness data toggle ─────────────────────────────────
+          const _SectionLabel(label: 'Caregiver wellness'),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => setState(() {
+              _includeWellness = !_includeWellness;
+              _lastExportPath = null;
+            }),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _includeWellness
+                    ? const Color(0xFF8E24AA).withOpacity(0.06)
+                    : AppTheme.backgroundGray,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _includeWellness
+                      ? const Color(0xFF8E24AA)
+                      : AppTheme.textLight.withOpacity(0.4),
+                  width: _includeWellness ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.favorite_outline,
+                    size: 20,
+                    color: _includeWellness
+                        ? const Color(0xFF8E24AA)
+                        : AppTheme.textSecondary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Include wellness check-ins',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _includeWellness
+                                ? const Color(0xFF8E24AA)
+                                : AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Daily mood, sleep, exercise, social & me-time scores',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _includeWellness
+                        ? Icons.check_circle
+                        : Icons.circle_outlined,
+                    size: 22,
+                    color: _includeWellness
+                        ? const Color(0xFF8E24AA)
+                        : AppTheme.textLight,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          const Divider(height: 1),
+          const SizedBox(height: 20),
+
           // ── Format picker ────────────────────────────────────────
           const _SectionLabel(label: 'Format'),
           const SizedBox(height: 10),
@@ -496,7 +610,7 @@ class _ExportScreenState extends State<ExportScreen> {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed:
-                  (_isExporting || _selectedTypes.isEmpty)
+                  (_isExporting || (_selectedTypes.isEmpty && !_includeWellness))
                       ? null
                       : _handleExport,
               icon: _isExporting

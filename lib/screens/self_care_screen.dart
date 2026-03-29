@@ -33,6 +33,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/screens/wellness_checkin_screen.dart';
 import 'package:cecelia_care_flutter/screens/breathing_exercise_screen.dart';
 import 'package:cecelia_care_flutter/screens/sos_screen.dart';
+import 'package:cecelia_care_flutter/screens/affirmations_screen.dart';
 import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal_screen.dart';
 
 // Widgets
@@ -648,14 +649,12 @@ class _ReliefToolsGrid extends StatelessWidget {
         _ReliefTile(
           icon: Icons.format_quote_outlined,
           label: 'Affirmations',
-          subtitle: 'Coming soon',
+          subtitle: 'Daily encouragement',
           color: const Color(0xFF00897B),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Affirmations coming in a future update!')),
-            );
-          },
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (_) => const AffirmationsScreen()),
+          ),
         ),
       ],
     );

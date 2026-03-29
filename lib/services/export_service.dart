@@ -19,6 +19,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
+import 'package:cecelia_care_flutter/models/wellness_checkin.dart';
 import 'package:cecelia_care_flutter/screens/export_screen.dart'
     show ExportMeta;
 
@@ -31,9 +32,13 @@ class ExportService {
   ///
   /// When [meta] is provided the file opens with 4 context rows followed by
   /// a blank row, then the standard column headers and data rows.
+  ///
+  /// When [wellnessCheckins] is provided, a wellness section is appended
+  /// after the care log entries.
   String generateCsv(
     List<JournalEntry> entries, {
     ExportMeta? meta,
+    List<WellnessCheckin>? wellnessCheckins,
   }) {
     if (entries.isEmpty) return '';
 
@@ -68,6 +73,38 @@ class ExportService {
       rows.add(_getFormattedCsvRow(entry));
     }
 
+    // ── Wellness check-in section (optional) ────────────────────────────
+    if (wellnessCheckins != null && wellnessCheckins.isNotEmpty) {
+      rows.addAll([
+        [], // blank spacer
+        ['CAREGIVER WELLNESS CHECK-INS'],
+        [
+          'Date',
+          'Mood (1-5)',
+          'Sleep (1-5)',
+          'Exercise (1-5)',
+          'Social (1-5)',
+          'Me-Time (1-5)',
+          'Wellbeing Score',
+          'Burnout Risk',
+          'Note',
+        ],
+      ]);
+      for (final c in wellnessCheckins) {
+        rows.add([
+          c.dateString,
+          c.mood,
+          c.sleepQuality,
+          c.exercise,
+          c.socialConnection,
+          c.meTime,
+          c.wellbeingScore.toStringAsFixed(1),
+          c.burnoutRisk.toStringAsFixed(1),
+          c.note ?? '',
+        ]);
+      }
+    }
+
     return const ListToCsvConverter().convert(rows);
   }
 
@@ -80,9 +117,13 @@ class ExportService {
   /// When [meta] is provided the document opens with a styled cover-header
   /// block, then entries are grouped by entry type with a bold section
   /// header before each group.
+  ///
+  /// When [wellnessCheckins] is provided, a wellness section is appended
+  /// after the care log entries.
   Future<Uint8List> generatePdf(
     List<JournalEntry> entries, {
     ExportMeta? meta,
+    List<WellnessCheckin>? wellnessCheckins,
   }) async {
     final pdf = pw.Document();
     final dateFmt = DateFormat('yyyy-MM-dd');
@@ -180,6 +221,104 @@ class ExportService {
               }
             }
             widgets.add(pw.SizedBox(height: 16));
+          }
+
+          // ── Wellness check-in section (optional) ──────────────────────
+          if (wellnessCheckins != null && wellnessCheckins.isNotEmpty) {
+            widgets.add(pw.SizedBox(height: 8));
+            widgets.add(
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 6),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.purple100,
+                  borderRadius:
+                      pw.BorderRadius.all(pw.Radius.circular(4)),
+                ),
+                child: pw.Text(
+                  'CAREGIVER WELLNESS CHECK-INS',
+                  style: pw.TextStyle(
+                    fontSize: 11,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.purple800,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ),
+            );
+            widgets.add(pw.SizedBox(height: 10));
+
+            // Table header
+            widgets.add(
+              pw.Table(
+                border: pw.TableBorder.all(
+                    color: PdfColors.grey300, width: 0.5),
+                columnWidths: const {
+                  0: pw.FlexColumnWidth(2.0),
+                  1: pw.FlexColumnWidth(1.0),
+                  2: pw.FlexColumnWidth(1.0),
+                  3: pw.FlexColumnWidth(1.0),
+                  4: pw.FlexColumnWidth(1.0),
+                  5: pw.FlexColumnWidth(1.0),
+                  6: pw.FlexColumnWidth(1.2),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColors.purple50),
+                    children: [
+                      'Date', 'Mood', 'Sleep', 'Exercise',
+                      'Social', 'Me-Time', 'Wellbeing',
+                    ]
+                        .map((h) => pw.Padding(
+                              padding: const pw.EdgeInsets.all(4),
+                              child: pw.Text(h,
+                                  style: pw.TextStyle(
+                                      fontSize: 8,
+                                      fontWeight:
+                                          pw.FontWeight.bold)),
+                            ))
+                        .toList(),
+                  ),
+                  ...wellnessCheckins.map((c) => pw.TableRow(
+                        children: [
+                          c.dateString,
+                          '${c.mood} ${c.moodLabel}',
+                          '${c.sleepQuality}',
+                          '${c.exercise}',
+                          '${c.socialConnection}',
+                          '${c.meTime}',
+                          c.wellbeingScore.toStringAsFixed(0),
+                        ]
+                            .map((v) => pw.Padding(
+                                  padding:
+                                      const pw.EdgeInsets.all(4),
+                                  child: pw.Text(v,
+                                      style: const pw.TextStyle(
+                                          fontSize: 8)),
+                                ))
+                            .toList(),
+                      )),
+                ],
+              ),
+            );
+
+            // Summary line
+            if (wellnessCheckins.length >= 2) {
+              final avgScore = wellnessCheckins.fold<double>(
+                      0, (sum, c) => sum + c.wellbeingScore) /
+                  wellnessCheckins.length;
+              widgets.add(pw.SizedBox(height: 6));
+              widgets.add(pw.Text(
+                'Average wellbeing: ${avgScore.toStringAsFixed(1)} / 100  '
+                '(${wellnessCheckins.length} check-ins)',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontStyle: pw.FontStyle.italic,
+                  color: PdfColors.blueGrey500,
+                ),
+              ));
+            }
           }
 
           return widgets;

@@ -8,6 +8,7 @@
 //   caregiverJournalEntries/{id}
 //     userId      : String   — author's UID (rules enforce author-only access)
 //     note        : String   — journal body text
+//     prompt      : String?  — the gratitude prompt used (null if free-form)
 //     createdAt   : Timestamp
 //     updatedAt   : Timestamp
 
@@ -15,12 +16,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/gratitude_prompts.dart';
+import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
+import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 
 // Purple — matches the Self Care tab that hosts this screen.
 const _kJournalColor = Color(0xFF8E24AA);
+const _kPromptColor = Color(0xFF00897B); // teal for the prompt card
 const _kMaxChars = 1000;
 
 class CareGiverJournalScreen extends StatefulWidget {
@@ -36,6 +42,9 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
   String? _editingDocId;
   bool _isSubmitting = false;
 
+  /// The gratitude prompt attached to the current composition (null = free-form).
+  String? _activePrompt;
+
   static final _col =
       FirebaseFirestore.instance.collection('caregiverJournalEntries');
 
@@ -45,6 +54,38 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Gratitude prompt helpers
+  // ---------------------------------------------------------------------------
+
+  void _usePrompt(String prompt) {
+    setState(() {
+      _activePrompt = prompt;
+      _editingDocId = null;
+      _ctrl.text = '';
+    });
+    // Auto-focus the text field so the user can start typing immediately.
+  }
+
+  void _clearPrompt() {
+    setState(() => _activePrompt = null);
+  }
+
+  void _showAllPrompts() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _AllPromptsSheet(
+        onSelect: (prompt) {
+          Navigator.of(ctx).pop();
+          _usePrompt(prompt);
+        },
+      ),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -75,13 +116,35 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
         await _col.add({
           'userId': uid,
           'note': text,
+          if (_activePrompt != null) 'prompt': _activePrompt,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
         _snack(AppLocalizations.of(context)!.journalEntryAddedSuccessfully);
+
+        // Award points for journaling
+        try {
+          final gam = context.read<GamificationProvider>();
+          await gam.onJournalWritten();
+          final badges = context.read<BadgeProvider>();
+          await badges.checkTierProgress(
+            journalCount: gam.lifetimeJournals,
+            streakDays: gam.longestStreak,
+            breathingCount: gam.lifetimeBreathingSessions,
+            careLogCount: gam.lifetimeCareLogs,
+            challengeCount: gam.lifetimeChallengesCompleted,
+            totalPoints: gam.totalPoints,
+            moodDays: gam.lifetimeCheckins,
+          );
+        } catch (e) {
+          debugPrint('Journal: error awarding points: $e');
+        }
       }
       _ctrl.clear();
-      setState(() => _editingDocId = null);
+      setState(() {
+        _editingDocId = null;
+        _activePrompt = null;
+      });
     } catch (e) {
       debugPrint('CareGiverJournalScreen._save error: $e');
       _snack(AppLocalizations.of(context)!.genericError(e.toString()));
@@ -132,6 +195,7 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
   void _startEdit(String docId, String note) {
     setState(() {
       _editingDocId = docId;
+      _activePrompt = null;
       _ctrl.text = note;
     });
   }
@@ -139,6 +203,7 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
   void _cancelEdit() {
     setState(() {
       _editingDocId = null;
+      _activePrompt = null;
       _ctrl.clear();
     });
   }
@@ -167,21 +232,45 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.caregiverJournal)),
+      appBar: AppBar(
+        title: Text(loc.caregiverJournal),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryColor,
+                AppTheme.primaryColor.withOpacity(0.82),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+      ),
       body: Column(
         children: [
-          // ── Entry composer ────────────────────────────────────────────────
+          // ── Gratitude prompt card ─────────────────────────────────────
+          _GratitudePromptCard(
+            prompt: GratitudePrompts.todayPrompt,
+            isActive: _activePrompt != null,
+            onUsePrompt: () => _usePrompt(GratitudePrompts.todayPrompt),
+            onSeeAll: _showAllPrompts,
+            onClear: _clearPrompt,
+          ),
+
+          // ── Entry composer ────────────────────────────────────────────
           _ComposerCard(
             ctrl: _ctrl,
             isEditing: _editingDocId != null,
             isSubmitting: _isSubmitting,
+            activePrompt: _activePrompt,
             onSave: _save,
-            onCancel: _cancelEdit,
+            onCancel: _editingDocId != null ? _cancelEdit : _clearPrompt,
             color: _kJournalColor,
             loc: loc,
           ),
 
-          // ── Journal entries list ──────────────────────────────────────────
+          // ── Journal entries list ──────────────────────────────────────
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _col
@@ -237,6 +326,7 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
                     final doc = docs[i];
                     final data = doc.data() as Map<String, dynamic>;
                     final note = data['note'] as String? ?? '';
+                    final prompt = data['prompt'] as String?;
                     final ts = data['createdAt'] as Timestamp?;
                     final date = ts != null
                         ? DateFormat.yMMMd(loc.localeName)
@@ -248,6 +338,7 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
                     return _JournalCard(
                       docId: doc.id,
                       note: note,
+                      prompt: prompt,
                       date: date,
                       isBeingEdited: isBeingEdited,
                       color: _kJournalColor,
@@ -267,7 +358,281 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Composer card — text field + save/cancel buttons
+// Gratitude prompt card — shown at the top of the journal
+// ---------------------------------------------------------------------------
+
+class _GratitudePromptCard extends StatelessWidget {
+  const _GratitudePromptCard({
+    required this.prompt,
+    required this.isActive,
+    required this.onUsePrompt,
+    required this.onSeeAll,
+    required this.onClear,
+  });
+
+  final String prompt;
+  final bool isActive;
+  final VoidCallback onUsePrompt;
+  final VoidCallback onSeeAll;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _kPromptColor.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isActive ? _kPromptColor : _kPromptColor.withOpacity(0.2),
+          width: isActive ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _kPromptColor.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.lightbulb_outline,
+                    color: _kPromptColor, size: 16),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                "TODAY'S GRATITUDE PROMPT",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8,
+                  color: _kPromptColor,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: onSeeAll,
+                child: Text(
+                  'More prompts',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: _kPromptColor.withOpacity(0.7),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Prompt text
+          Text(
+            prompt,
+            style: TextStyle(
+              fontSize: 14,
+              color: _kPromptColor.withOpacity(0.9),
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Action button
+          if (!isActive)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onUsePrompt,
+                icon: const Icon(Icons.edit_outlined, size: 14),
+                label: const Text('Use this prompt',
+                    style: TextStyle(fontSize: 12)),
+                style: TextButton.styleFrom(
+                  foregroundColor: _kPromptColor,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                        color: _kPromptColor.withOpacity(0.3)),
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            )
+          else
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check_circle,
+                      size: 14, color: _kPromptColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Writing with this prompt',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _kPromptColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onClear,
+                    child: Icon(Icons.close,
+                        size: 14,
+                        color: _kPromptColor.withOpacity(0.5)),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// All prompts sheet — scrollable list of all 50+ prompts
+// ---------------------------------------------------------------------------
+
+class _AllPromptsSheet extends StatelessWidget {
+  const _AllPromptsSheet({required this.onSelect});
+  final ValueChanged<String> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final prompts = GratitudePrompts.all;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppTheme.textLight,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                const Icon(Icons.lightbulb_outline,
+                    color: _kPromptColor, size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  'Choose a prompt',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _kPromptColor,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${prompts.length} prompts',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView.separated(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              itemCount: prompts.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, i) {
+                final isToday = prompts[i] == GratitudePrompts.todayPrompt;
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 4, vertical: 4),
+                  leading: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: isToday
+                          ? _kPromptColor.withOpacity(0.12)
+                          : AppTheme.backgroundGray,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${i + 1}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isToday
+                              ? _kPromptColor
+                              : AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    prompts[i],
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.textPrimary,
+                      fontWeight:
+                          isToday ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: isToday
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _kPromptColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'Today',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: _kPromptColor,
+                            ),
+                          ),
+                        )
+                      : null,
+                  onTap: () => onSelect(prompts[i]),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Composer card — text field + save/cancel buttons + active prompt indicator
 // ---------------------------------------------------------------------------
 
 class _ComposerCard extends StatefulWidget {
@@ -275,6 +640,7 @@ class _ComposerCard extends StatefulWidget {
     required this.ctrl,
     required this.isEditing,
     required this.isSubmitting,
+    required this.activePrompt,
     required this.onSave,
     required this.onCancel,
     required this.color,
@@ -284,6 +650,7 @@ class _ComposerCard extends StatefulWidget {
   final TextEditingController ctrl;
   final bool isEditing;
   final bool isSubmitting;
+  final String? activePrompt;
   final VoidCallback onSave;
   final VoidCallback onCancel;
   final Color color;
@@ -314,7 +681,7 @@ class _ComposerCardState extends State<_ComposerCard> {
     final color = widget.color;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.05),
@@ -358,7 +725,51 @@ class _ComposerCardState extends State<_ComposerCard> {
                 color: color,
               ),
             ),
+            // Points hint for new entries
+            if (!widget.isEditing) ...[
+              const Spacer(),
+              Text(
+                '+15 pts',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: color.withOpacity(0.5),
+                ),
+              ),
+            ],
           ]),
+
+          // Active prompt indicator
+          if (widget.activePrompt != null && !widget.isEditing) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _kPromptColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lightbulb_outline,
+                      size: 13, color: _kPromptColor),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      widget.activePrompt!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: _kPromptColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: 12),
 
@@ -367,8 +778,11 @@ class _ComposerCardState extends State<_ComposerCard> {
             controller: widget.ctrl,
             maxLines: 5,
             maxLength: _kMaxChars,
+            autofocus: widget.activePrompt != null,
             decoration: InputDecoration(
-              hintText: widget.loc.writeYourEntryHere,
+              hintText: widget.activePrompt != null
+                  ? 'Write your response...'
+                  : widget.loc.writeYourEntryHere,
               filled: true,
               fillColor: color.withOpacity(0.04),
               counterText: '$charCount / $_kMaxChars',
@@ -393,13 +807,16 @@ class _ComposerCardState extends State<_ComposerCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if (widget.isEditing)
+              if (widget.isEditing || widget.activePrompt != null)
                 TextButton(
                   onPressed:
                       widget.isSubmitting ? null : widget.onCancel,
-                  child: Text(widget.loc.cancelEdit),
+                  child: Text(widget.isEditing
+                      ? widget.loc.cancelEdit
+                      : 'Clear prompt'),
                 ),
-              if (widget.isEditing) const SizedBox(width: 8),
+              if (widget.isEditing || widget.activePrompt != null)
+                const SizedBox(width: 8),
               ElevatedButton.icon(
                 onPressed: widget.isSubmitting ? null : widget.onSave,
                 icon: widget.isSubmitting
@@ -434,7 +851,7 @@ class _ComposerCardState extends State<_ComposerCard> {
 }
 
 // ---------------------------------------------------------------------------
-// Journal entry card — left accent strip, edit/delete actions
+// Journal entry card — left accent strip, prompt badge, edit/delete actions
 // ---------------------------------------------------------------------------
 
 class _JournalCard extends StatelessWidget {
@@ -447,10 +864,12 @@ class _JournalCard extends StatelessWidget {
     required this.theme,
     required this.onEdit,
     required this.onDelete,
+    this.prompt,
   });
 
   final String docId;
   final String note;
+  final String? prompt;
   final String date;
   final bool isBeingEdited;
   final Color color;
@@ -494,7 +913,7 @@ class _JournalCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Date
+                      // Date + editing badge
                       Row(
                         children: [
                           Icon(Icons.calendar_today_outlined,
@@ -528,7 +947,42 @@ class _JournalCard extends StatelessWidget {
                           ],
                         ],
                       ),
+
+                      // Prompt badge — shown on entries that used a gratitude prompt
+                      if (prompt != null && prompt!.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _kPromptColor.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.lightbulb_outline,
+                                  size: 12, color: _kPromptColor),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  prompt!,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                    color: _kPromptColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       const SizedBox(height: 8),
+
                       // Note body
                       Text(
                         note,

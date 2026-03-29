@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/screens/settings/inclusive_language_guide_s
 import 'package:cecelia_care_flutter/screens/export_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/providers/theme_provider.dart';
 import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -230,6 +231,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
         ),
+
+        const SizedBox(height: 20),
+
+        // Appearance / Dark Mode
+        _SectionHeader(label: 'Appearance'),
+        _DarkModeSelector(),
 
         const SizedBox(height: 20),
 
@@ -461,6 +468,146 @@ class _SettingsTile extends StatelessWidget {
         ? const Icon(Icons.chevron_right, color: AppTheme.textLight, size: 20) : null,
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Dark mode selector — three-option segmented control (Light / System / Dark)
+// ---------------------------------------------------------------------------
+
+class _DarkModeSelector extends StatelessWidget {
+  const _DarkModeSelector();
+
+  static const _kColor = Color(0xFF5C6BC0); // indigo — matches export tile
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final current = themeProvider.themeMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: _kColor.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _kColor.withOpacity(0.15)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _kColor.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    themeProvider.isDark(context)
+                        ? Icons.dark_mode_outlined
+                        : Icons.light_mode_outlined,
+                    color: _kColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Theme',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _ThemeChip(
+                  label: 'Light',
+                  icon: Icons.light_mode_outlined,
+                  selected: current == ThemeMode.light,
+                  onTap: () => themeProvider.setLight(),
+                ),
+                const SizedBox(width: 8),
+                _ThemeChip(
+                  label: 'System',
+                  icon: Icons.settings_brightness_outlined,
+                  selected: current == ThemeMode.system,
+                  onTap: () => themeProvider.setSystem(),
+                ),
+                const SizedBox(width: 8),
+                _ThemeChip(
+                  label: 'Dark',
+                  icon: Icons.dark_mode_outlined,
+                  selected: current == ThemeMode.dark,
+                  onTap: () => themeProvider.setDark(),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeChip extends StatelessWidget {
+  const _ThemeChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  static const _kColor = Color(0xFF5C6BC0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected
+                ? _kColor.withOpacity(0.12)
+                : AppTheme.backgroundGray,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? _kColor : Colors.transparent,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: selected ? _kColor : AppTheme.textSecondary,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight:
+                      selected ? FontWeight.w600 : FontWeight.normal,
+                  color: selected ? _kColor : AppTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

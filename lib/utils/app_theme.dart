@@ -42,6 +42,25 @@ class AppTheme {
   static const Color backgroundGray = Color(0xFFF5F5F5);
 
   // ---------------------------------------------------------------------------
+  // DARK MODE COLORS
+  //
+  // Suffixed with "Dark" to avoid collision with light-mode constants.
+  // These are used exclusively in darkTheme below; widgets that reference
+  // the static constants above (textPrimary, backgroundGray, etc.) will
+  // continue working because the ThemeData's colorScheme overrides take
+  // effect at the widget level via Theme.of(context).
+  // ---------------------------------------------------------------------------
+
+  static const Color _darkBackground = Color(0xFF121212);
+  static const Color _darkSurface = Color(0xFF1E1E1E);
+  static const Color _darkCard = Color(0xFF2C2C2C);
+  static const Color _darkTextPrimary = Color(0xFFE0E0E0);
+  static const Color _darkTextSecondary = Color(0xFF9E9E9E);
+  static const Color _darkTextLight = Color(0xFF616161);
+  static const Color _darkPrimary = Color(0xFF7986CB); // lighter indigo for contrast
+  static const Color _darkAccent = Color(0xFFFF8A65); // lighter deep orange
+
+  // ---------------------------------------------------------------------------
   // SEMANTIC STATUS COLORS
   // ---------------------------------------------------------------------------
 
@@ -116,12 +135,95 @@ class AppTheme {
   static const Color entryDefaultSurface = backgroundGray;
 
   // ---------------------------------------------------------------------------
-  // THEME DATA
+  // DARK ENTRY TYPE SURFACE COLORS
+  //
+  // In dark mode the pastel surfaces need to be dark-tinted versions so cards
+  // are readable. Accent colors stay the same or get slightly lighter.
+  // ---------------------------------------------------------------------------
+
+  static const Color entryMessageSurfaceDark  = Color(0xFF3E2723);
+  static const Color entryCaregiverSurfaceDark = Color(0xFF263238);
+  static const Color entryMedicationSurfaceDark = Color(0xFF1A237E);
+  static const Color entrySleepSurfaceDark    = Color(0xFF0D47A1);
+  static const Color entryMealSurfaceDark     = Color(0xFF1B5E20);
+  static const Color entryMoodSurfaceDark     = Color(0xFF4A148C);
+  static const Color entryPainSurfaceDark     = Color(0xFF4E1313);
+  static const Color entryActivitySurfaceDark = Color(0xFF004D40);
+  static const Color entryVitalSurfaceDark    = Color(0xFF006064);
+  static const Color entryExpenseSurfaceDark  = Color(0xFF3E2723);
+  static const Color entryImageSurfaceDark    = Color(0xFF1A237E);
+  static const Color entryDefaultSurfaceDark  = _darkCard;
+
+  /// Returns the correct entry surface color based on brightness.
+  /// Usage: AppTheme.entryMedicationSurfaceFor(context)
+  static Color entryMessageSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryMessageSurfaceDark
+          : entryMessageSurface;
+
+  static Color entryCaregiverSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryCaregiverSurfaceDark
+          : entryCaregiverSurface;
+
+  static Color entryMedicationSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryMedicationSurfaceDark
+          : entryMedicationSurface;
+
+  static Color entrySleepSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entrySleepSurfaceDark
+          : entrySleepSurface;
+
+  static Color entryMealSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryMealSurfaceDark
+          : entryMealSurface;
+
+  static Color entryMoodSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryMoodSurfaceDark
+          : entryMoodSurface;
+
+  static Color entryPainSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryPainSurfaceDark
+          : entryPainSurface;
+
+  static Color entryActivitySurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryActivitySurfaceDark
+          : entryActivitySurface;
+
+  static Color entryVitalSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryVitalSurfaceDark
+          : entryVitalSurface;
+
+  static Color entryExpenseSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryExpenseSurfaceDark
+          : entryExpenseSurface;
+
+  static Color entryImageSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryImageSurfaceDark
+          : entryImageSurface;
+
+  static Color entryDefaultSurfaceFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? entryDefaultSurfaceDark
+          : entryDefaultSurface;
+
+  // ---------------------------------------------------------------------------
+  // THEME DATA — LIGHT
   // ---------------------------------------------------------------------------
 
   /// The main light theme for the application.
   static ThemeData get lightTheme {
     return ThemeData(
+      brightness: Brightness.light,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
       fontFamily: 'Poppins',
@@ -238,6 +340,183 @@ class AppTheme {
         ),
         hintStyle: const TextStyle(
           color: textSecondary,
+          fontFamily: 'Poppins',
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // THEME DATA — DARK
+  // ---------------------------------------------------------------------------
+
+  /// The dark theme for the application.
+  static ThemeData get darkTheme {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primaryColor: _darkPrimary,
+      scaffoldBackgroundColor: _darkBackground,
+      fontFamily: 'Poppins',
+      colorScheme: const ColorScheme.dark(
+        primary: _darkPrimary,
+        secondary: _darkAccent,
+        surface: _darkSurface,
+        error: Color(0xFFEF5350), // lighter red for dark bg
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: _darkTextPrimary,
+        onError: Colors.white,
+      ),
+
+      // --- COMPONENT THEMES ---
+      appBarTheme: AppBarTheme(
+        backgroundColor: _darkSurface,
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.5),
+        scrolledUnderElevation: 6,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: _darkTextPrimary),
+        actionsIconTheme: const IconThemeData(color: _darkTextPrimary),
+        titleTextStyle: const TextStyle(
+          color: _darkTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+        ),
+        shape: const Border(
+          bottom: BorderSide(
+            color: Color(0x33FFFFFF),
+            width: 1,
+          ),
+        ),
+      ),
+
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: _darkTextPrimary,
+        ),
+        titleLarge: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: _darkTextPrimary,
+        ),
+        bodyLarge: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          color: _darkTextPrimary,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          color: _darkTextSecondary,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+
+      cardTheme: CardThemeData(
+        color: _darkCard,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+
+      dividerColor: _darkTextLight,
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _darkPrimary,
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _darkPrimary,
+          side: const BorderSide(color: _darkPrimary, width: 1.5),
+          textStyle: const TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w600,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: _darkCard,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: _darkPrimary, width: 2.0),
+        ),
+        labelStyle: const TextStyle(
+          color: _darkTextPrimary,
+          fontFamily: 'Poppins',
+        ),
+        hintStyle: const TextStyle(
+          color: _darkTextSecondary,
+          fontFamily: 'Poppins',
+        ),
+      ),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: _darkSurface,
+        selectedItemColor: _darkPrimary,
+        unselectedItemColor: _darkTextSecondary,
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: _darkCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: _darkSurface,
+      ),
+
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return _darkPrimary;
+          return _darkTextLight;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return _darkPrimary.withOpacity(0.4);
+          }
+          return _darkTextLight.withOpacity(0.3);
+        }),
+      ),
+
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: _darkCard,
+        contentTextStyle: TextStyle(
+          color: _darkTextPrimary,
           fontFamily: 'Poppins',
         ),
       ),

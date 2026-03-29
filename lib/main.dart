@@ -27,6 +27,7 @@ import 'providers/self_care_provider.dart';
 import 'providers/user_profile_provider.dart';
 import 'providers/wellness_provider.dart';
 import 'providers/gamification_provider.dart';
+import 'providers/theme_provider.dart';
 import 'routing/app_router.dart';
 import 'utils/app_theme.dart';
 import 'screens/splash_screen.dart';
@@ -162,6 +163,7 @@ class _AppRootState extends State<AppRoot> {
             ChangeNotifierProvider(create: (_) => SelfCareProvider()),
             ChangeNotifierProvider(create: (_) => WellnessProvider()),
             ChangeNotifierProvider(create: (_) => GamificationProvider()),
+            ChangeNotifierProvider(create: (_) => ThemeProvider()),
             ChangeNotifierProvider(create: (_) => NotificationPrefsProvider()),
 
             // FIX: On elder switch, mutate the existing JournalServiceProvider
@@ -262,8 +264,8 @@ class _CeceliaCareAppState extends State<CeceliaCareApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocaleProvider>(
-      builder: (context, localeProvider, child) {
+    return Consumer2<LocaleProvider, ThemeProvider>(
+      builder: (context, localeProvider, themeProvider, child) {
         return MaterialApp.router(
           routerConfig: _appRouter.router,
           locale: localeProvider.selectedLocale,
@@ -278,6 +280,8 @@ class _CeceliaCareAppState extends State<CeceliaCareApp> {
               AppLocalizations.of(ctx)?.appTitle ?? 'Cecelia Care',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
         );
       },
     );

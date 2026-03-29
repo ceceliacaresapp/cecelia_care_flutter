@@ -28,6 +28,9 @@ import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
+import 'package:cecelia_care_flutter/widgets/wellness_summary_card.dart';
+import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
+import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -350,6 +353,30 @@ class DashboardScreen extends StatelessWidget {
             elderName: elderDisplayName,
             elderInitial: activeElder.profileName[0].toUpperCase(),
           ),
+
+          const SizedBox(height: 14),
+
+          // Weekly wellness summary — reads from WellnessProvider + GamificationProvider
+          Builder(builder: (ctx) {
+            final wellProv = ctx.watch<WellnessProvider>();
+            final gamProv = ctx.watch<GamificationProvider>();
+            if (wellProv.recentCheckins.isEmpty && gamProv.totalPoints == 0) {
+              return const SizedBox.shrink();
+            }
+            final dailyScores = wellProv.recentCheckins.reversed
+                .map((c) => c.wellbeingScore)
+                .toList();
+            return WellnessSummaryCard(
+              wellbeingScore: wellProv.wellbeingScore,
+              burnoutRiskLevel: wellProv.burnoutStatus.level.name,
+              dailyScores: dailyScores,
+              dimensionAverages: wellProv.dimensionAverages,
+              currentStreak: gamProv.currentStreak,
+              level: gamProv.level,
+              levelTitle: gamProv.levelTitle,
+              hasCheckedInToday: wellProv.hasCheckedInToday,
+            );
+          }),
 
           const SizedBox(height: 20),
 
