@@ -212,12 +212,12 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
 
     setState(() => _isUploadingPhoto = true);
     try {
-      // Upload to Firebase Storage under elder_profile_photos/{id or timestamp}/
+      // Upload to Firebase Storage under elder_images/{id or timestamp}/
       final String pathKey = widget.elderId ??
           DateTime.now().millisecondsSinceEpoch.toString();
       final ref = FirebaseStorage.instance
           .ref()
-          .child('elder_profile_photos/$pathKey/profile.jpg');
+          .child('elder_images/$pathKey/profile.jpg');
 
       await ref.putFile(File(file.path));
       final String url = await ref.getDownloadURL();
@@ -395,8 +395,8 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
                     // Title
                     Text(
                       widget.mode == 'edit'
-                          ? 'Edit Elder Profile'
-                          : 'Create New Elder Profile',
+                          ? 'Edit Care Recipient Profile'
+                          : 'Create New Care Recipient Profile',
                       style:
                           kModalTitleStyle.copyWith(fontSize: 22),
                       textAlign: TextAlign.center,
@@ -468,7 +468,7 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
                       onChanged: (_) =>
                           setState(() {}), // refresh initial for avatar
                       decoration: kInputDecoration.copyWith(
-                        hintText: "Elder's Full Name or Nickname",
+                        hintText: "Full Name or Nickname",
                         hintStyle:
                             const TextStyle(color: kTextLight),
                       ),
@@ -531,7 +531,7 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
                       controller: _preferredNameController,
                       decoration: kInputDecoration.copyWith(
                         hintText:
-                            "Elder's Preferred Name (Optional)",
+                            "Preferred Name (Optional)",
                         hintStyle:
                             const TextStyle(color: kTextLight),
                       ),

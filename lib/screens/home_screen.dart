@@ -16,6 +16,8 @@ import 'calendar_screen.dart';
 import 'expenses_screen.dart';
 import 'settings_screen.dart';
 import 'self_care_screen.dart';
+import 'manage_care_recipient_profiles_screen.dart';
+import 'onboarding_screen.dart';
  
 // ---------------------------------------------------------------------------
 // Tab accent colors — 6 tabs. Settings lives in the AppBar gear icon.
@@ -42,6 +44,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _greetingShown = false;
+  bool _onboardingChecked = false;
  
   // One navigator per tab — pushes stay scoped inside the tab so the
   // bottom nav remains visible on every sub-screen.
@@ -61,6 +64,31 @@ class _HomeScreenState extends State<HomeScreen> {
       _showWelcomeGreeting();
     }
   }
+
+  /// Watches [UserProfileProvider.needsOnboarding] reactively.
+  /// Called in [build] — when the provider stream delivers the new user's
+  /// profile doc with onboardingCompleted == false, this fires the
+  /// onboarding screen exactly once. No race condition because we wait
+  /// for the provider (which auto-creates the doc) instead of doing a
+  /// raw Firestore .get() that can fire before the doc exists.
+  void _maybeShowOnboarding(UserProfileProvider provider) {
+    if (_onboardingChecked) return;
+    if (provider.isLoading) return; // still loading — wait
+    if (!provider.needsOnboarding) return; // existing user or already done
+
+    _onboardingChecked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).push(MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => OnboardingScreen(
+          onComplete: () {
+            if (mounted) Navigator.of(context).pop();
+          },
+        ),
+      ));
+    });
+  }
  
   void _onItemTapped(int index) {
     if (index == _selectedIndex) {
@@ -69,6 +97,12 @@ class _HomeScreenState extends State<HomeScreen> {
           .currentState
           ?.popUntil((route) => route.isFirst);
     } else {
+      // Switching to a different tab → pop the OLD tab back to its root
+      // so when the user returns they see the top-level screen, not
+      // whatever sub-screen they had navigated into (e.g. Settings).
+      _navigatorKeys[_selectedIndex]
+          .currentState
+          ?.popUntil((route) => route.isFirst);
       setState(() => _selectedIndex = index);
     }
  
@@ -172,10 +206,15 @@ class _HomeScreenState extends State<HomeScreen> {
  
   @override
   Widget build(BuildContext context) {
-    final userProfile =
-        Provider.of<UserProfileProvider>(context).userProfile;
+    final userProfileProvider =
+        Provider.of<UserProfileProvider>(context);
+    final userProfile = userProfileProvider.userProfile;
     final String preferredTerm =
         userProfile?.preferredTerm ?? _l10n.termElderDefault;
+
+    // Check onboarding reactively — fires once when the provider
+    // delivers a new-user profile with onboardingCompleted == false.
+    _maybeShowOnboarding(userProfileProvider);
  
     final activeElderProvider =
         Provider.of<ActiveElderProvider>(context);
@@ -389,6 +428,41 @@ class _TabScaffold extends StatelessWidget {
           ),
         ),
         actions: [
+          // Care recipient quick-switch avatar — tap to manage profiles.
+          if (activeElder != null)
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) =>
+                      const ManageCareRecipientProfilesScreen(),
+                ));
+              },
+              child: Tooltip(
+                message: 'Switch care recipient',
+                child: Container(
+                  margin: const EdgeInsets.only(right: 4),
+                  child: CircleAvatar(
+                    radius: 15,
+                    backgroundColor: Colors.white.withOpacity(0.25),
+                    backgroundImage:
+                        (activeElder.photoUrl?.isNotEmpty == true)
+                            ? NetworkImage(activeElder.photoUrl!)
+                            : null,
+                    child: (activeElder.photoUrl == null ||
+                            activeElder.photoUrl!.isEmpty)
+                        ? Text(
+                            activeElder.profileName[0].toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: l10n.homeScreenBaseTitleSettings,

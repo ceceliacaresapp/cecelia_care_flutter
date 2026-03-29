@@ -302,7 +302,7 @@ class _ManageCareRecipientProfilesScreenState
       elevation: isActive ? 4 : 2,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: isActive ? AppTheme.accentColor : Colors.transparent,
           width: 2,
@@ -313,85 +313,73 @@ class _ManageCareRecipientProfilesScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row
+            // Header: avatar + name
             Row(
               children: [
-                // Avatar + name — Expanded so the actions Row gets remaining space
+                _ElderAvatar(
+                    profileName: profile.profileName,
+                    photoUrl: profile.photoUrl,
+                    radius: 24),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _ElderAvatar(
-                          profileName: profile.profileName,
-                          photoUrl: profile.photoUrl,
-                          radius: 22),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          profile.profileName,
-                          style: AppStyles.sectionTitle.copyWith(
-                            color: isActive
-                                ? AppTheme.accentColor
-                                : AppTheme.primaryColor,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        profile.profileName,
+                        style: AppStyles.sectionTitle.copyWith(
+                          color: isActive
+                              ? AppTheme.accentColor
+                              : AppTheme.primaryColor,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      if (profile.dateOfBirth.isNotEmpty)
+                        Text('Born: ${profile.dateOfBirth}',
+                            style: _theme.textTheme.bodySmall
+                                ?.copyWith(color: AppTheme.textSecondary)),
                     ],
                   ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isPrimaryAdmin)
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined,
-                            color: AppTheme.accentColor),
-                        tooltip: _l10n.tooltipEditProfile,
-                        onPressed: () => _startEditProfile(profile),
-                      ),
-                    if (isPrimaryAdmin)
-                      Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.person_add_alt_1_outlined,
-                              size: 16),
-                          label: Text(_l10n.inviteButton),
-                          onPressed: () => _showInviteDialog(profile),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                AppTheme.accentColor.withOpacity(0.8),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            textStyle:
-                                const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
-                          ),
-                        ),
-                      ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Provider.of<ActiveElderProvider>(context,
-                                listen: false)
-                            .setActive(profile);
-                        if (mounted)
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(_l10n.profileSetActiveSnackbar(
-                                  profile.profileName))));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isActive
-                            ? AppTheme.accentColor
-                            : AppTheme.primaryColor,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        textStyle:
-                            const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
-                      ),
-                      child: Text(
-                          isActive ? _l10n.activeButton : _l10n.setActiveButton),
-                    ),
-                  ],
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Action buttons row — stacked below the name so they don't overflow
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // Set active / Active badge
+                _ActionChip(
+                  icon: isActive ? Icons.check_circle : Icons.radio_button_unchecked,
+                  label: isActive ? 'Active' : 'Set active',
+                  color: isActive ? AppTheme.accentColor : AppTheme.primaryColor,
+                  filled: isActive,
+                  onTap: () {
+                    Provider.of<ActiveElderProvider>(context, listen: false)
+                        .setActive(profile);
+                    if (mounted)
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(_l10n.profileSetActiveSnackbar(
+                              profile.profileName))));
+                  },
                 ),
+                if (isPrimaryAdmin)
+                  _ActionChip(
+                    icon: Icons.edit_outlined,
+                    label: 'Edit profile',
+                    color: AppTheme.accentColor,
+                    onTap: () => _startEditProfile(profile),
+                  ),
+                if (isPrimaryAdmin)
+                  _ActionChip(
+                    icon: Icons.person_add_alt_1_outlined,
+                    label: 'Invite',
+                    color: const Color(0xFF00897B),
+                    onTap: () => _showInviteDialog(profile),
+                  ),
               ],
             ),
 
@@ -478,12 +466,27 @@ class _ManageCareRecipientProfilesScreenState
 
             const SizedBox(height: 12),
 
-            // Caregivers list with role badges
-            Text(_l10n.caregiversLabel(profile.caregiverUserIds.length),
-                style: _theme.textTheme.bodyLarge
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            // Caregivers list with role management
+            const Divider(height: 24),
+            Row(
+              children: [
+                const Icon(Icons.group_outlined, size: 16,
+                    color: AppTheme.textSecondary),
+                const SizedBox(width: 6),
+                Text(
+                  'CARE TEAM (${profile.caregiverUserIds.length})',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             if (profile.caregiverUserIds.isEmpty)
-              Text(_l10n.noCaregiversYet, style: _theme.textTheme.bodyLarge)
+              Text(_l10n.noCaregiversYet, style: _theme.textTheme.bodyMedium)
             else
               FutureBuilder<Map<String, String>>(
                 future: _fetchCaregiverIdentifiers(profile.caregiverUserIds),
@@ -502,47 +505,73 @@ class _ManageCareRecipientProfilesScreenState
 
                   final identifiers = snapshot.data!;
                   return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: profile.caregiverUserIds.map((uid) {
                       final identifier = identifiers[uid] ?? uid;
                       final isAdmin = uid == profile.primaryAdminUserId;
                       final role = profile.roleForUser(uid);
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isAdmin
+                              ? const Color(0xFF1E88E5).withOpacity(0.04)
+                              : AppTheme.backgroundGray,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isAdmin
+                                ? const Color(0xFF1E88E5).withOpacity(0.2)
+                                : AppTheme.textLight.withOpacity(0.3),
+                          ),
+                        ),
                         child: Row(
                           children: [
+                            // Name
                             Expanded(
-                              child: Text(
-                                '• $identifier',
-                                style: _theme.textTheme.bodyLarge,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    identifier,
+                                    style: _theme.textTheme.bodyMedium
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  _RoleBadge(role: role),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            _RoleBadge(role: role),
-                            // Admin can change role or remove (not self)
+                            // Admin controls: change role + remove
                             if (isPrimaryAdmin && !isAdmin) ...[
                               IconButton(
                                 icon: const Icon(Icons.swap_horiz_outlined,
-                                    size: 18, color: AppTheme.primaryColor),
+                                    size: 20),
                                 tooltip: 'Change role',
+                                color: AppTheme.primaryColor,
                                 onPressed: () => _handleChangeRole(
                                     profile.id, uid, identifier, role),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
-                              const SizedBox(width: 4),
                               IconButton(
                                 icon: const Icon(Icons.remove_circle_outline,
-                                    color: AppTheme.dangerColor, size: 18),
+                                    size: 20),
                                 tooltip:
                                     _l10n.tooltipRemoveCaregiver(identifier),
+                                color: AppTheme.dangerColor,
                                 onPressed: () => _handleRemoveCaregiver(
                                     profile.id, uid, identifier),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                             ],
+                            if (isAdmin)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8),
+                                child: Icon(Icons.shield_outlined,
+                                    size: 18, color: Color(0xFF1E88E5)),
+                              ),
                           ],
                         ),
                       );
@@ -806,39 +835,13 @@ class _ManageCareRecipientProfilesScreenState
               (a.priorityIndex ?? 9999).compareTo(b.priorityIndex ?? 9999));
           _displayedProfiles = List.from(profiles);
 
-          return ReorderableListView.builder(
-            key: UniqueKey(),
+          return ListView.builder(
             padding: AppStyles.screenPadding,
             itemCount: _displayedProfiles.length,
             itemBuilder: (context, index) {
               final profile = _displayedProfiles[index];
               return _buildCareRecipientProfileCard(
                   profile, activeElder, currentUserProfile);
-            },
-            onReorder: (oldIndex, newIndex) async {
-              setState(() {
-                if (newIndex > oldIndex) newIndex -= 1;
-                final item = _displayedProfiles.removeAt(oldIndex);
-                _displayedProfiles.insert(newIndex, item);
-              });
-              final fs = context.read<FirestoreService>();
-              List<Future<void>> futures = [];
-              for (var i = 0; i < _displayedProfiles.length; i++) {
-                if (_displayedProfiles[i].priorityIndex != i) {
-                  _displayedProfiles[i].priorityIndex = i;
-                  futures.add(fs.updateElderPriority(
-                      elderId: _displayedProfiles[i].id, priorityIndex: i));
-                }
-              }
-              await Future.wait(futures);
-              if (_displayedProfiles.isNotEmpty) {
-                Provider.of<ActiveElderProvider>(context, listen: false)
-                    .setActive(_displayedProfiles.first);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(_l10n.profileSetActiveSnackbar(
-                      _displayedProfiles.first.profileName)),
-                ));
-              }
             },
           );
         },
@@ -951,6 +954,61 @@ class _ElderAvatar extends StatelessWidget {
               ),
             )
           : null,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Action chip — used for profile card action buttons
+// ---------------------------------------------------------------------------
+
+class _ActionChip extends StatelessWidget {
+  const _ActionChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.filled = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: filled ? color : color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: color.withOpacity(filled ? 1.0 : 0.4),
+            width: filled ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 14,
+                color: filled ? Colors.white : color),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: filled ? Colors.white : color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

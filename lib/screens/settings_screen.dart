@@ -175,6 +175,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         const SizedBox(height: 8),
 
+        // Care recipient management — moved to top for quick access
+        if (canAccessProfilesScreen) ...[
+          _SectionHeader(label: l10n.settingsTitleCareRecipientManagement),
+          if (activeElder != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Text(l10n.settingsActiveCareRecipient(activeElder.profileName),
+                style: textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Text(l10n.settingsNoActiveCareRecipient,
+                style: textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
+            ),
+          _SettingsTile(
+            icon: Icons.group_outlined,
+            iconColor: const Color(0xFF1E88E5),
+            title: l10n.settingsItemManageProfiles,
+            onTap: widget.navigateToManageCareRecipientProfiles ?? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const ManageCareRecipientProfilesScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+
         // Account
         _SectionHeader(label: l10n.settingsTitleMyAccount),
         _SettingsTile(
@@ -271,38 +303,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 20),
         ],
-
-        // Care recipient — admin only
-        // All roles can access to create their own care recipient.
-        if (canAccessProfilesScreen) ...[
-          _SectionHeader(label: l10n.settingsTitleCareRecipientManagement),
-          if (activeElder != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-              child: Text(l10n.settingsActiveCareRecipient(activeElder.profileName),
-                style: textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-              child: Text(l10n.settingsNoActiveCareRecipient,
-                style: textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
-            ),
-          _SettingsTile(
-            icon: Icons.group_outlined,
-            iconColor: const Color(0xFF1E88E5),
-            title: l10n.settingsItemManageProfiles,
-            onTap: widget.navigateToManageCareRecipientProfiles ?? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const ManageCareRecipientProfilesScreen(),
-                ),
-              );
-            },
-          ),
-        ], // end canManageProfiles
 
         const SizedBox(height: 24),
 

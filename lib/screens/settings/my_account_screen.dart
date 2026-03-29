@@ -141,7 +141,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     try {
       final ref = FirebaseStorage.instance
           .ref()
-          .child('user_profile_photos/${profile.uid}/profile.jpg');
+          .child('profile_photos/${profile.uid}/profile.jpg');
 
       await ref.putFile(File(file.path));
       final String url = await ref.getDownloadURL();

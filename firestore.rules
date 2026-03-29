@@ -174,5 +174,42 @@ service cloud.firestore {
       allow update: if request.auth != null &&
         resource.data.userId == request.auth.uid;
     }
+
+    // -----------------------------------------------------------------------
+    // Wellness & Gamification Collections (Self-Care module)
+    //
+    // These are per-user private collections — each user can only read/write
+    // their own data. No cross-user access needed.
+    // -----------------------------------------------------------------------
+
+    // Wellness check-ins — daily 5-dimension self-assessments.
+    // Queried with: where('userId', isEqualTo: uid)
+    match /wellnessCheckins/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Caregiver points — one doc per user, doc ID == userId.
+    // Tracks total points, level, streaks, streak freeze.
+    match /caregiverPoints/{userId} {
+      allow read, write: if request.auth != null &&
+        request.auth.uid == userId;
+    }
+
+    // Weekly challenge progress — one doc per user per week.
+    // Doc ID pattern: {userId}_{weekStart}
+    // Has a userId field for query filtering.
+    match /challengeProgress/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
   }
 }

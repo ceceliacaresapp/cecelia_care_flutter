@@ -12,9 +12,19 @@ class UserProfileProvider extends ChangeNotifier {
   StreamSubscription<User?>? _authSubscription;
   StreamSubscription<DocumentSnapshot>? _profileSubscription;
 
+  /// Onboarding flag read directly from Firestore snapshot.
+  /// null = not yet loaded or field missing (existing user → no onboarding).
+  /// false = new account, needs onboarding.
+  /// true = onboarding completed.
+  bool? _onboardingCompleted;
+
   UserProfile? get userProfile => _userProfile;
   bool get isLoading => _isLoading;
   String? get error => _errorMessage;
+
+  /// Returns true only if the field is explicitly false (new account).
+  /// Missing field / null / true all return false → no onboarding.
+  bool get needsOnboarding => _onboardingCompleted == false;
 
   void clearErrorMessage() {
     _errorMessage = null;
@@ -30,6 +40,7 @@ class UserProfileProvider extends ChangeNotifier {
         _profileSubscription?.cancel();
         _profileSubscription = null;
         _userProfile = null;
+        _onboardingCompleted = null;
         _isLoading = false;
         _errorMessage = null;
         notifyListeners();
@@ -67,6 +78,9 @@ class UserProfileProvider extends ChangeNotifier {
         _errorMessage = null;
         if (docSnapshot.exists) {
           _userProfile = UserProfile.fromFirestore(docSnapshot, null);
+          // Read onboarding flag directly from raw snapshot data.
+          final data = docSnapshot.data();
+          _onboardingCompleted = data?['onboardingCompleted'] as bool?;
         } else {
           // Auto-create a minimal profile document for new users.
           final user = FirebaseAuth.instance.currentUser;
@@ -95,10 +109,10 @@ class UserProfileProvider extends ChangeNotifier {
               'relationshipToElder': null,
               'preferredTerm': null,
               'avatarUrl': user.photoURL,
-              // FIX: userGoals was missing from the new-profile creation
-              // map — it is present on UserProfile but would be null
-              // forever for new users until they explicitly saved the form.
               'userGoals': null,
+              // Onboarding flag — only new accounts get false.
+              // Existing users without this field are treated as completed.
+              'onboardingCompleted': false,
               'createdAt': FieldValue.serverTimestamp(),
               'updatedAt': FieldValue.serverTimestamp(),
             };
@@ -180,6 +194,7 @@ class UserProfileProvider extends ChangeNotifier {
     try {
       await FirebaseAuth.instance.signOut();
       _userProfile = null;
+      _onboardingCompleted = null;
       _errorMessage = null;
     } catch (e) {
       debugPrint('UserProfileProvider: Error signing out: $e');

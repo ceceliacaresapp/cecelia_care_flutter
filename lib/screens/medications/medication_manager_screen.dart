@@ -80,6 +80,9 @@ class _MedicationManagerScreenState extends State<MedicationManagerScreen>
         title: Text(_l10n.manageMedications),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: AppTheme.textOnPrimary,
+          unselectedLabelColor: AppTheme.textOnPrimary.withOpacity(0.7),
+          indicatorColor: AppTheme.textOnPrimary,
           tabs: const [
             Tab(text: 'Medications'),
             Tab(text: 'Reminders'),

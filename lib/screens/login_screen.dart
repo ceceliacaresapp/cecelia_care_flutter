@@ -30,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _errorText;
   bool _isLoading = false;
+  bool _isCreateMode = false;
 
   @override
   void dispose() {
@@ -85,6 +86,45 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleCreateAccount() async {
+    final l10n = AppLocalizations.of(context)!;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    setState(() => _errorText = null);
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorText = l10n.errorEnterEmailPassword);
+      return;
+    }
+    if (password.length < 6) {
+      setState(() => _errorText = 'Password must be at least 6 characters.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = AuthService();
+      await authService.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      // UserProfileProvider will auto-create the Firestore doc with
+      // onboardingCompleted: false, which triggers the onboarding flow.
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorText = e.message ?? 'Account creation failed. Please try again.';
+      });
+    } catch (e) {
+      setState(() {
+        _errorText = '${l10n.errorPrefix}${e.toString()}';
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get AppLocalizations instance
@@ -110,8 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // ─── App Name ───
                 Text(
-                  // Assuming 'loginScreenTitle' is a key you've added
-                  l10n.loginScreenTitle,
+                  _isCreateMode ? 'Create Account' : l10n.loginScreenTitle,
                   style: AppStyles.authTitle,
                 ),
                 const SizedBox(height: 48),
@@ -162,11 +201,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                // ─── Login Button ───
+                // ─── Login / Create Button ───
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
+                    onPressed: _isLoading
+                        ? null
+                        : (_isCreateMode ? _handleCreateAccount : _handleLogin),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentColor,
                       elevation: _isLoading ? 0 : 2,
@@ -185,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           )
                         : Text(
-                            l10n.loginButton, // This is an existing key
+                            _isCreateMode ? 'Create Account' : l10n.loginButton,
                             style: const TextStyle(
                               fontSize: 18,
                               color: Colors.white,
@@ -195,25 +236,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // ─── (Optional) Link to create an account ───
+                // ─── Toggle between login and create account ───
                 GestureDetector(
                   onTap: () {
-                    // <<< MODIFICATION: Use the callback passed from LandingPage >>>
-                    if (widget.onNavigateToSignUp != null) {
-                      widget.onNavigateToSignUp!();
-                    } else {
-                      // Fallback or error if the callback is somehow not provided,
-                      // though in the current setup from LandingPage, it should always be.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l10n.signUpNotImplemented),
-                        ), // Or a more specific error
-                      );
-                    }
+                    setState(() {
+                      _isCreateMode = !_isCreateMode;
+                      _errorText = null;
+                    });
                   },
                   child: Text(
-                    // Assuming 'dontHaveAccountSignUp' is a key you've added
-                    l10n.dontHaveAccountSignUp,
+                    _isCreateMode
+                        ? 'Already have an account? Log in'
+                        : l10n.dontHaveAccountSignUp,
                     style: const TextStyle(
                       fontSize: 16,
                       color: AppTheme.primaryColor,
