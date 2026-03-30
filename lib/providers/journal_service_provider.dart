@@ -157,7 +157,7 @@ class JournalServiceProvider extends ChangeNotifier {
         displayName = em.trim();
       }
     }
-    final String? avatarUrl = authUser?.photoURL;
+    final String? avatarUrl = await _firestoreService.getAvatarUrl(userId);
 
     final DateTime actualEntryDateTime = DateTime.now();
     final String dateString =
@@ -306,7 +306,8 @@ class JournalServiceProvider extends ChangeNotifier {
                 currentUser.email ??
                 'Unknown User'),
         'loggedByUserAvatarUrl':
-            entryData['loggedByUserAvatarUrl'] ?? currentUser.photoURL,
+            entryData['loggedByUserAvatarUrl'] ??
+                await _firestoreService.getAvatarUrl(currentUser.uid),
       };
       await detailedDocRef.update(updatePayload);
 

@@ -54,6 +54,12 @@ dependencies:
   csv: ^6.0.0
   pdf: ^3.11.0
 
+  # --- celebrations ---
+  confetti: ^0.7.0
+
+  # --- connectivity ---
+  connectivity_plus: ^6.1.0
+
 
 dev_dependencies:
   flutter_test:

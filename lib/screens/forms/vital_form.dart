@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -168,6 +169,7 @@ class _VitalFormState extends State<VitalForm> {
             'vital', payload, currentUser.uid);
         _showSnackBar(_l10n.formSuccessVitalSaved, Colors.green);
       }
+      HapticUtils.success();
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {

@@ -16,6 +16,8 @@ import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/models/wellness_checkin.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/confetti_overlay.dart';
 
 // Accent — purple, matching the Self Care tab.
 const _kAccent = Color(0xFF8E24AA);
@@ -95,6 +97,17 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
         challengeCount: gamification.lifetimeChallengesCompleted,
         totalPoints: gamification.totalPoints,
       );
+
+      // 4. Haptic feedback
+      // Celebration for streak milestones (7, 14, 30, 60, 90, 365…)
+      final streak = gamification.currentStreak;
+      if (streak == 7 || streak == 14 || streak == 30 ||
+          streak == 60 || streak == 90 || streak == 365) {
+        HapticUtils.celebration();
+        if (mounted) ConfettiOverlay.trigger(context);
+      } else {
+        HapticUtils.success();
+      }
 
       if (mounted) {
         setState(() => _saved = true);

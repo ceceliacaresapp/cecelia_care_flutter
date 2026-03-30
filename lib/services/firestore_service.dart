@@ -35,6 +35,8 @@ class FirestoreService {
   // ---------------------------------------------------------------------------
   static String? _cachedDisplayName;
   static String? _cachedDisplayNameUid;
+  static String? _cachedAvatarUrl;
+  static String? _cachedAvatarUrlUid;
 
 
   // --- Collection Names ---
@@ -574,6 +576,44 @@ class FirestoreService {
   }
 
   // ---------------------------------------------------------------------------
+  // _getAvatarUrl — resolves the user's avatar from Firestore profile.
+  //
+  // Firebase Auth's photoURL is almost always null because the app saves
+  // avatars to Firestore (users/{uid}.avatarUrl), not to Auth profile.
+  // This mirrors _getDisplayName's pattern: cache per UID per session.
+  // ---------------------------------------------------------------------------
+  Future<String?> getAvatarUrl(String uid) async {
+    if (uid.isNotEmpty &&
+        _cachedAvatarUrlUid == uid &&
+        _cachedAvatarUrl != null) {
+      return _cachedAvatarUrl;
+    }
+
+    // 1. Firebase Auth photoURL (rarely set, but check anyway)
+    final authPhoto = AuthService.currentUser?.photoURL;
+    if (authPhoto != null && authPhoto.isNotEmpty) {
+      _cachedAvatarUrlUid = uid;
+      _cachedAvatarUrl = authPhoto;
+      return authPhoto;
+    }
+
+    // 2. Firestore user profile avatarUrl
+    try {
+      final doc = await _usersRef.doc(uid).get();
+      final firestoreAvatar = doc.data()?.avatarUrl;
+      if (firestoreAvatar != null && firestoreAvatar.isNotEmpty) {
+        _cachedAvatarUrlUid = uid;
+        _cachedAvatarUrl = firestoreAvatar;
+        return firestoreAvatar;
+      }
+    } catch (e) {
+      debugPrint('FirestoreService._getAvatarUrl Firestore lookup error: $e');
+    }
+
+    return null;
+  }
+
+  // ---------------------------------------------------------------------------
   // backfillDisplayNames — one-time migration for old entries.
   //
   // Entries created before the _getDisplayName fix stored the raw email
@@ -690,6 +730,8 @@ class FirestoreService {
 
     final String loggedByDisplayName =
         await _getDisplayName(creatorId0);
+    final String? loggedByAvatarUrl =
+        await getAvatarUrl(creatorId0);
 
     final newEntry = JournalEntry(
       id: null,
@@ -699,7 +741,7 @@ class FirestoreService {
       data: data,
       loggedByUserId: creatorId0,
       loggedByDisplayName: loggedByDisplayName,
-      loggedByUserAvatarUrl: AuthService.currentUser?.photoURL,
+      loggedByUserAvatarUrl: loggedByAvatarUrl,
       entryTimestamp: Timestamp.fromDate(timestamp0),
       dateString: dateOnly,
       visibleToUserIds: visibleToUserIds0,

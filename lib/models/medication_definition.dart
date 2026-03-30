@@ -12,15 +12,10 @@ class MedicationDefinition {
   // Persists whether a daily reminder is currently scheduled.
   final bool reminderEnabled;
 
-  // NEW: Refill reminder fields.
-  //
-  // pillCount       — current number of pills remaining. Decremented by 1
-  //                   each time a dose is marked taken via markTaken().
-  //                   null = caregiver hasn't set up pill counting yet.
-  //
-  // refillThreshold — when pillCount drops to or below this value a one-time
-  //                   low-stock push notification fires via NotificationService.
-  //                   null = refill reminders are disabled for this med.
+  // NEW: Pinned medications appear on the dashboard for one-tap logging.
+  final bool pinned;
+
+  // Refill reminder fields.
   final int? pillCount;
   final int? refillThreshold;
 
@@ -33,6 +28,7 @@ class MedicationDefinition {
     this.defaultTime,
     required this.elderId,
     this.reminderEnabled = false,
+    this.pinned = false,
     this.pillCount,
     this.refillThreshold,
   });
@@ -47,6 +43,7 @@ class MedicationDefinition {
       defaultTime: null,
       elderId: '',
       reminderEnabled: false,
+      pinned: false,
       pillCount: null,
       refillThreshold: null,
     );
@@ -67,6 +64,7 @@ class MedicationDefinition {
       defaultTime: data?['defaultTime'] as String?,
       elderId: data?['elderId'] as String? ?? '',
       reminderEnabled: data?['reminderEnabled'] as bool? ?? false,
+      pinned: data?['pinned'] as bool? ?? false,
       pillCount: data?['pillCount'] as int?,
       refillThreshold: data?['refillThreshold'] as int?,
     );
@@ -81,7 +79,7 @@ class MedicationDefinition {
       'defaultTime': defaultTime,
       'elderId': elderId,
       'reminderEnabled': reminderEnabled,
-      // Omit when null so existing docs without pill tracking aren't dirtied.
+      'pinned': pinned,
       if (pillCount != null) 'pillCount': pillCount,
       if (refillThreshold != null) 'refillThreshold': refillThreshold,
     };
@@ -96,6 +94,7 @@ class MedicationDefinition {
     String? defaultTime,
     String? elderId,
     bool? reminderEnabled,
+    bool? pinned,
     // Sentinel pattern so callers can explicitly pass null to clear the value.
     Object? pillCount = _kSentinel,
     Object? refillThreshold = _kSentinel,
@@ -109,6 +108,7 @@ class MedicationDefinition {
       defaultTime: defaultTime ?? this.defaultTime,
       elderId: elderId ?? this.elderId,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      pinned: pinned ?? this.pinned,
       pillCount:
           identical(pillCount, _kSentinel) ? this.pillCount : pillCount as int?,
       refillThreshold: identical(refillThreshold, _kSentinel)

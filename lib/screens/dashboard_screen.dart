@@ -2,10 +2,11 @@
 //
 // The home dashboard — first tab the user lands on.
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
@@ -13,8 +14,10 @@ import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
+import 'package:cecelia_care_flutter/models/badge.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
+import 'package:cecelia_care_flutter/models/medication_definition.dart';
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/screens/forms/mood_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/sleep_form.dart';
@@ -27,10 +30,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal_screen.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/confetti_overlay.dart';
 import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
 import 'package:cecelia_care_flutter/widgets/wellness_summary_card.dart';
 import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
 import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
+import 'package:cecelia_care_flutter/screens/wellness_checkin_screen.dart';
+import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -99,6 +106,14 @@ void _openMessageSheet(
       firestoreService: firestoreService,
     ),
   );
+}
+
+/// Strips email addresses from display names — shows the local part
+/// (before @) instead of the full address. Matches the timeline fix.
+String _sanitizeDisplayName(String? raw) {
+  if (raw == null || raw.isEmpty) return 'Unknown';
+  if (raw.contains('@')) return raw.split('@')[0];
+  return raw;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,7 +222,7 @@ void _showEntriesSheet(
                         final time = DateFormat('h:mm a')
                             .format(entry.entryTimestamp.toDate());
                         final loggedBy =
-                            entry.loggedByDisplayName ?? 'Unknown';
+                            _sanitizeDisplayName(entry.loggedByDisplayName);
                         final summary = _entrySummary(entry);
 
                         return Padding(
@@ -310,8 +325,159 @@ String _entrySummary(JournalEntry entry) {
 // Screen
 // ---------------------------------------------------------------------------
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  List<Map<String, dynamic>>? _sectionConfig;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSectionConfig();
+  }
+
+  Future<void> _loadSectionConfig() async {
+    final config = await loadDashboardSections();
+    if (mounted) setState(() => _sectionConfig = config);
+  }
+
+  /// Returns true if a section key is visible in the current config.
+  bool _isVisible(String key) {
+    if (_sectionConfig == null) return true; // show all while loading
+    return _sectionConfig!.any((s) => s['key'] == key && s['visible'] == true);
+  }
+
+  /// Builds the ordered list of section widgets based on saved config.
+  List<Widget> _buildDynamicSections({
+    required BuildContext context,
+    required ElderProfile activeElder,
+    required String currentUserId,
+    required String currentDateStr,
+    required DateTime startOfDay,
+    required DateTime endOfDay,
+  }) {
+    final sectionBuilders = <String, List<Widget> Function()>{
+      'wellness': () => [
+        Builder(builder: (ctx) {
+          final wellProv = ctx.watch<WellnessProvider>();
+          final gamProv = ctx.watch<GamificationProvider>();
+          if (wellProv.recentCheckins.isEmpty && gamProv.totalPoints == 0) {
+            return const SizedBox.shrink();
+          }
+          final dailyScores = wellProv.recentCheckins.reversed
+              .map((c) => c.wellbeingScore)
+              .toList();
+          return WellnessSummaryCard(
+            wellbeingScore: wellProv.wellbeingScore,
+            burnoutRiskLevel: wellProv.burnoutStatus.level.name,
+            dailyScores: dailyScores,
+            dimensionAverages: wellProv.dimensionAverages,
+            currentStreak: gamProv.currentStreak,
+            level: gamProv.level,
+            levelTitle: gamProv.levelTitle,
+            hasCheckedInToday: wellProv.hasCheckedInToday,
+            onTap: () => Navigator.of(ctx).push(
+              MaterialPageRoute(
+                  builder: (_) => const WellnessCheckinScreen()),
+            ),
+          );
+        }),
+      ],
+      'quickMeds': () => [
+        Builder(builder: (ctx) {
+          final medProv = ctx.watch<MedicationDefinitionsProvider>();
+          final pinned = medProv.pinnedMeds;
+          if (pinned.isEmpty) return const SizedBox.shrink();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const _SectionLabel(label: 'Quick meds'),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 72,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: pinned.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, i) => _PinnedMedCard(
+                    med: pinned[i],
+                    activeElder: activeElder,
+                    currentDateStr: currentDateStr,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
+      ],
+      'careLog': () => [
+        const SizedBox(height: 20),
+        const _SectionLabel(label: "Today's care log"),
+        const SizedBox(height: 10),
+        StreamBuilder<List<JournalEntry>>(
+          stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
+                elderId: activeElder.id,
+                currentUserId: currentUserId,
+                startDate: startOfDay,
+                endDate: endOfDay,
+              ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const _TodayLoadingCard();
+            }
+            return _TodaySummaryGrid(entries: snapshot.data ?? []);
+          },
+        ),
+      ],
+      'achievements': () => [
+        const SizedBox(height: 20),
+        const _SectionLabel(label: 'Achievements'),
+        const SizedBox(height: 10),
+        const _BadgesRow(),
+      ],
+      'journal': () => [
+        const SizedBox(height: 20),
+        const _SectionLabel(label: 'My Journal'),
+        const SizedBox(height: 10),
+        _JournalPreviewCard(currentUserId: currentUserId),
+      ],
+      'quickLog': () {
+        if (!context.watch<ActiveElderProvider>().canLog) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Quick log'),
+          const SizedBox(height: 10),
+          _QuickActionsGrid(
+            activeElder: activeElder,
+            currentDateStr: currentDateStr,
+          ),
+        ];
+      },
+    };
+
+    // Use saved order, or defaults if not loaded yet.
+    final order = _sectionConfig ?? kDefaultSections;
+    final widgets = <Widget>[];
+
+    for (final section in order) {
+      final key = section['key'] as String;
+      final visible = section['visible'] as bool? ?? true;
+      if (!visible) continue;
+
+      final builder = sectionBuilders[key];
+      if (builder != null) widgets.addAll(builder());
+    }
+
+    return widgets;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +510,9 @@ class DashboardScreen extends StatelessWidget {
     final currentDateStr = DateFormat('yyyy-MM-dd').format(now);
 
     return RefreshIndicator(
-      onRefresh: () async {},
+      onRefresh: () async {
+        await _loadSectionConfig();
+      },
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
@@ -354,74 +522,39 @@ class DashboardScreen extends StatelessWidget {
             elderInitial: activeElder.profileName[0].toUpperCase(),
           ),
 
-          const SizedBox(height: 14),
-
-          // Weekly wellness summary — reads from WellnessProvider + GamificationProvider
-          Builder(builder: (ctx) {
-            final wellProv = ctx.watch<WellnessProvider>();
-            final gamProv = ctx.watch<GamificationProvider>();
-            if (wellProv.recentCheckins.isEmpty && gamProv.totalPoints == 0) {
-              return const SizedBox.shrink();
-            }
-            final dailyScores = wellProv.recentCheckins.reversed
-                .map((c) => c.wellbeingScore)
-                .toList();
-            return WellnessSummaryCard(
-              wellbeingScore: wellProv.wellbeingScore,
-              burnoutRiskLevel: wellProv.burnoutStatus.level.name,
-              dailyScores: dailyScores,
-              dimensionAverages: wellProv.dimensionAverages,
-              currentStreak: gamProv.currentStreak,
-              level: gamProv.level,
-              levelTitle: gamProv.levelTitle,
-              hasCheckedInToday: wellProv.hasCheckedInToday,
-            );
-          }),
-
-          const SizedBox(height: 20),
-
-          const _SectionLabel(label: "Today's care log"),
-          const SizedBox(height: 10),
-          StreamBuilder<List<JournalEntry>>(
-            stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
-                  elderId: activeElder.id,
-                  currentUserId: currentUserId,
-                  startDate: startOfDay,
-                  endDate: endOfDay,
-                ),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting &&
-                  !snapshot.hasData) {
-                return const _TodayLoadingCard();
-              }
-              return _TodaySummaryGrid(entries: snapshot.data ?? []);
-            },
+          // Customize dashboard link
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const DashboardSettingsScreen()),
+                );
+                // Reload config when returning from settings
+                _loadSectionConfig();
+              },
+              icon: const Icon(Icons.tune_outlined, size: 14),
+              label: const Text('Customize'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.textSecondary,
+                textStyle: const TextStyle(fontSize: 11),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
           ),
 
-          const SizedBox(height: 20),
-
-          const _SectionLabel(label: 'Achievements'),
-          const SizedBox(height: 10),
-          const _BadgesRow(),
-
-          const SizedBox(height: 20),
-
-          // Caregiver Journal preview — personal, not shared
-          const _SectionLabel(label: 'My Journal'),
-          const SizedBox(height: 10),
-          _JournalPreviewCard(currentUserId: currentUserId),
-
-          const SizedBox(height: 20),
-
-          // Quick Log — hidden for viewers (read-only role)
-          if (context.watch<ActiveElderProvider>().canLog) ...[
-            const _SectionLabel(label: 'Quick log'),
-            const SizedBox(height: 10),
-            _QuickActionsGrid(
-              activeElder: activeElder,
-              currentDateStr: currentDateStr,
-            ),
-          ],
+          // Dynamic sections
+          ..._buildDynamicSections(
+            context: context,
+            activeElder: activeElder,
+            currentUserId: currentUserId,
+            currentDateStr: currentDateStr,
+            startOfDay: startOfDay,
+            endOfDay: endOfDay,
+          ),
         ],
       ),
     );
@@ -1271,6 +1404,189 @@ class _TodayLoadingCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Badge info dialog — shown when tapping any badge (locked or unlocked)
+// ---------------------------------------------------------------------------
+
+void _showBadgeInfoDialog(BuildContext context, Badge badge) {
+  final isEarned = badge.tier != BadgeTier.none || badge.unlocked == true;
+  final tierColor = badge.tierStyle.color;
+  final thresholds = badge.thresholds;
+
+  if (isEarned) {
+    HapticUtils.celebration();
+    ConfettiOverlay.trigger(context);
+  }
+
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(
+        children: [
+          Icon(
+            isEarned ? Icons.emoji_events : Icons.lock_outline,
+            color: isEarned ? tierColor : AppTheme.textLight,
+            size: 28,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              badge.label,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isEarned ? tierColor : AppTheme.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Description
+          Text(
+            badge.description,
+            style: const TextStyle(fontSize: 14, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+
+          // Current tier
+          if (isEarned) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: tierColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: tierColor.withOpacity(0.3)),
+              ),
+              child: Text(
+                'Current tier: ${badge.tierStyle.label}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: tierColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Progress
+          if (badge.progressLabel.isNotEmpty)
+            Text(
+              badge.progressLabel,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          if (badge.progressLabel.isNotEmpty)
+            const SizedBox(height: 12),
+
+          // Tier thresholds
+          if (thresholds != null) ...[
+            const Text(
+              'TIER REQUIREMENTS',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            _TierRow(label: 'Bronze', count: thresholds.bronze,
+                reached: badge.progressCount >= thresholds.bronze),
+            _TierRow(label: 'Silver', count: thresholds.silver,
+                reached: badge.progressCount >= thresholds.silver),
+            _TierRow(label: 'Gold', count: thresholds.gold,
+                reached: badge.progressCount >= thresholds.gold),
+            _TierRow(label: 'Diamond', count: thresholds.diamond,
+                reached: badge.progressCount >= thresholds.diamond),
+          ],
+
+          const SizedBox(height: 16),
+
+          // Why gamification matters
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF8E24AA).withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: 14,
+                    color: Color(0xFF8E24AA)),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Achievements reward you for taking care of yourself '
+                    'while caring for others. Small consistent actions '
+                    'reduce burnout and build resilience.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF8E24AA),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
+
+class _TierRow extends StatelessWidget {
+  const _TierRow({
+    required this.label,
+    required this.count,
+    required this.reached,
+  });
+  final String label;
+  final int count;
+  final bool reached;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            reached ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 14,
+            color: reached ? const Color(0xFF43A047) : AppTheme.textLight,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$label: $count',
+            style: TextStyle(
+              fontSize: 12,
+              color: reached ? AppTheme.textPrimary : AppTheme.textSecondary,
+              fontWeight: reached ? FontWeight.w600 : FontWeight.normal,
+              decoration: reached ? TextDecoration.lineThrough : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Badges row
 // ---------------------------------------------------------------------------
 
@@ -1294,8 +1610,8 @@ class _BadgesRow extends StatelessWidget {
         itemBuilder: (context, i) {
           final badge = all[i];
           final isUnlocked = badge.unlocked == true;
-          return Tooltip(
-            message: badge.description,
+          return GestureDetector(
+            onTap: () => _showBadgeInfoDialog(context, badge),
             child: Container(
               width: 72,
               decoration: BoxDecoration(
@@ -1342,6 +1658,180 @@ class _BadgesRow extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Pinned medication card — compact one-tap "Taken" quick logger
+// ---------------------------------------------------------------------------
+
+class _PinnedMedCard extends StatefulWidget {
+  const _PinnedMedCard({
+    required this.med,
+    required this.activeElder,
+    required this.currentDateStr,
+  });
+
+  final MedicationDefinition med;
+  final ElderProfile activeElder;
+  final String currentDateStr;
+
+  @override
+  State<_PinnedMedCard> createState() => _PinnedMedCardState();
+}
+
+class _PinnedMedCardState extends State<_PinnedMedCard> {
+  bool _logging = false;
+  bool _justLogged = false;
+
+  static const _kColor = Color(0xFF1E88E5);
+
+  Future<void> _logTaken() async {
+    if (_logging || _justLogged) return;
+    setState(() => _logging = true);
+
+    try {
+      final journalService = context.read<JournalServiceProvider>();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final payload = <String, dynamic>{
+        'elderId': widget.activeElder.id,
+        'name': widget.med.name,
+        'dose': widget.med.dose ?? '',
+        'taken': true,
+        'time': DateFormat('HH:mm').format(DateTime.now()),
+        'date': widget.currentDateStr,
+        'loggedByUserId': user.uid,
+        'loggedBy': user.displayName ?? user.email ?? 'Unknown',
+        'updatedAt': FieldValue.serverTimestamp(),
+        'isPublic': true,
+        'visibleToUserIds': <String>[],
+      };
+
+      await journalService.addJournalEntry(
+          'medication', payload, user.uid);
+
+      // Decrement pill count if tracking is set up
+      if (widget.med.id != null) {
+        final medProv = context.read<MedicationDefinitionsProvider>();
+        final elderName =
+            widget.activeElder.preferredName?.isNotEmpty == true
+                ? widget.activeElder.preferredName!
+                : widget.activeElder.profileName;
+        await medProv.decrementPillCount(
+          medDefId: widget.med.id!,
+          medName: widget.med.name,
+          elderName: elderName,
+        );
+      }
+
+      if (mounted) {
+        HapticUtils.success();
+        setState(() {
+          _justLogged = true;
+          _logging = false;
+        });
+        // Reset the checkmark after 2 seconds
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) setState(() => _justLogged = false);
+        });
+      }
+    } catch (e) {
+      debugPrint('_PinnedMedCard._logTaken error: $e');
+      if (mounted) {
+        setState(() => _logging = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not log ${widget.med.name}: $e'),
+            backgroundColor: AppTheme.dangerColor,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _logTaken,
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: _justLogged
+              ? const Color(0xFF43A047).withOpacity(0.08)
+              : _kColor.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _justLogged
+                ? const Color(0xFF43A047).withOpacity(0.3)
+                : _kColor.withOpacity(0.25),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _justLogged ? Icons.check_circle : Icons.medication_outlined,
+                  size: 16,
+                  color: _justLogged ? const Color(0xFF43A047) : _kColor,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    widget.med.name,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _justLogged
+                          ? const Color(0xFF43A047)
+                          : _kColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            if (widget.med.dose != null && widget.med.dose!.isNotEmpty)
+              Text(
+                widget.med.dose!,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textSecondary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            else
+              Text(
+                _justLogged ? 'Logged!' : 'Tap to log',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: _justLogged
+                      ? const Color(0xFF43A047)
+                      : AppTheme.textSecondary,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            if (_logging)
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

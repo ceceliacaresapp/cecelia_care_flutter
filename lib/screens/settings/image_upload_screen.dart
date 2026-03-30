@@ -132,6 +132,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
       if (loggedByDisplayName.isEmpty) {
         loggedByDisplayName = user.email ?? _l10n.formUnknownUser;
       }
+      final String? loggedByAvatarUrl =
+          await context.read<FirestoreService>().getAvatarUrl(user.uid);
 
       final imageData = <String, dynamic>{
         'url': downloadUrl,
@@ -150,7 +152,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
         'elderId': elderId,
         'loggedByUserId': user.uid,
         'loggedByDisplayName': loggedByDisplayName,
-        'loggedByUserAvatarUrl': user.photoURL,
+        'loggedByUserAvatarUrl': loggedByAvatarUrl,
         'entryTimestamp': Timestamp.fromDate(now),
         'dateString': dateString,
         'text': _imageTitle ?? _l10n.imageUploadDefaultTitle,

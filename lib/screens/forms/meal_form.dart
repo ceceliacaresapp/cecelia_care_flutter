@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/models/meal_entry.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
@@ -117,6 +118,7 @@ class _MealFormState extends State<MealForm> {
         await journal.addJournalEntry('meal', payload, user.uid);
         _showSnackBar(_l10n.formSuccessMealSaved, Colors.green);
       }
+      HapticUtils.success();
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {

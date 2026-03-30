@@ -32,6 +32,10 @@ class _EventFormModalState extends State<EventFormModal> {
   late TextEditingController _titleCtrl;
   late TextEditingController _typeCtrl;
   late TextEditingController _notesCtrl;
+  final TextEditingController _startDateCtrl = TextEditingController();
+  final TextEditingController _startTimeCtrl = TextEditingController();
+  final TextEditingController _endDateCtrl = TextEditingController();
+  final TextEditingController _endTimeCtrl = TextEditingController();
 
   DateTime? _startDate;
   TimeOfDay? _startTime;
@@ -63,12 +67,31 @@ class _EventFormModalState extends State<EventFormModal> {
       _endTime = null;
     }
     _allDay = init.allDay;
+    // Initial format without locale — will be re-synced in didChangeDependencies
+    _syncDisplayControllers();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _l10n = AppLocalizations.of(context)!;
+    _syncDisplayControllers();
+  }
+
+  /// Updates the read-only date/time text controllers to match the current state.
+  void _syncDisplayControllers() {
+    _startDateCtrl.text = _startDate != null
+        ? DateFormat.yMd().format(_startDate!)
+        : '';
+    _startTimeCtrl.text = _startTime != null
+        ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}'
+        : '';
+    _endDateCtrl.text = _endDate != null
+        ? DateFormat.yMd().format(_endDate!)
+        : '';
+    _endTimeCtrl.text = _endTime != null
+        ? '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}'
+        : '';
   }
 
   @override
@@ -76,6 +99,10 @@ class _EventFormModalState extends State<EventFormModal> {
     _titleCtrl.dispose();
     _typeCtrl.dispose();
     _notesCtrl.dispose();
+    _startDateCtrl.dispose();
+    _startTimeCtrl.dispose();
+    _endDateCtrl.dispose();
+    _endTimeCtrl.dispose();
     super.dispose();
   }
 
@@ -94,6 +121,7 @@ class _EventFormModalState extends State<EventFormModal> {
         } else {
           _endDate = picked;
         }
+        _syncDisplayControllers();
       });
     }
   }
@@ -111,6 +139,7 @@ class _EventFormModalState extends State<EventFormModal> {
         } else {
           _endTime = picked;
         }
+        _syncDisplayControllers();
       });
     }
   }
@@ -219,6 +248,7 @@ class _EventFormModalState extends State<EventFormModal> {
                         _startTime = null;
                         _endTime = null;
                       }
+                      _syncDisplayControllers();
                     }),
                   ),
                   Text(_l10n.eventFormLabelAllDay),
@@ -261,8 +291,8 @@ class _EventFormModalState extends State<EventFormModal> {
   }
 
   Widget _buildDateTimePicker({required bool isStart}) {
-    final date = isStart ? _startDate : _endDate;
-    final time = isStart ? _startTime : _endTime;
+    final dateCtrl = isStart ? _startDateCtrl : _endDateCtrl;
+    final timeCtrl = isStart ? _startTimeCtrl : _endTimeCtrl;
 
     String dateLabel = isStart
         ? _l10n.eventFormLabelStartDate
@@ -280,11 +310,11 @@ class _EventFormModalState extends State<EventFormModal> {
           onTap: () => _pickDate(isStart),
           child: AbsorbPointer(
             child: TextField(
+              controller: dateCtrl,
+              readOnly: true,
               decoration: InputDecoration(
                 labelText: dateLabel,
-                hintText: date != null
-                    ? DateFormat.yMd(_l10n.localeName).format(date)
-                    : _l10n.eventFormHintSelectDate,
+                hintText: _l10n.eventFormHintSelectDate,
                 border: const OutlineInputBorder(),
                 suffixIcon: const Icon(Icons.calendar_today),
               ),
@@ -297,10 +327,11 @@ class _EventFormModalState extends State<EventFormModal> {
             onTap: () => _pickTime(isStart),
             child: AbsorbPointer(
               child: TextField(
+                controller: timeCtrl,
+                readOnly: true,
                 decoration: InputDecoration(
                   labelText: timeLabel,
-                  hintText:
-                      time != null ? time.format(context) : _l10n.eventFormHintSelectTime,
+                  hintText: _l10n.eventFormHintSelectTime,
                   border: const OutlineInputBorder(),
                   suffixIcon: const Icon(Icons.access_time),
                 ),

@@ -15,6 +15,7 @@ import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/providers/theme_provider.dart';
 import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
+import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? navigateToManageCareRecipientProfiles;
@@ -269,6 +270,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Appearance / Dark Mode
         _SectionHeader(label: 'Appearance'),
         _DarkModeSelector(),
+        _SettingsTile(
+          icon: Icons.dashboard_customize_outlined,
+          iconColor: const Color(0xFF00897B),
+          title: 'Customize Dashboard',
+          onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const DashboardSettingsScreen())),
+        ),
 
         const SizedBox(height: 20),
 

@@ -4,6 +4,7 @@ import 'package:cecelia_care_flutter/models/pain_entry.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -168,6 +169,7 @@ class _PainFormState extends State<PainForm> {
         await journal.addJournalEntry('pain', payload, user.uid);
         _showSnackBar(_l10n.formSuccessPainSaved, Colors.green);
       }
+      HapticUtils.success();
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {

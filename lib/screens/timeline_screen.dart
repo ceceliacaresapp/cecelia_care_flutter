@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
@@ -832,25 +833,115 @@ class TimelineScreenState extends State<TimelineScreen> {
                   );
                 }
 
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  itemCount: docsToDisplay.length,
-                  separatorBuilder: (_, __) => const SizedBox.shrink(),
-                  itemBuilder: (context, index) {
-                    try {
-                      return _buildTimelineCard(
-                        context,
-                        docsToDisplay[index],
-                        user,
-                        activeElder,
-                      );
-                    } catch (e, s) {
-                      debugPrint(
-                          'ERROR building timeline item at index $index: $e');
-                      debugPrint('Stack trace: $s');
-                      return _buildErrorCard(index, e);
-                    }
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    // Force a rebuild which re-subscribes to the Firestore stream.
+                    // The stream is already real-time, so this is mainly a UX gesture
+                    // that gives the user confidence the data is current.
+                    if (mounted) setState(() {});
+                    // Small delay so the indicator is visible
+                    await Future.delayed(const Duration(milliseconds: 400));
                   },
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    itemCount: docsToDisplay.length,
+                    separatorBuilder: (_, __) => const SizedBox.shrink(),
+                    itemBuilder: (context, index) {
+                      try {
+                        final entry = docsToDisplay[index];
+                        final isOwned = user != null &&
+                            entry.loggedByUserId == user.uid;
+
+                        final card = _buildTimelineCard(
+                          context,
+                          entry,
+                          user,
+                          activeElder,
+                        );
+
+                        // Swipe-to-delete — only on entries the current user owns
+                        if (!isOwned || entry.id == null) return card;
+
+                        return Dismissible(
+                          key: ValueKey(entry.id),
+                          direction: DismissDirection.endToStart,
+                          child: card,
+                          confirmDismiss: (_) async {
+                            // Show the same confirmation dialog used by the popup menu
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(_l10n.timelineConfirmDeleteMessageTitle),
+                                content: Text(_l10n.timelineConfirmDeleteMessageContent),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(false),
+                                    child: Text(_l10n.cancelButton),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(true),
+                                    style: TextButton.styleFrom(
+                                        foregroundColor: AppTheme.dangerColor),
+                                    child: Text(_l10n.deleteButton),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return confirmed == true;
+                          },
+                          onDismissed: (_) async {
+                            HapticUtils.warning();
+                            try {
+                              final firestoreService = context.read<FirestoreService>();
+                              await firestoreService.deleteJournalEntry(entry.id!);
+                              if (mounted) {
+                                _showSnackBar(
+                                    _l10n.timelineMessageDeletedSuccess,
+                                    isError: false);
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                _showSnackBar(
+                                    _l10n.timelineErrorDeletingMessage(e.toString()),
+                                    isError: true);
+                              }
+                            }
+                          },
+                          background: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.dangerColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 24),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(Icons.delete_outline,
+                                    color: Colors.white, size: 22),
+                              ],
+                            ),
+                          ),
+                        );
+                      } catch (e, s) {
+                        debugPrint(
+                            'ERROR building timeline item at index $index: $e');
+                        debugPrint('Stack trace: $s');
+                        return _buildErrorCard(index, e);
+                      }
+                    },
+                  ),
                 );
               },
             ),

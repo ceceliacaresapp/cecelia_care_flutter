@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -118,6 +119,7 @@ class _SleepFormState extends State<SleepForm> {
         await journal.addJournalEntry('sleep', payload, user.uid);
         _showSnackBar(_l10n.formSuccessSleepSaved, Colors.green);
       }
+      HapticUtils.success();
       Navigator.of(context).pop();
       widget.onClose?.call();
     } catch (e) {
@@ -207,6 +209,7 @@ class _SleepFormState extends State<SleepForm> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _totalDurationController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                         hintText: _l10n.sleepFormHintTotalDuration),
                   ),

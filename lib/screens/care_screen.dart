@@ -10,6 +10,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
 import 'package:cecelia_care_flutter/screens/resources_screen.dart';
+import 'package:cecelia_care_flutter/screens/emergency_card_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';
@@ -171,6 +172,29 @@ class CareScreen extends StatelessWidget {
               )
             else
               const Expanded(child: SizedBox.shrink()),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Second standard tiles row ─────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.medical_information_outlined,
+                title: 'Emergency Card',
+                subtitle: 'Share with doctors',
+                color: AppTheme.dangerColor,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const EmergencyCardScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(child: SizedBox.shrink()),
           ],
         ),
       ],

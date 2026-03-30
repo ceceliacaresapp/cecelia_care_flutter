@@ -795,6 +795,32 @@ class _ReminderCardState extends State<_ReminderCard> {
                     ],
                   ),
                 ),
+                // Pin/unpin star — pinned meds appear on the dashboard
+                // for one-tap logging.
+                IconButton(
+                  icon: Icon(
+                    def.pinned ? Icons.star : Icons.star_border,
+                    color: def.pinned
+                        ? const Color(0xFFFFC107)
+                        : AppTheme.textLight,
+                    size: 22,
+                  ),
+                  tooltip: def.pinned
+                      ? 'Unpin from dashboard'
+                      : 'Pin to dashboard',
+                  onPressed: () {
+                    context
+                        .read<MedicationDefinitionsProvider>()
+                        .togglePinned(
+                          medDefId: def.id!,
+                          pinned: !def.pinned,
+                        );
+                  },
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                      minWidth: 36, minHeight: 36),
+                ),
                 _isBusy
                     ? const SizedBox(
                         width: 24,

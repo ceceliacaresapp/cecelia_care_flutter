@@ -247,7 +247,8 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
           ),
         ),
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
           // ── Gratitude prompt card ─────────────────────────────────────
           _GratitudePromptCard(
@@ -271,85 +272,83 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
           ),
 
           // ── Journal entries list ──────────────────────────────────────
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _col
-                  .where('userId', isEqualTo: uid)
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(
-                        loc.genericError(snapshot.error.toString()),
-                        style:
-                            const TextStyle(color: AppTheme.dangerColor),
+          StreamBuilder<QuerySnapshot>(
+            stream: _col
+                .where('userId', isEqualTo: uid)
+                .orderBy('createdAt', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    loc.genericError(snapshot.error.toString()),
+                    style: const TextStyle(color: AppTheme.dangerColor),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+              final docs = snapshot.data?.docs ?? [];
+              if (docs.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.menu_book_outlined,
+                          size: 52,
+                          color: _kJournalColor.withOpacity(0.4)),
+                      const SizedBox(height: 12),
+                      Text(
+                        loc.noJournalEntriesYet,
+                        style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14),
                         textAlign: TextAlign.center,
                       ),
-                    ),
-                  );
-                }
-                final docs = snapshot.data?.docs ?? [];
-                if (docs.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.menu_book_outlined,
-                              size: 52,
-                              color: _kJournalColor.withOpacity(0.4)),
-                          const SizedBox(height: 12),
-                          Text(
-                            loc.noJournalEntriesYet,
-                            style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  itemCount: docs.length,
-                  itemBuilder: (_, i) {
-                    final doc = docs[i];
-                    final data = doc.data() as Map<String, dynamic>;
-                    final note = data['note'] as String? ?? '';
-                    final prompt = data['prompt'] as String?;
-                    final ts = data['createdAt'] as Timestamp?;
-                    final date = ts != null
-                        ? DateFormat.yMMMd(loc.localeName)
-                            .add_jm()
-                            .format(ts.toDate())
-                        : '';
-                    final isBeingEdited = _editingDocId == doc.id;
-
-                    return _JournalCard(
-                      docId: doc.id,
-                      note: note,
-                      prompt: prompt,
-                      date: date,
-                      isBeingEdited: isBeingEdited,
-                      color: _kJournalColor,
-                      theme: theme,
-                      onEdit: () => _startEdit(doc.id, note),
-                      onDelete: () => _delete(doc.id),
-                    );
-                  },
+                    ],
+                  ),
                 );
-              },
-            ),
+              }
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                itemCount: docs.length,
+                itemBuilder: (_, i) {
+                  final doc = docs[i];
+                  final data = doc.data() as Map<String, dynamic>;
+                  final note = data['note'] as String? ?? '';
+                  final prompt = data['prompt'] as String?;
+                  final ts = data['createdAt'] as Timestamp?;
+                  final date = ts != null
+                      ? DateFormat.yMMMd(loc.localeName)
+                          .add_jm()
+                          .format(ts.toDate())
+                      : '';
+                  final isBeingEdited = _editingDocId == doc.id;
+
+                  return _JournalCard(
+                    docId: doc.id,
+                    note: note,
+                    prompt: prompt,
+                    date: date,
+                    isBeingEdited: isBeingEdited,
+                    color: _kJournalColor,
+                    theme: theme,
+                    onEdit: () => _startEdit(doc.id, note),
+                    onDelete: () => _delete(doc.id),
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
@@ -884,7 +883,7 @@ class _JournalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isBeingEdited
             ? color.withOpacity(0.06)
-            : Colors.white,
+            : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isBeingEdited

@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
+import 'package:cecelia_care_flutter/widgets/confetti_overlay.dart';
+import 'package:cecelia_care_flutter/widgets/offline_banner.dart';
 import '../providers/active_elder_provider.dart';
 import '../providers/message_provider.dart';
 import '../models/caregiver_role.dart';
@@ -274,12 +276,23 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         // No AppBar here — each tab provides its own via _TabScaffold.
-        body: (isActiveElderLoading &&
-                activeElder == null &&
-                _selectedIndex > 0 &&
-                _selectedIndex < 4)
-            ? const Center(child: CircularProgressIndicator())
-            : IndexedStack(index: _selectedIndex, children: pages),
+        body: ConfettiOverlay(
+          child: Column(
+            children: [
+              // Offline indicator — auto-shows/hides based on connectivity
+              const OfflineBanner(),
+              // Tab content
+              Expanded(
+                child: (isActiveElderLoading &&
+                        activeElder == null &&
+                        _selectedIndex > 0 &&
+                        _selectedIndex < 4)
+                    ? const Center(child: CircularProgressIndicator())
+                    : IndexedStack(index: _selectedIndex, children: pages),
+              ),
+            ],
+          ),
+        ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,

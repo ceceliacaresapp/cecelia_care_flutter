@@ -26,6 +26,10 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
   bool get isLoadingMedDefs => _isLoadingMedDefs;
   MedicationDefinitionError? get errorInfo => _errorInfo;
 
+  /// Medications the user has pinned for quick one-tap logging on the dashboard.
+  List<MedicationDefinition> get pinnedMeds =>
+      _medDefinitions.where((d) => d.pinned).toList();
+
   void clearErrorMessage() {
     _errorInfo = null;
     notifyListeners();
@@ -121,6 +125,41 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
       debugPrint('Error updating reminderEnabled for $medDefId: $e');
       _errorInfo = MedicationDefinitionError(
           type: 'reminder_update_failed', details: e.toString());
+      notifyListeners();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // togglePinned — pin/unpin a medication for dashboard quick-log
+  // ---------------------------------------------------------------------------
+  Future<void> togglePinned({
+    required String medDefId,
+    required bool pinned,
+  }) async {
+    _errorInfo = null;
+    try {
+      await FirebaseFirestore.instance
+          .collection('medicationDefinitions')
+          .doc(medDefId)
+          .update({
+        'pinned': pinned,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      final idx = _medDefinitions.indexWhere((d) => d.id == medDefId);
+      if (idx != -1) {
+        _medDefinitions[idx] =
+            _medDefinitions[idx].copyWith(pinned: pinned);
+        notifyListeners();
+      }
+
+      debugPrint(
+          'MedicationDefinitionsProvider: ${pinned ? "pinned" : "unpinned"} '
+          'med def $medDefId');
+    } catch (e) {
+      debugPrint('Error toggling pinned for $medDefId: $e');
+      _errorInfo = MedicationDefinitionError(
+          type: 'pin_update_failed', details: e.toString());
       notifyListeners();
     }
   }
