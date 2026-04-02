@@ -20,8 +20,12 @@ class _ConfettiScope extends InheritedWidget {
 
   final ConfettiController controller;
 
+  /// Uses findAncestorWidgetOfExactType instead of
+  /// dependOnInheritedWidgetOfExactType to avoid registering a dependency.
+  /// This prevents the '_dependents.isEmpty' assertion error when the
+  /// calling widget is being disposed during navigation transitions.
   static _ConfettiScope? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_ConfettiScope>();
+    return context.findAncestorWidgetOfExactType<_ConfettiScope>();
   }
 
   @override
@@ -38,11 +42,15 @@ class ConfettiOverlay extends StatefulWidget {
   final Widget child;
 
   /// Fire a confetti burst from the nearest ConfettiOverlay ancestor.
-  /// Safe to call even if no overlay exists — silently no-ops.
+  /// Safe to call even if no overlay exists or during disposal — silently no-ops.
   static void trigger(BuildContext context) {
-    final scope = _ConfettiScope.of(context);
-    if (scope != null) {
-      scope.controller.play();
+    try {
+      final scope = _ConfettiScope.of(context);
+      if (scope != null) {
+        scope.controller.play();
+      }
+    } catch (_) {
+      // Silently ignore — confetti is decorative, never worth crashing for.
     }
   }
 

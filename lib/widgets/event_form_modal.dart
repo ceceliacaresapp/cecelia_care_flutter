@@ -36,12 +36,15 @@ class _EventFormModalState extends State<EventFormModal> {
   final TextEditingController _startTimeCtrl = TextEditingController();
   final TextEditingController _endDateCtrl = TextEditingController();
   final TextEditingController _endTimeCtrl = TextEditingController();
+  final TextEditingController _recurrenceEndDateCtrl = TextEditingController();
 
   DateTime? _startDate;
   TimeOfDay? _startTime;
   DateTime? _endDate;
   TimeOfDay? _endTime;
   bool _allDay = false;
+  String? _recurrenceRule; // null = no recurrence
+  DateTime? _recurrenceEndDate;
 
   late AppLocalizations _l10n;
 
@@ -67,6 +70,11 @@ class _EventFormModalState extends State<EventFormModal> {
       _endTime = null;
     }
     _allDay = init.allDay;
+    _recurrenceRule = init.recurrenceRule;
+    if (init.recurrenceEndDate != null) {
+      final red = init.recurrenceEndDate!.toDate();
+      _recurrenceEndDate = DateTime(red.year, red.month, red.day);
+    }
     // Initial format without locale — will be re-synced in didChangeDependencies
     _syncDisplayControllers();
   }
@@ -92,6 +100,9 @@ class _EventFormModalState extends State<EventFormModal> {
     _endTimeCtrl.text = _endTime != null
         ? '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}'
         : '';
+    _recurrenceEndDateCtrl.text = _recurrenceEndDate != null
+        ? DateFormat.yMd().format(_recurrenceEndDate!)
+        : '';
   }
 
   @override
@@ -103,6 +114,7 @@ class _EventFormModalState extends State<EventFormModal> {
     _startTimeCtrl.dispose();
     _endDateCtrl.dispose();
     _endTimeCtrl.dispose();
+    _recurrenceEndDateCtrl.dispose();
     super.dispose();
   }
 
@@ -171,6 +183,19 @@ class _EventFormModalState extends State<EventFormModal> {
       endTimestamp = Timestamp.fromDate(endDateTime);
     }
 
+    if (_recurrenceRule != null && _recurrenceEndDate == null) {
+      _showSnackBar('Please select a "Repeat Until" date.');
+      return;
+    }
+
+    final Timestamp? recurrenceEndTimestamp = _recurrenceEndDate != null
+        ? Timestamp.fromDate(DateTime(
+            _recurrenceEndDate!.year,
+            _recurrenceEndDate!.month,
+            _recurrenceEndDate!.day,
+            23, 59))
+        : null;
+
     final updatedEvent = CalendarEvent(
       id: widget.initialEvent.id,
       elderId: widget.initialEvent.elderId,
@@ -181,6 +206,9 @@ class _EventFormModalState extends State<EventFormModal> {
       endDateTime: endTimestamp,
       allDay: _allDay,
       notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      recurrenceRule: _recurrenceRule,
+      recurrenceParentId: widget.initialEvent.recurrenceParentId,
+      recurrenceEndDate: recurrenceEndTimestamp,
     );
 
     widget.onSubmit(updatedEvent);
@@ -258,6 +286,8 @@ class _EventFormModalState extends State<EventFormModal> {
               _buildDateTimePicker(isStart: true),
               const SizedBox(height: 12),
               _buildDateTimePicker(isStart: false),
+              const SizedBox(height: 12),
+              _buildRecurrencePicker(),
               const SizedBox(height: 12),
               TextField(
                 controller: _notesCtrl,
@@ -341,5 +371,69 @@ class _EventFormModalState extends State<EventFormModal> {
         ],
       ],
     );
+  }
+
+  Widget _buildRecurrencePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String?>(
+          initialValue: _recurrenceRule,
+          decoration: const InputDecoration(
+            labelText: 'Repeat',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.repeat),
+          ),
+          items: const [
+            DropdownMenuItem(value: null, child: Text('None')),
+            DropdownMenuItem(value: 'daily', child: Text('Daily')),
+            DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+            DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+          ],
+          onChanged: (val) => setState(() {
+            _recurrenceRule = val;
+            if (val == null) {
+              _recurrenceEndDate = null;
+              _recurrenceEndDateCtrl.clear();
+            }
+          }),
+        ),
+        if (_recurrenceRule != null) ...[
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: _pickRecurrenceEndDate,
+            child: AbsorbPointer(
+              child: TextField(
+                controller: _recurrenceEndDateCtrl,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  labelText: 'Repeat Until',
+                  hintText: 'Select end date',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _pickRecurrenceEndDate() async {
+    final initialDate = _recurrenceEndDate ??
+        (_startDate ?? DateTime.now()).add(const Duration(days: 30));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: _startDate ?? DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+    );
+    if (picked != null) {
+      setState(() {
+        _recurrenceEndDate = picked;
+        _syncDisplayControllers();
+      });
+    }
   }
 }

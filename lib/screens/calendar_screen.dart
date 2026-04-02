@@ -66,6 +66,8 @@ class _HealthReminder {
   _HealthReminder({required this.title, required this.frequency});
 }
 
+enum _DeleteChoice { thisOnly, allInSeries }
+
 class CalendarScreen extends StatefulWidget {
   final ElderProfile activeElder;
   final String? currentUserId;
@@ -354,14 +356,68 @@ class _CalendarScreenState extends State<CalendarScreen> {
           SnackBar(content: Text(_l10n.calendarErrorDeletePermission)));
       return;
     }
+
+    final isRecurring =
+        event.recurrenceRule != null || event.recurrenceParentId != null;
+    final eventTitle = event.title.isNotEmpty
+        ? event.title
+        : _l10n.calendarUntitledEvent;
+
+    if (isRecurring) {
+      // Ask whether to delete just this instance or the whole series
+      final choice = await showDialog<_DeleteChoice>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Delete Recurring Event'),
+          content: Text('Delete "$eventTitle"?'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, null),
+                child: Text(_l10n.cancelButton)),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, _DeleteChoice.thisOnly),
+              child: const Text('This event only'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(ctx, _DeleteChoice.allInSeries),
+              style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.dangerColor),
+              child: const Text('All recurring events'),
+            ),
+          ],
+        ),
+      );
+      if (choice == null) return;
+      try {
+        await _cancelEventNotification(event);
+        if (choice == _DeleteChoice.allInSeries) {
+          final parentId = event.recurrenceParentId ?? event.id!;
+          await context
+              .read<FirestoreService>()
+              .deleteRecurringEvents(parentId);
+        } else {
+          await context
+              .read<FirestoreService>()
+              .deleteCalendarEvent(event.id!);
+        }
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_l10n.eventDeletedSuccess)));
+      } catch (e) {
+        debugPrint('Error deleting calendar event: $e');
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_l10n.errorCouldNotDeleteEvent)));
+      }
+      return;
+    }
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(_l10n.calendarConfirmDeleteTitle),
-        content: Text(_l10n.calendarConfirmDeleteContent(
-            event.title.isNotEmpty
-                ? event.title
-                : _l10n.calendarUntitledEvent)),
+        content:
+            Text(_l10n.calendarConfirmDeleteContent(eventTitle)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -741,13 +797,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(
-                              event.title.isNotEmpty
-                                  ? event.title
-                                  : _l10n.calendarUntitledEvent,
-                              style: AppStyles.cardTitle.copyWith(
-                                  color: _kCalendarColor),
-                              overflow: TextOverflow.ellipsis,
+                            child: Row(
+                              children: [
+                                if (event.recurrenceRule != null ||
+                                    event.recurrenceParentId != null) ...[
+                                  const Icon(Icons.repeat,
+                                      size: 14,
+                                      color: _kCalendarColor),
+                                  const SizedBox(width: 4),
+                                ],
+                                Expanded(
+                                  child: Text(
+                                    event.title.isNotEmpty
+                                        ? event.title
+                                        : _l10n.calendarUntitledEvent,
+                                    style: AppStyles.cardTitle.copyWith(
+                                        color: _kCalendarColor),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           if (canEditDelete &&

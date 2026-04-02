@@ -38,6 +38,8 @@ import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
 import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
 import 'package:cecelia_care_flutter/screens/wellness_checkin_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
+import 'package:cecelia_care_flutter/widgets/symptom_insights_card.dart';
+import 'package:cecelia_care_flutter/widgets/med_schedule_timeline.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -316,6 +318,13 @@ String _entrySummary(JournalEntry entry) {
       return amt != null ? 'Expense: \$$amt' : 'Expense logged';
     case EntryType.message:
       return 'Message';
+    case EntryType.handoff:
+      final shift = entry.data?['shift'] as String?;
+      return (shift != null && shift.isNotEmpty)
+          ? '$shift shift handoff'
+          : 'Shift handoff';
+    case EntryType.custom:
+      return entry.data?['customTypeName'] as String? ?? 'Custom entry';
     default:
       return 'Entry logged';
   }
@@ -461,6 +470,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ];
       },
+      'insights': () => [
+        const SizedBox(height: 20),
+        const _SectionLabel(label: 'Symptom insights'),
+        const SizedBox(height: 10),
+        const SymptomInsightsCard(),
+      ],
+      'medSchedule': () => [
+        Builder(builder: (ctx) {
+          final medProv = ctx.watch<MedicationDefinitionsProvider>();
+          if (medProv.medDefinitions.isEmpty) return const SizedBox.shrink();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              SizedBox(height: 20),
+              _SectionLabel(label: 'Med schedule'),
+              SizedBox(height: 10),
+              MedScheduleTimeline(),
+            ],
+          );
+        }),
+      ],
     };
 
     // Use saved order, or defaults if not loaded yet.
@@ -519,7 +549,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _GreetingCard(
             greeting: greeting,
             elderName: elderDisplayName,
-            elderInitial: activeElder.profileName[0].toUpperCase(),
+            userInitial: (userProfile?.displayName.isNotEmpty == true)
+                ? userProfile!.displayName[0].toUpperCase()
+                : 'C',
+            userPhotoUrl: userProfile?.avatarUrl,
           ),
 
           // Customize dashboard link
@@ -1023,15 +1056,19 @@ class _GreetingCard extends StatelessWidget {
   const _GreetingCard({
     required this.greeting,
     required this.elderName,
-    required this.elderInitial,
+    required this.userInitial,
+    this.userPhotoUrl,
   });
 
   final String greeting;
   final String elderName;
-  final String elderInitial;
+  final String userInitial;
+  final String? userPhotoUrl;
 
   @override
   Widget build(BuildContext context) {
+    final hasPhoto = userPhotoUrl != null && userPhotoUrl!.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1085,13 +1122,17 @@ class _GreetingCard extends StatelessWidget {
           CircleAvatar(
             radius: 28,
             backgroundColor: Colors.white.withOpacity(0.2),
-            child: Text(
-              elderInitial,
-              style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
+            backgroundImage:
+                hasPhoto ? NetworkImage(userPhotoUrl!) : null,
+            child: hasPhoto
+                ? null
+                : Text(
+                    userInitial,
+                    style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
           ),
         ],
       ),
@@ -1217,6 +1258,8 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.vital: return const Color(0xFFF57C00);
       case EntryType.expense: return const Color(0xFF8E24AA);
       case EntryType.message: return const Color(0xFF546E7A);
+      case EntryType.handoff: return const Color(0xFF00897B);
+      case EntryType.custom: return const Color(0xFF546E7A);
       default: return AppTheme.textSecondary;
     }
   }
@@ -1232,6 +1275,8 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.vital: return Icons.monitor_heart_outlined;
       case EntryType.expense: return Icons.receipt_long_outlined;
       case EntryType.message: return Icons.chat_bubble_outline;
+      case EntryType.handoff: return Icons.swap_horiz_outlined;
+      case EntryType.custom: return Icons.extension_outlined;
       default: return Icons.note_outlined;
     }
   }
@@ -1247,6 +1292,8 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.vital: return 'Vitals';
       case EntryType.expense: return 'Expenses';
       case EntryType.message: return 'Messages';
+      case EntryType.handoff: return 'Handoff';
+      case EntryType.custom: return 'Custom';
       default: return t.name;
     }
   }

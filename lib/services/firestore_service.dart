@@ -461,9 +461,70 @@ class FirestoreService {
   Future<DocumentReference<CalendarEvent>> addCalendarEvent(
       CalendarEvent event) async {
     try {
-      return await _calendarEventsRef.add(event);
+      final parentRef = await _calendarEventsRef.add(event);
+
+      if (event.recurrenceRule != null && event.recurrenceEndDate != null) {
+        final rule = event.recurrenceRule!;
+        final endDate = event.recurrenceEndDate!.toDate();
+        final startDate = event.startDateTime.toDate();
+        final duration = event.endDateTime != null
+            ? event.endDateTime!.toDate().difference(startDate)
+            : Duration.zero;
+
+        var current = startDate;
+        WriteBatch batch = _db.batch();
+        int opCount = 0;
+        const int maxOps = 499;
+
+        while (true) {
+          DateTime next;
+          if (rule == 'daily') {
+            next = current.add(const Duration(days: 1));
+          } else if (rule == 'weekly') {
+            next = current.add(const Duration(days: 7));
+          } else if (rule == 'monthly') {
+            next = DateTime(
+                current.year, current.month + 1, current.day,
+                current.hour, current.minute);
+          } else {
+            break;
+          }
+          if (next.isAfter(endDate)) break;
+          current = next;
+
+          final instance = CalendarEvent(
+            elderId: event.elderId,
+            createdBy: event.createdBy,
+            createdByDisplayName: event.createdByDisplayName,
+            title: event.title,
+            eventType: event.eventType,
+            allDay: event.allDay,
+            notes: event.notes,
+            startDateTime: Timestamp.fromDate(current),
+            endDateTime: duration != Duration.zero
+                ? Timestamp.fromDate(current.add(duration))
+                : null,
+            recurrenceRule: null,
+            recurrenceParentId: parentRef.id,
+            recurrenceEndDate: event.recurrenceEndDate,
+          );
+
+          final docRef = _db.collection(_calendarEventsCollection).doc();
+          batch.set(docRef, instance.toFirestore());
+          opCount++;
+
+          if (opCount >= maxOps) {
+            await batch.commit();
+            batch = _db.batch();
+            opCount = 0;
+          }
+        }
+
+        if (opCount > 0) await batch.commit();
+      }
+
+      return parentRef;
     } catch (e) {
-      // FIX: was print() — must be debugPrint().
       debugPrint('FirestoreService.addCalendarEvent error: $e');
       rethrow;
     }
@@ -493,6 +554,135 @@ class FirestoreService {
 
   Future<void> deleteCalendarEvent(String eventId) async {
     await _calendarEventsRef.doc(eventId).delete();
+  }
+
+  Future<void> deleteRecurringEvents(String parentId) async {
+    // Delete all instances that reference this parent
+    final instances = await _db
+        .collection(_calendarEventsCollection)
+        .where('recurrenceParentId', isEqualTo: parentId)
+        .get();
+
+    WriteBatch batch = _db.batch();
+    int opCount = 0;
+    const int maxOps = 499;
+
+    for (final doc in instances.docs) {
+      batch.delete(doc.reference);
+      opCount++;
+      if (opCount >= maxOps) {
+        await batch.commit();
+        batch = _db.batch();
+        opCount = 0;
+      }
+    }
+
+    // Also delete the parent event itself
+    batch.delete(_db.collection(_calendarEventsCollection).doc(parentId));
+    await batch.commit();
+  }
+
+  // ---------------------------------------------------------------------------
+  // applyCarePlanTemplate — batch-creates calendar events from a template.
+  //
+  // Each event in [events] is treated as a "parent" event. If the event has
+  // a recurrenceRule + recurrenceEndDate, recurring instances are generated
+  // (same logic as addCalendarEvent). All writes are consolidated into
+  // minimal WriteBatch commits for efficiency.
+  //
+  // Returns the total number of documents created.
+  // ---------------------------------------------------------------------------
+  Future<int> applyCarePlanTemplate(List<CalendarEvent> events) async {
+    if (events.isEmpty) return 0;
+
+    int totalCreated = 0;
+    WriteBatch batch = _db.batch();
+    int opCount = 0;
+    const int maxOps = 499;
+
+    Future<void> commitIfNeeded() async {
+      if (opCount >= maxOps) {
+        await batch.commit();
+        batch = _db.batch();
+        opCount = 0;
+      }
+    }
+
+    try {
+      for (final event in events) {
+        // Create the parent event
+        final parentRef =
+            _db.collection(_calendarEventsCollection).doc();
+        batch.set(parentRef, event.toFirestore());
+        opCount++;
+        totalCreated++;
+        await commitIfNeeded();
+
+        // Generate recurring instances if applicable
+        if (event.recurrenceRule != null &&
+            event.recurrenceEndDate != null) {
+          final rule = event.recurrenceRule!;
+          final endDate = event.recurrenceEndDate!.toDate();
+          final startDate = event.startDateTime.toDate();
+          final duration = event.endDateTime != null
+              ? event.endDateTime!.toDate().difference(startDate)
+              : Duration.zero;
+
+          var current = startDate;
+          while (true) {
+            DateTime next;
+            if (rule == 'daily') {
+              next = current.add(const Duration(days: 1));
+            } else if (rule == 'weekly') {
+              next = current.add(const Duration(days: 7));
+            } else if (rule == 'monthly') {
+              next = DateTime(current.year, current.month + 1,
+                  current.day, current.hour, current.minute);
+            } else {
+              break;
+            }
+            if (next.isAfter(endDate)) break;
+            current = next;
+
+            final instance = CalendarEvent(
+              elderId: event.elderId,
+              createdBy: event.createdBy,
+              createdByDisplayName: event.createdByDisplayName,
+              title: event.title,
+              eventType: event.eventType,
+              allDay: event.allDay,
+              notes: event.notes,
+              startDateTime: Timestamp.fromDate(current),
+              endDateTime: duration != Duration.zero
+                  ? Timestamp.fromDate(current.add(duration))
+                  : null,
+              recurrenceRule: null,
+              recurrenceParentId: parentRef.id,
+              recurrenceEndDate: event.recurrenceEndDate,
+            );
+
+            final docRef =
+                _db.collection(_calendarEventsCollection).doc();
+            batch.set(docRef, instance.toFirestore());
+            opCount++;
+            totalCreated++;
+            await commitIfNeeded();
+          }
+        }
+      }
+
+      // Final commit for remaining operations
+      if (opCount > 0) await batch.commit();
+
+      debugPrint(
+        'FirestoreService.applyCarePlanTemplate: created '
+        '$totalCreated calendar events from ${events.length} template items.',
+      );
+      return totalCreated;
+    } catch (e) {
+      debugPrint('FirestoreService.applyCarePlanTemplate error: $e');
+      rethrow;
+    }
   }
 
   Stream<List<CalendarEvent>> getCalendarEventsStream(
@@ -1065,6 +1255,120 @@ class FirestoreService {
           'error ($detailedEntryPath): $e');
       return false;
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shift Definitions (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _shiftDefinitionsSubcollection = 'shiftDefinitions';
+
+  Stream<List<Map<String, dynamic>>> getShiftDefinitionsStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_shiftDefinitionsSubcollection)
+        .orderBy('startTime')
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getShiftDefinitionsStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addShiftDefinition(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_shiftDefinitionsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateShiftDefinition(
+      String elderId, String shiftId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || shiftId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_shiftDefinitionsSubcollection)
+        .doc(shiftId)
+        .update(data);
+  }
+
+  Future<void> deleteShiftDefinition(
+      String elderId, String shiftId) async {
+    if (elderId.isEmpty || shiftId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_shiftDefinitionsSubcollection)
+        .doc(shiftId)
+        .delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Custom Entry Types (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _customEntryTypesSubcollection = 'customEntryTypes';
+
+  Stream<List<Map<String, dynamic>>> getCustomEntryTypesStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_customEntryTypesSubcollection)
+        .orderBy('name')
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getCustomEntryTypesStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addCustomEntryType(
+      String elderId, dynamic type) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_customEntryTypesSubcollection)
+        .add(type.toFirestore());
+    return ref.id;
+  }
+
+  Future<void> updateCustomEntryType(
+      String elderId, String typeId, dynamic type) async {
+    if (elderId.isEmpty || typeId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_customEntryTypesSubcollection)
+        .doc(typeId)
+        .update(type.toFirestore());
+  }
+
+  Future<void> deleteCustomEntryType(
+      String elderId, String typeId) async {
+    if (elderId.isEmpty || typeId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_customEntryTypesSubcollection)
+        .doc(typeId)
+        .delete();
   }
 
   // ---------------------------------------------------------------------------

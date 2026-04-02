@@ -16,6 +16,9 @@ class CalendarEvent {
   final String? createdByDisplayName; // Optional: For easier display
   final Timestamp? createdAt; // Firestore server timestamp for creation
   final Timestamp? updatedAt; // Firestore server timestamp for updates
+  final String? recurrenceRule; // 'daily', 'weekly', 'monthly', or null
+  final String? recurrenceParentId; // links instances back to the original event
+  final Timestamp? recurrenceEndDate; // how far out to generate instances
 
   CalendarEvent({
     this.id,
@@ -30,6 +33,9 @@ class CalendarEvent {
     this.createdByDisplayName,
     this.createdAt,
     this.updatedAt,
+    this.recurrenceRule,
+    this.recurrenceParentId,
+    this.recurrenceEndDate,
   });
 
   // Updated fromFirestore to use an intermediate fromJson factory
@@ -66,6 +72,9 @@ class CalendarEvent {
       createdByDisplayName: json['createdByDisplayName'] as String?,
       createdAt: json['createdAt'] as Timestamp?,
       updatedAt: json['updatedAt'] as Timestamp?,
+      recurrenceRule: json['recurrenceRule'] as String?,
+      recurrenceParentId: json['recurrenceParentId'] as String?,
+      recurrenceEndDate: json['recurrenceEndDate'] as Timestamp?,
     );
   }
 
@@ -87,6 +96,9 @@ class CalendarEvent {
           FieldValue.serverTimestamp(), // Sets server timestamp if createdAt is null on creation
       'updatedAt':
           FieldValue.serverTimestamp(), // Always sets/updates server timestamp on save
+      'recurrenceRule': recurrenceRule,
+      'recurrenceParentId': recurrenceParentId,
+      'recurrenceEndDate': recurrenceEndDate,
     };
   }
 
@@ -103,6 +115,9 @@ class CalendarEvent {
     String? createdByDisplayName,
     Timestamp? createdAt,
     Timestamp? updatedAt,
+    String? recurrenceRule,
+    String? recurrenceParentId,
+    Timestamp? recurrenceEndDate,
   }) {
     return CalendarEvent(
       id: id ?? this.id,
@@ -117,6 +132,9 @@ class CalendarEvent {
       createdByDisplayName: createdByDisplayName ?? this.createdByDisplayName,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      recurrenceParentId: recurrenceParentId ?? this.recurrenceParentId,
+      recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
     );
   }
 }

@@ -575,6 +575,16 @@ class ExportService {
         notes = d['note'] as String? ?? '';
         break;
 
+      case EntryType.handoff:
+        final shift = d['shift'] as String?;
+        primaryInfo = (shift != null && shift.isNotEmpty)
+            ? '$shift Shift Handoff'
+            : 'Shift Handoff';
+        valueIntensity = d['completed'] as String? ?? '';
+        unitSecondaryInfo = d['pending'] as String? ?? '';
+        notes = d['concerns'] as String? ?? '';
+        break;
+
       case EntryType.message:
       case EntryType.caregiverJournal:
         primaryInfo =
@@ -625,6 +635,7 @@ class ExportService {
       case EntryType.message: return 'Messages';
       case EntryType.caregiverJournal: return 'Caregiver Journal';
       case EntryType.image: return 'Images';
+      case EntryType.handoff: return 'Shift Handoffs';
       default: return t.name[0].toUpperCase() + t.name.substring(1);
     }
   }

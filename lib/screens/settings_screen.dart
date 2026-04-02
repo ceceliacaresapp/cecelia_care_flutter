@@ -16,6 +16,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/providers/theme_provider.dart';
 import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
+import 'package:cecelia_care_flutter/screens/settings/custom_entry_types_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? navigateToManageCareRecipientProfiles;
@@ -276,6 +277,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: 'Customize Dashboard',
           onTap: () => Navigator.push(context,
             MaterialPageRoute(builder: (_) => const DashboardSettingsScreen())),
+        ),
+        const Divider(indent: 56, height: 1),
+        _SettingsTile(
+          icon: Icons.extension_outlined,
+          iconColor: const Color(0xFF5C6BC0),
+          title: 'Custom Entry Types',
+          onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const CustomEntryTypesScreen())),
         ),
 
         const SizedBox(height: 20),

@@ -15,6 +15,9 @@ import 'package:cecelia_care_flutter/screens/forms/mood_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/pain_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/sleep_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
+import 'package:cecelia_care_flutter/screens/forms/handoff_form.dart';
+import 'package:cecelia_care_flutter/screens/forms/custom_entry_form.dart';
+import 'package:cecelia_care_flutter/providers/custom_entry_types_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // ---------------------------------------------------------------------------
@@ -252,6 +255,47 @@ void showEntryDialog(
                   ),
                 ),
               ),
+              ListTile(
+                leading: const Icon(Icons.swap_horiz_outlined),
+                title: const Text('Shift Handoff'),
+                onTap: () => _showFormSheet(
+                  dialogContext,
+                  ChangeNotifierProvider.value(
+                    value: journalService,
+                    child: HandoffForm(
+                      onClose: () {},
+                      currentDate: currentDateStr,
+                      activeElder: activeElder,
+                    ),
+                  ),
+                ),
+              ),
+              // ── Custom entry types ──────────────────────────────
+              Builder(builder: (ctx) {
+                final customTypes =
+                    ctx.watch<CustomEntryTypesProvider>().types;
+                if (customTypes.isEmpty) return const SizedBox.shrink();
+                return Column(
+                  children: [
+                    const Divider(),
+                    ...customTypes.map((t) => ListTile(
+                          leading: Icon(t.iconData, color: t.color),
+                          title: Text(t.name),
+                          onTap: () => _showFormSheet(
+                            dialogContext,
+                            ChangeNotifierProvider.value(
+                              value: journalService,
+                              child: CustomEntryForm(
+                                typeDef: t,
+                                activeElder: activeElder,
+                                currentDate: currentDateStr,
+                              ),
+                            ),
+                          ),
+                        )),
+                  ],
+                );
+              }),
             ],
           ),
         ),

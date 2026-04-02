@@ -62,6 +62,12 @@ _EntryStyle _entryTypeStyle(EntryType type) {
     case EntryType.image:
       return _EntryStyle(
           accent: const Color(0xFF283593), surface: const Color(0xFFE8EAF6));
+    case EntryType.handoff:
+      return _EntryStyle(
+          accent: const Color(0xFF00897B), surface: const Color(0xFFE0F2F1));
+    case EntryType.custom:
+      return _EntryStyle(
+          accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
     default:
       return _EntryStyle(
           accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
@@ -1019,6 +1025,14 @@ class TimelineScreenState extends State<TimelineScreen> {
         title = _l10n.caregiverJournal;
         summary = data?['note'] as String? ?? _l10n.noContent;
         break;
+      case EntryType.handoff:
+        title = 'Shift Handoff';
+        summary = _extractSummaryFromData(data, type, _l10n);
+        break;
+      case EntryType.custom:
+        title = data?['customTypeName'] as String? ?? 'Custom Entry';
+        summary = _extractSummaryFromData(data, type, _l10n);
+        break;
       default:
         title = type.name.isNotEmpty
             ? '${type.name[0].toUpperCase()}${type.name.substring(1)}'
@@ -1416,6 +1430,36 @@ class TimelineScreenState extends State<TimelineScreen> {
           return l10n.timelineSummaryImageFormat(title);
         case EntryType.caregiverJournal:
           return entryData['note'] as String? ?? l10n.noContent;
+        case EntryType.handoff:
+          final shift = entryData['shift'] as String?;
+          final shiftPrefix =
+              (shift != null && shift.isNotEmpty) ? '$shift shift — ' : '';
+          final completed = entryData['completed'] as String? ?? '';
+          final pending = entryData['pending'] as String? ?? '';
+          final completedLines =
+              completed.isNotEmpty ? completed.trim().split('\n').length : 0;
+          final pendingLines =
+              pending.isNotEmpty ? pending.trim().split('\n').length : 0;
+          return '$shiftPrefix$completedLines task${completedLines == 1 ? '' : 's'} done, '
+              '$pendingLines pending';
+        case EntryType.custom:
+          // Build summary from custom field values, skipping metadata keys
+          const metaKeys = {
+            'customTypeId', 'customTypeName', 'customTypeColor',
+            'customTypeIcon', 'elderId', 'date', 'loggedByUserId',
+            'loggedBy', 'updatedAt', 'isPublic', 'visibleToUserIds', 'text',
+          };
+          final parts = <String>[];
+          for (final key in entryData.keys) {
+            if (metaKeys.contains(key)) continue;
+            final val = entryData[key];
+            if (val != null && val.toString().isNotEmpty && val != false) {
+              parts.add(val.toString());
+            }
+          }
+          return parts.isNotEmpty
+              ? parts.join(' · ')
+              : entryData['text'] as String? ?? l10n.timelineNoDetailsProvided;
         default:
           return entryData['text'] as String? ??
               l10n.timelineNoDetailsProvided;

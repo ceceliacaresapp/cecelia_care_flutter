@@ -26,6 +26,8 @@ import 'providers/medication_definitions_provider.dart';
 import 'providers/self_care_provider.dart';
 import 'providers/user_profile_provider.dart';
 import 'providers/wellness_provider.dart';
+import 'providers/custom_entry_types_provider.dart';
+import 'providers/symptom_analytics_provider.dart';
 import 'providers/gamification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'routing/app_router.dart';
@@ -155,6 +157,38 @@ class _AppRootState extends State<AppRoot> {
                 previousMedDefsProvider!
                     .updateForElder(activeElderProvider.activeElder);
                 return previousMedDefsProvider;
+              },
+            ),
+            ChangeNotifierProxyProvider<ActiveElderProvider,
+                CustomEntryTypesProvider>(
+              create: (context) {
+                final activeElder =
+                    Provider.of<ActiveElderProvider>(context, listen: false)
+                        .activeElder;
+                final provider = CustomEntryTypesProvider();
+                provider.updateForElder(activeElder);
+                return provider;
+              },
+              update: (context, activeElderProvider, previous) {
+                previous!.updateForElder(activeElderProvider.activeElder);
+                return previous;
+              },
+            ),
+            ChangeNotifierProxyProvider<ActiveElderProvider,
+                SymptomAnalyticsProvider>(
+              create: (context) {
+                final provider = SymptomAnalyticsProvider(
+                  firestoreService: context.read<FirestoreService>(),
+                );
+                final elder = Provider.of<ActiveElderProvider>(
+                        context, listen: false)
+                    .activeElder;
+                provider.updateForElder(elder);
+                return provider;
+              },
+              update: (context, activeElderProvider, previous) {
+                previous!.updateForElder(activeElderProvider.activeElder);
+                return previous;
               },
             ),
             ChangeNotifierProvider(create: (_) => UserProfileProvider()),

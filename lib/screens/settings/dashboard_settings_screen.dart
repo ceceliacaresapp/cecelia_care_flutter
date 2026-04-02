@@ -19,6 +19,8 @@ const List<Map<String, dynamic>> kDefaultSections = [
   {'key': 'achievements', 'label': 'Achievements', 'icon': 0xe545, 'visible': true},
   {'key': 'journal', 'label': 'My Journal', 'icon': 0xf584, 'visible': true},
   {'key': 'quickLog', 'label': 'Quick Log', 'icon': 0xe145, 'visible': true},
+  {'key': 'insights', 'label': 'Symptom Insights', 'icon': 0xe3a1, 'visible': true},
+  {'key': 'medSchedule', 'label': 'Med Schedule', 'icon': 0xf0575, 'visible': true},
 ];
 
 /// Reads the saved config from SharedPreferences, falling back to defaults.
@@ -130,6 +132,8 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
       case 'achievements': return Icons.emoji_events_outlined;
       case 'journal': return Icons.menu_book_outlined;
       case 'quickLog': return Icons.add_circle_outline;
+      case 'insights': return Icons.insights_outlined;
+      case 'medSchedule': return Icons.schedule_outlined;
       default: return Icons.widgets_outlined;
     }
   }

@@ -202,6 +202,24 @@ const List<EntrySchema> entrySchemas = <EntrySchema>[
         descriptionForAI:
             'The content of a private caregiver journal entry.'),
   ]),
+  EntrySchema('Handoff Note', [
+    EntryField('handoff-shift', 'Shift',
+        isRequired: false,
+        descriptionForAI:
+            'Which shift this handoff covers: Morning, Afternoon, Evening, or Overnight.'),
+    EntryField('handoff-completed', 'Tasks Completed',
+        isRequired: true,
+        descriptionForAI:
+            'What was done during this shift — meds given, meals served, activities, etc.'),
+    EntryField('handoff-pending', 'Tasks Pending',
+        isRequired: true,
+        descriptionForAI:
+            'What still needs to be done by the next caregiver.'),
+    EntryField('handoff-concerns', 'Concerns / Notes',
+        isRequired: true,
+        descriptionForAI:
+            'Anything the next caregiver should know — mood changes, pain complaints, visitors expected.'),
+  ]),
 ];
 
 /// A standardized enum for all journal entry types used in the app.
@@ -218,6 +236,8 @@ enum EntryType {
   image,
   calendarEvent,
   caregiverJournal, // FIX: Added the missing enum member
+  handoff,
+  custom,
   unknown; // A fallback for safety
 
   /// Creates an EntryType from a string, ignoring case.
@@ -238,6 +258,13 @@ enum EntryType {
     // Handle plural 'expenses' from old schema if necessary
     if (lowercasedType == 'expenses') {
       return EntryType.expense;
+    }
+    // Handle alternate spellings stored in Firestore
+    if (lowercasedType == 'handoffnote') {
+      return EntryType.handoff;
+    }
+    if (lowercasedType == 'custom') {
+      return EntryType.custom;
     }
 
     return EntryType.unknown;

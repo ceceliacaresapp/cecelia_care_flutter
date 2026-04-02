@@ -11,6 +11,10 @@ import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
 import 'package:cecelia_care_flutter/screens/resources_screen.dart';
 import 'package:cecelia_care_flutter/screens/emergency_card_screen.dart';
+import 'package:cecelia_care_flutter/screens/doctor_summary_screen.dart';
+import 'package:cecelia_care_flutter/screens/appointment_prep_screen.dart';
+import 'package:cecelia_care_flutter/screens/care_plan_templates_screen.dart';
+import 'package:cecelia_care_flutter/screens/shift_schedule_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';
@@ -190,6 +194,76 @@ class CareScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (_) => const EmergencyCardScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.summarize_outlined,
+                title: 'Doctor Summary',
+                subtitle: 'Last 7 days PDF',
+                color: const Color(0xFF5C6BC0),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const DoctorSummaryScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Third standard tiles row ──────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.checklist_outlined,
+                title: 'Appointment Prep',
+                subtitle: '30-day summary',
+                color: const Color(0xFF3949AB),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AppointmentPrepScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.auto_fix_high_outlined,
+                title: 'Care Plans',
+                subtitle: 'Auto-fill calendar',
+                color: const Color(0xFF00897B),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const CarePlanTemplatesScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Fourth standard tiles row ─────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.schedule_outlined,
+                title: 'Shift Schedule',
+                subtitle: 'Assign caregivers',
+                color: const Color(0xFF1565C0),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ShiftScheduleScreen()),
                 ),
               ),
             ),
