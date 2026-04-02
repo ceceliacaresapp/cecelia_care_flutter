@@ -1372,6 +1372,103 @@ class FirestoreService {
   }
 
   // ---------------------------------------------------------------------------
+  // Respite Providers (top-level collection — shared across all elders)
+  // ---------------------------------------------------------------------------
+
+  static const String _respiteProvidersCollection = 'respiteProviders';
+
+  Future<List<Map<String, dynamic>>> getRespiteProvidersByZipPrefix(
+      String zipPrefix) async {
+    if (zipPrefix.isEmpty) return [];
+    try {
+      final snapshot = await _db
+          .collection(_respiteProvidersCollection)
+          .where('zipPrefix', isEqualTo: zipPrefix)
+          .limit(25)
+          .get();
+      return snapshot.docs
+          .map((d) => {'id': d.id, ...d.data()})
+          .toList();
+    } catch (e) {
+      debugPrint('FirestoreService.getRespiteProvidersByZipPrefix error: $e');
+      return [];
+    }
+  }
+
+  Future<String> addRespiteProvider(Map<String, dynamic> data) async {
+    data['createdAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_respiteProvidersCollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> deleteRespiteProvider(String docId) async {
+    if (docId.isEmpty) return;
+    await _db.collection(_respiteProvidersCollection).doc(docId).delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Vault Documents (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _vaultDocumentsSubcollection = 'vaultDocuments';
+
+  Stream<List<Map<String, dynamic>>> getVaultDocumentsStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_vaultDocumentsSubcollection)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getVaultDocumentsStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addVaultDocument(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_vaultDocumentsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateVaultDocument(
+      String elderId, String docId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || docId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_vaultDocumentsSubcollection)
+        .doc(docId)
+        .update(data);
+  }
+
+  Future<void> deleteVaultDocument(
+      String elderId, String docId) async {
+    if (elderId.isEmpty || docId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_vaultDocumentsSubcollection)
+        .doc(docId)
+        .delete();
+  }
+
+  // ---------------------------------------------------------------------------
   // Image Folders (subcollection under elderProfiles)
   // ---------------------------------------------------------------------------
 

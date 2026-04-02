@@ -15,6 +15,8 @@ import 'package:cecelia_care_flutter/screens/doctor_summary_screen.dart';
 import 'package:cecelia_care_flutter/screens/appointment_prep_screen.dart';
 import 'package:cecelia_care_flutter/screens/care_plan_templates_screen.dart';
 import 'package:cecelia_care_flutter/screens/shift_schedule_screen.dart';
+import 'package:cecelia_care_flutter/screens/document_vault_screen.dart';
+import 'package:cecelia_care_flutter/screens/respite_care_finder_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';
@@ -264,6 +266,41 @@ class CareScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (_) => const ShiftScheduleScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.folder_special_outlined,
+                title: 'Document Vault',
+                subtitle: 'Legal & financial',
+                color: const Color(0xFF5C6BC0),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const DocumentVaultScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Fifth standard tiles row ──────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.location_on_outlined,
+                title: 'Respite Finder',
+                subtitle: 'Find local services',
+                color: const Color(0xFF00897B),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const RespiteCareFinderScreen()),
                 ),
               ),
             ),
