@@ -8,6 +8,7 @@ import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
+import 'package:cecelia_care_flutter/utils/string_extensions.dart';
 
 class JournalServiceProvider extends ChangeNotifier {
   final FirestoreService _firestoreService;
@@ -210,6 +211,9 @@ class JournalServiceProvider extends ChangeNotifier {
         final Map<String, dynamic> resultData =
             docSnap.data() as Map<String, dynamic>;
         resultData['firestoreId'] = docSnap.id;
+
+        // Fire-and-forget: stamp the user's last activity time.
+        _firestoreService.updateLastActiveAt(userId);
 
         try {
           await _badgeProvider.checkForNewBadgesAfterEntry(
@@ -434,20 +438,28 @@ class JournalServiceProvider extends ChangeNotifier {
 
     String? dateString;
     try {
+      // Look up the detailed entry directly by document ID inside the
+      // entryType subcollection under each day. A collectionGroup query
+      // on the entryType name lets Firestore find the doc regardless of
+      // which date it lives under.
       final querySnapshot = await FirebaseFirestore.instance
-          .collection('elders')
-          .doc(_activeElder!.id)
-          .collection('days')
-          .where('$entryType.$entryId', isNotEqualTo: null)
+          .collectionGroup(entryType)
+          .where(FieldPath.documentId, isEqualTo: entryId)
           .limit(1)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        dateString = querySnapshot.docs.first.id;
+        // Path: elders/{elderId}/days/{dateString}/{entryType}/{entryId}
+        // Parent of the entry doc is the type collection; grandparent is
+        // the day document whose ID is the dateString.
+        final entryRef = querySnapshot.docs.first.reference;
+        dateString = entryRef.parent.parent?.id;
         debugPrint(
             'JournalServiceProvider: found dateString $dateString for '
             'entry $entryId of type $entryType.');
-      } else {
+      }
+
+      if (dateString == null || dateString.isEmpty) {
         debugPrint(
             'JournalServiceProvider: could not find dateString for entry '
             '$entryId of type $entryType.');
@@ -526,9 +538,3 @@ class JournalServiceProvider extends ChangeNotifier {
   }
 }
 
-extension StringExtension on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return '${this[0].toUpperCase()}${substring(1)}';
-  }
-}

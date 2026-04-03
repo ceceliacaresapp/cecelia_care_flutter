@@ -140,18 +140,38 @@ service cloud.firestore {
       allow update, delete: if isCaregiver(resource.data.elderId);
     }
 
-    // Financial Data
+    // Financial Data — restricted to the owning user.
     match /budget_entries/{docId} {
-      allow read, write: if request.auth != null; 
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
     }
     match /income_entries/{docId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
     }
     match /financial_assets/{docId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
     }
     match /financial_liabilities/{docId} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
     }
 
     // --- Collection Group Queries ---

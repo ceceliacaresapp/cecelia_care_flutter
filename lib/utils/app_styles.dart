@@ -40,9 +40,9 @@ class AppStyles {
     fontFamily: 'Poppins',
   );
 
-  static final TextStyle emptyStateText = TextStyle(
+  static const TextStyle emptyStateText = TextStyle(
     fontSize: 16,
-    color: Colors.black.withOpacity(0.6),
+    color: Color(0x99000000), // equivalent to Colors.black.withOpacity(0.6)
     fontFamily: 'Poppins',
   );
 
@@ -66,9 +66,9 @@ class AppStyles {
     fontFamily: 'Poppins',
   );
 
-  static final TextStyle timelineItemMeta = TextStyle(
+  static const TextStyle timelineItemMeta = TextStyle(
     fontSize: 12,
-    color: Colors.black.withOpacity(0.6),
+    color: Color(0x99000000), // equivalent to Colors.black.withOpacity(0.6)
     fontFamily: 'Poppins',
   );
 

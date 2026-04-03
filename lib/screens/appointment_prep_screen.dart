@@ -27,6 +27,7 @@ import 'package:cecelia_care_flutter/providers/medication_definitions_provider.d
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/utils/string_extensions.dart';
 
 const _kColor = Color(0xFF3949AB); // deep indigo — distinct from DoctorSummary
 

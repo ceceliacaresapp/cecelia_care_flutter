@@ -262,6 +262,37 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
   }
 
   // ---------------------------------------------------------------------------
+  // updatePhotoUrl — targeted single-field update for medication photos.
+  // ---------------------------------------------------------------------------
+  Future<void> updatePhotoUrl({
+    required String medDefId,
+    required String? photoUrl,
+  }) async {
+    _errorInfo = null;
+    try {
+      await FirebaseFirestore.instance
+          .collection('medicationDefinitions')
+          .doc(medDefId)
+          .update({
+        'photoUrl': photoUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      final idx = _medDefinitions.indexWhere((d) => d.id == medDefId);
+      if (idx != -1) {
+        _medDefinitions[idx] =
+            _medDefinitions[idx].copyWith(photoUrl: photoUrl);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('MedicationDefinitionsProvider.updatePhotoUrl error: $e');
+      _errorInfo = MedicationDefinitionError(
+          type: 'photo_update_failed', details: e.toString());
+      notifyListeners();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // addMedicationDefinition
   // ---------------------------------------------------------------------------
   Future<String?> addMedicationDefinition({
@@ -270,6 +301,7 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
     String? defaultTime,
     required String elderId,
     String? rxCui,
+    String? photoUrl,
     Future<List<String>> Function(MedicationDefinition newlyAddedMed,
             List<MedicationDefinition> otherMedsForElder)?
         checkInteractionsFunction,
@@ -289,6 +321,7 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
         'rxCui': rxCui,
         'interactionNotes': [],
         'reminderEnabled': false,
+        if (photoUrl != null) 'photoUrl': photoUrl,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };

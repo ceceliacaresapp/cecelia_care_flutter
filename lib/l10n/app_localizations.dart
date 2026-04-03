@@ -4897,6 +4897,18 @@ abstract class AppLocalizations {
   /// **'Health Reminders'**
   String get healthRemindersNotificationsLabel;
 
+  /// No description provided for @sundowningAlertLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sundowning Alert'**
+  String get sundowningAlertLabel;
+
+  /// No description provided for @sundowningAlertSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily 3 PM reminder with calming tips'**
+  String get sundowningAlertSubtitle;
+
   /// No description provided for @generalNotificationsLabel.
   ///
   /// In en, this message translates to:

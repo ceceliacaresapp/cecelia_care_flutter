@@ -19,6 +19,9 @@ class MedicationDefinition {
   final int? pillCount;
   final int? refillThreshold;
 
+  // Photo of the pill/bottle for visual identification.
+  final String? photoUrl;
+
   MedicationDefinition({
     this.id,
     required this.name,
@@ -31,7 +34,10 @@ class MedicationDefinition {
     this.pinned = false,
     this.pillCount,
     this.refillThreshold,
+    this.photoUrl,
   });
+
+  bool get hasPhoto => photoUrl != null && photoUrl!.isNotEmpty;
 
   static MedicationDefinition empty() {
     return MedicationDefinition(
@@ -46,6 +52,7 @@ class MedicationDefinition {
       pinned: false,
       pillCount: null,
       refillThreshold: null,
+      photoUrl: null,
     );
   }
 
@@ -67,6 +74,7 @@ class MedicationDefinition {
       pinned: data?['pinned'] as bool? ?? false,
       pillCount: data?['pillCount'] as int?,
       refillThreshold: data?['refillThreshold'] as int?,
+      photoUrl: data?['photoUrl'] as String?,
     );
   }
 
@@ -82,6 +90,7 @@ class MedicationDefinition {
       'pinned': pinned,
       if (pillCount != null) 'pillCount': pillCount,
       if (refillThreshold != null) 'refillThreshold': refillThreshold,
+      if (photoUrl != null) 'photoUrl': photoUrl,
     };
   }
 
@@ -98,6 +107,7 @@ class MedicationDefinition {
     // Sentinel pattern so callers can explicitly pass null to clear the value.
     Object? pillCount = _kSentinel,
     Object? refillThreshold = _kSentinel,
+    Object? photoUrl = _kSentinel,
   }) {
     return MedicationDefinition(
       id: id ?? this.id,
@@ -114,6 +124,9 @@ class MedicationDefinition {
       refillThreshold: identical(refillThreshold, _kSentinel)
           ? this.refillThreshold
           : refillThreshold as int?,
+      photoUrl: identical(photoUrl, _kSentinel)
+          ? this.photoUrl
+          : photoUrl as String?,
     );
   }
 }

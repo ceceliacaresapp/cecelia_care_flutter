@@ -17,6 +17,8 @@ import 'package:cecelia_care_flutter/screens/care_plan_templates_screen.dart';
 import 'package:cecelia_care_flutter/screens/shift_schedule_screen.dart';
 import 'package:cecelia_care_flutter/screens/document_vault_screen.dart';
 import 'package:cecelia_care_flutter/screens/respite_care_finder_screen.dart';
+import 'package:cecelia_care_flutter/screens/adl_assessment_screen.dart';
+import 'package:cecelia_care_flutter/screens/communication_cards_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';
@@ -301,6 +303,41 @@ class CareScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (_) => const RespiteCareFinderScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.accessibility_new_outlined,
+                title: 'ADL Score',
+                subtitle: 'Weekly assessment',
+                color: const Color(0xFF1565C0),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AdlAssessmentScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Sixth standard tiles row ──────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.sign_language_outlined,
+                title: 'Comm Cards',
+                subtitle: 'Picture + ASL signs',
+                color: const Color(0xFF8E24AA),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const CommunicationCardsScreen()),
                 ),
               ),
             ),

@@ -220,6 +220,28 @@ const List<EntrySchema> entrySchemas = <EntrySchema>[
         descriptionForAI:
             'Anything the next caregiver should know — mood changes, pain complaints, visitors expected.'),
   ]),
+  EntrySchema('Incontinence', [
+    EntryField('incontinence-type', 'Type',
+        isRequired: true,
+        descriptionForAI:
+            'Type of incontinence: Urinary, Bowel, or Both.'),
+    EntryField('incontinence-severity', 'Severity',
+        isRequired: true,
+        descriptionForAI:
+            'Light (pad change), Moderate (clothing change), or Heavy (full change).'),
+    EntryField('incontinence-skin', 'Skin Condition',
+        isRequired: true,
+        descriptionForAI:
+            'Check for redness, irritation, or skin breakdown.'),
+    EntryField('incontinence-changed', 'Changed',
+        isRequired: false,
+        descriptionForAI:
+            'Whether clothing or bedding was changed.'),
+    EntryField('incontinence-note', 'Notes',
+        isRequired: false,
+        descriptionForAI:
+            'Any additional observations.'),
+  ]),
 ];
 
 /// A standardized enum for all journal entry types used in the app.
@@ -237,6 +259,7 @@ enum EntryType {
   calendarEvent,
   caregiverJournal, // FIX: Added the missing enum member
   handoff,
+  incontinence,
   custom,
   unknown; // A fallback for safety
 

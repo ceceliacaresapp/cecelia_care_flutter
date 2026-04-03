@@ -6,9 +6,8 @@ class NotificationPrefs {
   bool selfCare;
   bool chatMessages;
   bool generalDefault;
-  // --- FIX ---
-  // Added the missing healthReminders field.
   bool healthReminders;
+  bool sundowningAlert;
 
   NotificationPrefs({
     required this.meds,
@@ -16,9 +15,8 @@ class NotificationPrefs {
     required this.selfCare,
     required this.chatMessages,
     required this.generalDefault,
-    // --- FIX ---
-    // Added to the constructor.
     required this.healthReminders,
+    required this.sundowningAlert,
   });
 
   factory NotificationPrefs.defaultPrefs() {
@@ -28,9 +26,8 @@ class NotificationPrefs {
       selfCare: true,
       chatMessages: true,
       generalDefault: true,
-      // --- FIX ---
-      // Set a default value.
       healthReminders: true,
+      sundowningAlert: false,
     );
   }
 
@@ -42,9 +39,8 @@ class NotificationPrefs {
       selfCare: json['selfCare'] as bool? ?? true,
       chatMessages: json['chatMessages'] as bool? ?? true,
       generalDefault: json['generalDefault'] as bool? ?? true,
-      // --- FIX ---
-      // Handled deserialization for the new field.
       healthReminders: json['healthReminders'] as bool? ?? true,
+      sundowningAlert: json['sundowningAlert'] as bool? ?? false,
     );
   }
 
@@ -56,9 +52,8 @@ class NotificationPrefs {
       'selfCare': selfCare,
       'chatMessages': chatMessages,
       'generalDefault': generalDefault,
-      // --- FIX ---
-      // Added the new field to serialization.
       'healthReminders': healthReminders,
+      'sundowningAlert': sundowningAlert,
     };
   }
 
@@ -69,9 +64,8 @@ class NotificationPrefs {
     bool? selfCare,
     bool? chatMessages,
     bool? generalDefault,
-    // --- FIX ---
-    // Added to the copyWith method for completeness.
     bool? healthReminders,
+    bool? sundowningAlert,
   }) {
     return NotificationPrefs(
       meds: meds ?? this.meds,
@@ -80,6 +74,7 @@ class NotificationPrefs {
       chatMessages: chatMessages ?? this.chatMessages,
       generalDefault: generalDefault ?? this.generalDefault,
       healthReminders: healthReminders ?? this.healthReminders,
+      sundowningAlert: sundowningAlert ?? this.sundowningAlert,
     );
   }
 }

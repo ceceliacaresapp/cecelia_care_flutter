@@ -113,11 +113,16 @@ class NotificationPrefsProvider with ChangeNotifier {
     }
   }
   
-  // --- FIX ---
-  // This method correctly handles the new 'healthReminders' preference.
   Future<void> toggleHealthReminders(bool value) async {
     if (_prefs.healthReminders != value) {
       _prefs.healthReminders = value;
+      await _savePrefs();
+    }
+  }
+
+  Future<void> toggleSundowningAlert(bool value) async {
+    if (_prefs.sundowningAlert != value) {
+      _prefs.sundowningAlert = value;
       await _savePrefs();
     }
   }

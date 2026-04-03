@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-// No need for cloud_firestore here anymore as calendar methods are removed
+import 'package:cecelia_care_flutter/services/firestore_service.dart';
 
 // A service class for Firebase Authentication operations.
 class AuthService {
@@ -57,6 +57,7 @@ class AuthService {
 
   /// Sign out the current user.
   Future<void> signOut() async {
+    FirestoreService.clearProfileCache();
     await _firebaseAuth.signOut();
   }
 

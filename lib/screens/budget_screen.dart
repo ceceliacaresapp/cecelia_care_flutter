@@ -233,25 +233,25 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         });
                     },
                     style: SegmentedButton.styleFrom(
-                        backgroundColor: Colors.white24,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.24),
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         selectedForegroundColor: Theme.of(context).primaryColor,
-                        selectedBackgroundColor: Colors.white,
+                        selectedBackgroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.chevron_left, color: Colors.white),
+                      icon: Icon(Icons.chevron_left, color: Theme.of(context).colorScheme.onPrimary),
                       onPressed: () => _changeMonth(-1),
                     ),
                     Text(
                       DateFormat.yMMMM().format(_selectedMonth),
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.chevron_right, color: Colors.white),
+                      icon: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onPrimary),
                       onPressed: () => _changeMonth(1),
                     ),
                   ],

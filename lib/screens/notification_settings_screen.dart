@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cecelia_care_flutter/providers/notification_prefs_provider.dart';
+import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
@@ -72,6 +73,37 @@ class NotificationSettingsScreen extends StatelessWidget {
               onChanged: (bool value) => prefsProvider.toggleHealthReminders(value),
               secondary: const Icon(Icons.monitor_heart_outlined),
             ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'ALZHEIMER\'S & DEMENTIA',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
+              ),
+            ),
+            SwitchListTile(
+              title: Text(l10n.sundowningAlertLabel),
+              subtitle: Text(
+                l10n.sundowningAlertSubtitle,
+                style: const TextStyle(fontSize: 12),
+              ),
+              value: prefsProvider.prefs.sundowningAlert,
+              onChanged: (bool value) async {
+                await prefsProvider.toggleSundowningAlert(value);
+                if (value) {
+                  await NotificationService.instance.scheduleSundowningAlert();
+                } else {
+                  await NotificationService.instance.cancelSundowningAlert();
+                }
+              },
+              secondary: const Icon(Icons.wb_twilight_outlined),
+            ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
             SwitchListTile(
               title: Text(l10n.generalNotificationsLabel),
               value: prefsProvider.prefs.generalDefault,

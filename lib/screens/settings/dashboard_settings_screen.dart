@@ -13,6 +13,7 @@ const String kDashboardSectionsKey = 'dashboard_sections_config';
 
 /// Default section order and visibility.
 const List<Map<String, dynamic>> kDefaultSections = [
+  {'key': 'orientationBoard', 'label': 'Orientation Board', 'icon': 0xe8df, 'visible': true},
   {'key': 'wellness', 'label': 'Wellness Summary', 'icon': 0xe559, 'visible': true},
   {'key': 'quickMeds', 'label': 'Quick Meds', 'icon': 0xf0575, 'visible': true},
   {'key': 'careLog', 'label': "Today's Care Log", 'icon': 0xe873, 'visible': true},
@@ -21,6 +22,7 @@ const List<Map<String, dynamic>> kDefaultSections = [
   {'key': 'quickLog', 'label': 'Quick Log', 'icon': 0xe145, 'visible': true},
   {'key': 'insights', 'label': 'Symptom Insights', 'icon': 0xe3a1, 'visible': true},
   {'key': 'medSchedule', 'label': 'Med Schedule', 'icon': 0xf0575, 'visible': true},
+  {'key': 'dutyTimer', 'label': 'Duty Timer', 'icon': 0xe425, 'visible': true},
 ];
 
 /// Reads the saved config from SharedPreferences, falling back to defaults.
@@ -126,6 +128,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
   /// Resolve icon from the default list by key.
   IconData _iconForKey(String key) {
     switch (key) {
+      case 'orientationBoard': return Icons.today_outlined;
       case 'wellness': return Icons.favorite_border;
       case 'quickMeds': return Icons.medication_outlined;
       case 'careLog': return Icons.assignment_outlined;
@@ -134,6 +137,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
       case 'quickLog': return Icons.add_circle_outline;
       case 'insights': return Icons.insights_outlined;
       case 'medSchedule': return Icons.schedule_outlined;
+      case 'dutyTimer': return Icons.timer_outlined;
       default: return Icons.widgets_outlined;
     }
   }

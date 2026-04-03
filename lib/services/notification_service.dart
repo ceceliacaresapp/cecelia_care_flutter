@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -52,7 +51,8 @@ class NotificationService {
       return;
     }
 
-    tz.initializeTimeZones();
+    // tz.initializeTimeZones() is already called in main.dart's
+    // _initAppResources — no need to repeat the ~300ms parse here.
     await _initLocalNotifications();
     await _initFirebaseMessaging();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -396,6 +396,68 @@ class NotificationService {
     await cancel(id);
     debugPrint(
         'FLN: Cancelled med reminder for $medName at $timeStr (ID: $id)');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sundowning Alert — daily 3 PM notification with rotating Alzheimer's tips
+  // ---------------------------------------------------------------------------
+
+  static const int _sundowningAlertId = 99001;
+
+  static const List<String> _sundowningTips = [
+    'Close curtains and turn on warm, soft lights to reduce shadows.',
+    'Start a calm, familiar activity like folding towels or looking at photos.',
+    'Play soft music from their younger years — familiarity soothes agitation.',
+    'Offer a light snack — hunger can worsen sundowning symptoms.',
+    'Reduce background noise: turn off the TV and close windows.',
+    'Speak in a calm, reassuring voice. Don\'t argue or correct.',
+    'Go for a short, gentle walk if they\'re restless — movement helps.',
+    'Avoid caffeine after noon — it can amplify late-day confusion.',
+    'Keep the home well-lit as daylight fades to prevent shadow anxiety.',
+    'Maintain a consistent daily routine — predictability reduces agitation.',
+    'Limit daytime napping to keep the sleep-wake cycle on track.',
+    'Try aromatherapy: lavender or vanilla can have a calming effect.',
+    'Remove mirrors if they cause confusion or distress in the evening.',
+    'Redirect attention with a simple task: sorting buttons, winding yarn.',
+    'Make sure they\'ve used the bathroom — discomfort increases agitation.',
+    'Hold their hand or offer a gentle back rub for physical comfort.',
+    'Avoid asking complex questions in the evening — keep communication simple.',
+    'Ensure the room temperature is comfortable — not too warm, not too cool.',
+    'A weighted blanket may provide comforting sensory input.',
+    'If they pace, walk with them rather than trying to stop them.',
+    'Limit visitors and stimulation in the late afternoon and evening.',
+    'Try a warm drink: decaf tea or warm milk can be soothing.',
+    'Use nightlights in hallways and bathrooms for safe navigation.',
+    'Engage them with a pet — animal interaction can reduce anxiety.',
+    'Reminisce about happy memories — long-term recall is often preserved.',
+    'Check for pain or illness — sundowning can worsen when unwell.',
+    'Keep a consistent bedtime routine: same steps, same order, every night.',
+    'Distract with a favorite dessert or treat — positive associations help.',
+    'If they\'re verbal, let them talk through worries without correcting.',
+    'Remember: this is the disease, not the person. Be gentle with yourself too.',
+  ];
+
+  static String get _todaySundowningTip {
+    final now = DateTime.now();
+    final seed = now.year * 10000 + now.month * 100 + now.day;
+    return _sundowningTips[seed % _sundowningTips.length];
+  }
+
+  Future<void> scheduleSundowningAlert() async {
+    await scheduleDailyRepeatingNotification(
+      notificationId: _sundowningAlertId,
+      time: const TimeOfDay(hour: 15, minute: 0),
+      channelId: _androidHealthRemindersChannelId,
+      title: 'Sundowning prep time',
+      body: _todaySundowningTip,
+      payload: 'sundowning_alert',
+    );
+    debugPrint('NotificationService: Sundowning alert scheduled for 3:00 PM.');
+  }
+
+  Future<void> cancelSundowningAlert() async {
+    await cancel(_sundowningAlertId);
+    debugPrint('NotificationService: Sundowning alert cancelled.');
   }
 
   String _getAndroidChannelId(String key) {

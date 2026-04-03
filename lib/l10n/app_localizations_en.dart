@@ -2737,6 +2737,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get healthRemindersNotificationsLabel => 'Health Reminders';
 
   @override
+  String get sundowningAlertLabel => 'Sundowning Alert';
+
+  @override
+  String get sundowningAlertSubtitle => 'Daily 3 PM reminder with calming tips';
+
+  @override
   String get generalNotificationsLabel => 'General App Notifications';
 
   @override

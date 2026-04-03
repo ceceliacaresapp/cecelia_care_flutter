@@ -38,6 +38,15 @@ class FirestoreService {
   static String? _cachedAvatarUrl;
   static String? _cachedAvatarUrlUid;
 
+  /// Clears the display-name and avatar caches so the next journal write
+  /// re-fetches from Firestore. Call after a user updates their profile or
+  /// after sign-out / sign-in.
+  static void clearProfileCache() {
+    _cachedDisplayName = null;
+    _cachedDisplayNameUid = null;
+    _cachedAvatarUrl = null;
+    _cachedAvatarUrlUid = null;
+  }
 
   // --- Collection Names ---
   static const String _elderProfilesCollection = 'elderProfiles';
@@ -409,14 +418,21 @@ class FirestoreService {
         .collection('days')
         .get();
 
+    // Fetch all journal-type subcollections in parallel per day, and all
+    // days in parallel, to avoid N×M sequential round-trips.
+    final futures = <Future<List<DocumentReference>>>[];
     for (final dayDoc in daysSnapshot.docs) {
       for (final type in _dayJournalTypes) {
-        final typeSnapshot =
-            await dayDoc.reference.collection(type).get();
-        for (final entryDoc in typeSnapshot.docs) {
-          refsToDelete.add(entryDoc.reference);
-        }
+        futures.add(
+          dayDoc.reference.collection(type).get().then(
+                (snap) => snap.docs.map((d) => d.reference).toList(),
+              ),
+        );
       }
+    }
+    final results = await Future.wait(futures);
+    for (final refs in results) {
+      refsToDelete.addAll(refs);
     }
 
     // 2. Collect medication definition refs.
@@ -455,6 +471,84 @@ class FirestoreService {
   }
 
   // ---------------------------------------------------------------------------
+  // Recurrence Expansion Helper
+  // ---------------------------------------------------------------------------
+
+  /// Generates recurring [CalendarEvent] instances from a parent event and
+  /// writes them into [batch]. Returns the number of instances written and
+  /// the (possibly new) batch + opCount after any intermediate commits.
+  static Future<({WriteBatch batch, int opCount, int created})>
+      _expandRecurrence({
+    required CalendarEvent event,
+    required String parentId,
+    required WriteBatch batch,
+    required int opCount,
+    int maxOps = 499,
+  }) async {
+    int created = 0;
+    var currentBatch = batch;
+    var currentOpCount = opCount;
+
+    if (event.recurrenceRule == null || event.recurrenceEndDate == null) {
+      return (batch: currentBatch, opCount: currentOpCount, created: created);
+    }
+
+    final rule = event.recurrenceRule!;
+    final endDate = event.recurrenceEndDate!.toDate();
+    final startDate = event.startDateTime.toDate();
+    final duration = event.endDateTime != null
+        ? event.endDateTime!.toDate().difference(startDate)
+        : Duration.zero;
+
+    var current = startDate;
+    while (true) {
+      DateTime next;
+      if (rule == 'daily') {
+        next = current.add(const Duration(days: 1));
+      } else if (rule == 'weekly') {
+        next = current.add(const Duration(days: 7));
+      } else if (rule == 'monthly') {
+        next = DateTime(current.year, current.month + 1, current.day,
+            current.hour, current.minute);
+      } else {
+        break;
+      }
+      if (next.isAfter(endDate)) break;
+      current = next;
+
+      final instance = CalendarEvent(
+        elderId: event.elderId,
+        createdBy: event.createdBy,
+        createdByDisplayName: event.createdByDisplayName,
+        title: event.title,
+        eventType: event.eventType,
+        allDay: event.allDay,
+        notes: event.notes,
+        startDateTime: Timestamp.fromDate(current),
+        endDateTime: duration != Duration.zero
+            ? Timestamp.fromDate(current.add(duration))
+            : null,
+        recurrenceRule: null,
+        recurrenceParentId: parentId,
+        recurrenceEndDate: event.recurrenceEndDate,
+      );
+
+      final docRef = _db.collection(_calendarEventsCollection).doc();
+      currentBatch.set(docRef, instance.toFirestore());
+      currentOpCount++;
+      created++;
+
+      if (currentOpCount >= maxOps) {
+        await currentBatch.commit();
+        currentBatch = _db.batch();
+        currentOpCount = 0;
+      }
+    }
+
+    return (batch: currentBatch, opCount: currentOpCount, created: created);
+  }
+
+  // ---------------------------------------------------------------------------
   // Calendar Events
   // ---------------------------------------------------------------------------
 
@@ -464,63 +558,13 @@ class FirestoreService {
       final parentRef = await _calendarEventsRef.add(event);
 
       if (event.recurrenceRule != null && event.recurrenceEndDate != null) {
-        final rule = event.recurrenceRule!;
-        final endDate = event.recurrenceEndDate!.toDate();
-        final startDate = event.startDateTime.toDate();
-        final duration = event.endDateTime != null
-            ? event.endDateTime!.toDate().difference(startDate)
-            : Duration.zero;
-
-        var current = startDate;
-        WriteBatch batch = _db.batch();
-        int opCount = 0;
-        const int maxOps = 499;
-
-        while (true) {
-          DateTime next;
-          if (rule == 'daily') {
-            next = current.add(const Duration(days: 1));
-          } else if (rule == 'weekly') {
-            next = current.add(const Duration(days: 7));
-          } else if (rule == 'monthly') {
-            next = DateTime(
-                current.year, current.month + 1, current.day,
-                current.hour, current.minute);
-          } else {
-            break;
-          }
-          if (next.isAfter(endDate)) break;
-          current = next;
-
-          final instance = CalendarEvent(
-            elderId: event.elderId,
-            createdBy: event.createdBy,
-            createdByDisplayName: event.createdByDisplayName,
-            title: event.title,
-            eventType: event.eventType,
-            allDay: event.allDay,
-            notes: event.notes,
-            startDateTime: Timestamp.fromDate(current),
-            endDateTime: duration != Duration.zero
-                ? Timestamp.fromDate(current.add(duration))
-                : null,
-            recurrenceRule: null,
-            recurrenceParentId: parentRef.id,
-            recurrenceEndDate: event.recurrenceEndDate,
-          );
-
-          final docRef = _db.collection(_calendarEventsCollection).doc();
-          batch.set(docRef, instance.toFirestore());
-          opCount++;
-
-          if (opCount >= maxOps) {
-            await batch.commit();
-            batch = _db.batch();
-            opCount = 0;
-          }
-        }
-
-        if (opCount > 0) await batch.commit();
+        final result = await _expandRecurrence(
+          event: event,
+          parentId: parentRef.id,
+          batch: _db.batch(),
+          opCount: 0,
+        );
+        if (result.opCount > 0) await result.batch.commit();
       }
 
       return parentRef;
@@ -600,14 +644,6 @@ class FirestoreService {
     int opCount = 0;
     const int maxOps = 499;
 
-    Future<void> commitIfNeeded() async {
-      if (opCount >= maxOps) {
-        await batch.commit();
-        batch = _db.batch();
-        opCount = 0;
-      }
-    }
-
     try {
       for (final event in events) {
         // Create the parent event
@@ -616,59 +652,24 @@ class FirestoreService {
         batch.set(parentRef, event.toFirestore());
         opCount++;
         totalCreated++;
-        await commitIfNeeded();
+
+        if (opCount >= maxOps) {
+          await batch.commit();
+          batch = _db.batch();
+          opCount = 0;
+        }
 
         // Generate recurring instances if applicable
-        if (event.recurrenceRule != null &&
-            event.recurrenceEndDate != null) {
-          final rule = event.recurrenceRule!;
-          final endDate = event.recurrenceEndDate!.toDate();
-          final startDate = event.startDateTime.toDate();
-          final duration = event.endDateTime != null
-              ? event.endDateTime!.toDate().difference(startDate)
-              : Duration.zero;
-
-          var current = startDate;
-          while (true) {
-            DateTime next;
-            if (rule == 'daily') {
-              next = current.add(const Duration(days: 1));
-            } else if (rule == 'weekly') {
-              next = current.add(const Duration(days: 7));
-            } else if (rule == 'monthly') {
-              next = DateTime(current.year, current.month + 1,
-                  current.day, current.hour, current.minute);
-            } else {
-              break;
-            }
-            if (next.isAfter(endDate)) break;
-            current = next;
-
-            final instance = CalendarEvent(
-              elderId: event.elderId,
-              createdBy: event.createdBy,
-              createdByDisplayName: event.createdByDisplayName,
-              title: event.title,
-              eventType: event.eventType,
-              allDay: event.allDay,
-              notes: event.notes,
-              startDateTime: Timestamp.fromDate(current),
-              endDateTime: duration != Duration.zero
-                  ? Timestamp.fromDate(current.add(duration))
-                  : null,
-              recurrenceRule: null,
-              recurrenceParentId: parentRef.id,
-              recurrenceEndDate: event.recurrenceEndDate,
-            );
-
-            final docRef =
-                _db.collection(_calendarEventsCollection).doc();
-            batch.set(docRef, instance.toFirestore());
-            opCount++;
-            totalCreated++;
-            await commitIfNeeded();
-          }
-        }
+        final result = await _expandRecurrence(
+          event: event,
+          parentId: parentRef.id,
+          batch: batch,
+          opCount: opCount,
+          maxOps: maxOps,
+        );
+        batch = result.batch;
+        opCount = result.opCount;
+        totalCreated += result.created;
       }
 
       // Final commit for remaining operations
@@ -1074,6 +1075,20 @@ class FirestoreService {
       // FIX: was print() — must be debugPrint().
       debugPrint('FirestoreService.getUserProfile error ($uid): $e');
       return null;
+    }
+  }
+
+  /// Stamps the user's last activity time. Called fire-and-forget after every
+  /// journal write — uses serverTimestamp for clock-drift safety and silently
+  /// fails so it never blocks the actual journal entry.
+  Future<void> updateLastActiveAt(String uid) async {
+    if (uid.isEmpty) return;
+    try {
+      await _usersRef.doc(uid).update({
+        'lastActiveAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('FirestoreService.updateLastActiveAt error: $e');
     }
   }
 

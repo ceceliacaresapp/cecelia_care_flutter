@@ -151,10 +151,14 @@ class MedicationProvider with ChangeNotifier {
     await _firestoreService.deleteMed(_elderId, medId);
   }
 
-  Future<List<DrugInteraction>> warnIfInteractions(String newRxCui) async {
+  Future<List<DrugInteraction>> warnIfInteractions(
+    String newRxCui, {
+    List<MedicationEntry>? existingMeds,
+  }) async {
     if (_elderId.isEmpty || newRxCui.isEmpty) return [];
 
-    final List<MedicationEntry> currentMeds = await medsStream().first;
+    final List<MedicationEntry> currentMeds =
+        existingMeds ?? await medsStream().first;
 
     final allRxCuis = <String>{newRxCui};
     for (final med in currentMeds) {

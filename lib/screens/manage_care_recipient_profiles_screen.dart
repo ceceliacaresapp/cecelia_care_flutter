@@ -258,10 +258,10 @@ class _ManageCareRecipientProfilesScreenState
     }
   }
 
-  Future<Map<String, String>> _fetchCaregiverIdentifiers(
-      List<String> userIds) async {
+  Future<Map<String, ({String name, Timestamp? lastActiveAt})>>
+      _fetchCaregiverIdentifiers(List<String> userIds) async {
     if (userIds.isEmpty) return {};
-    Map<String, String> identifiers = {};
+    Map<String, ({String name, Timestamp? lastActiveAt})> identifiers = {};
     try {
       QuerySnapshot userDocs = await FirebaseFirestore.instance
           .collection('users')
@@ -269,17 +269,39 @@ class _ManageCareRecipientProfilesScreenState
           .get();
       for (var doc in userDocs.docs) {
         final data = doc.data() as Map<String, dynamic>?;
-        identifiers[doc.id] = data?['displayName'] as String? ??
-            data?['email'] as String? ??
-            doc.id;
+        identifiers[doc.id] = (
+          name: data?['displayName'] as String? ??
+              data?['email'] as String? ??
+              doc.id,
+          lastActiveAt: data?['lastActiveAt'] as Timestamp?,
+        );
       }
     } catch (e) {
       debugPrint('Error fetching caregiver identifiers: $e');
       for (var id in userIds) {
-        if (!identifiers.containsKey(id)) identifiers[id] = id;
+        if (!identifiers.containsKey(id)) {
+          identifiers[id] = (name: id, lastActiveAt: null);
+        }
       }
     }
     return identifiers;
+  }
+
+  String _formatLastActive(Timestamp? ts) {
+    if (ts == null) return '';
+    final now = DateTime.now();
+    final active = ts.toDate();
+    final diff = now.difference(active);
+    if (diff.inMinutes < 1) return 'Active now';
+    if (diff.inMinutes < 60) return 'Active ${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return 'Active ${diff.inHours}h ago';
+    if (diff.inDays < 7) return 'Active ${diff.inDays}d ago';
+    return 'Active ${active.month}/${active.day}';
+  }
+
+  bool _isRecentlyActive(Timestamp? ts) {
+    if (ts == null) return false;
+    return DateTime.now().difference(ts.toDate()).inHours < 1;
   }
 
   // ---------------------------------------------------------------------------
@@ -488,7 +510,7 @@ class _ManageCareRecipientProfilesScreenState
             if (profile.caregiverUserIds.isEmpty)
               Text(_l10n.noCaregiversYet, style: _theme.textTheme.bodyMedium)
             else
-              FutureBuilder<Map<String, String>>(
+              FutureBuilder<Map<String, ({String name, Timestamp? lastActiveAt})>>(
                 future: _fetchCaregiverIdentifiers(profile.caregiverUserIds),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -498,15 +520,19 @@ class _ManageCareRecipientProfilesScreenState
                           child: CircularProgressIndicator(strokeWidth: 2)),
                     );
                   }
-                  if (snapshot.hasError || !snapshot.hasData)
+                  if (snapshot.hasError || !snapshot.hasData) {
                     return Text(_l10n.errorLoadingCaregiverNames,
                         style:
                             const TextStyle(color: AppTheme.dangerColor));
+                  }
 
                   final identifiers = snapshot.data!;
                   return Column(
                     children: profile.caregiverUserIds.map((uid) {
-                      final identifier = identifiers[uid] ?? uid;
+                      final record = identifiers[uid];
+                      final identifier = record?.name ?? uid;
+                      final activeLabel = _formatLastActive(record?.lastActiveAt);
+                      final recentlyActive = _isRecentlyActive(record?.lastActiveAt);
                       final isAdmin = uid == profile.primaryAdminUserId;
                       final role = profile.roleForUser(uid);
                       return Container(
@@ -526,7 +552,7 @@ class _ManageCareRecipientProfilesScreenState
                         ),
                         child: Row(
                           children: [
-                            // Name
+                            // Name + role + activity
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
@@ -542,7 +568,24 @@ class _ManageCareRecipientProfilesScreenState
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 2),
-                                  _RoleBadge(role: role),
+                                  Row(
+                                    children: [
+                                      _RoleBadge(role: role),
+                                      if (activeLabel.isNotEmpty) ...[
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          activeLabel,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: recentlyActive
+                                                ? const Color(0xFF43A047)
+                                                : AppTheme.textLight,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),

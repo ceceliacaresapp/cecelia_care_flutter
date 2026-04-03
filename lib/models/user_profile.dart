@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class UserProfile {
   final String uid;
@@ -11,6 +12,7 @@ class UserProfile {
   final String? activeElderId;
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
+  final Timestamp? lastActiveAt;
 
   // SOGI and Identity Fields
   final String? sexualOrientation;
@@ -30,12 +32,26 @@ class UserProfile {
     this.activeElderId,
     this.createdAt,
     this.updatedAt,
+    this.lastActiveAt,
     this.sexualOrientation,
     this.genderIdentity,
     this.preferredPronouns,
     this.userGoals,
     this.preferredName,
   });
+
+  /// Human-readable relative time label for [lastActiveAt].
+  String get lastActiveLabel {
+    if (lastActiveAt == null) return '';
+    final now = DateTime.now();
+    final active = lastActiveAt!.toDate();
+    final diff = now.difference(active);
+    if (diff.inMinutes < 1) return 'Active now';
+    if (diff.inMinutes < 60) return 'Active ${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return 'Active ${diff.inHours}h ago';
+    if (diff.inDays < 7) return 'Active ${diff.inDays}d ago';
+    return 'Active ${DateFormat('MMM d').format(active)}';
+  }
 
   factory UserProfile.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot, [
@@ -64,6 +80,7 @@ class UserProfile {
       // from Firestore, so it always returned null after any reload.
       userGoals: data['userGoals'] as String?,
       preferredName: data['preferredName'] as String?,
+      lastActiveAt: data['lastActiveAt'] as Timestamp?,
     );
   }
 
@@ -84,6 +101,7 @@ class UserProfile {
       if (preferredPronouns != null) 'preferredPronouns': preferredPronouns,
       if (userGoals != null) 'userGoals': userGoals,
       if (preferredName != null) 'preferredName': preferredName,
+      if (lastActiveAt != null) 'lastActiveAt': lastActiveAt,
     };
   }
 
@@ -98,6 +116,7 @@ class UserProfile {
     String? activeElderId,
     Timestamp? createdAt,
     Timestamp? updatedAt,
+    Timestamp? lastActiveAt,
     String? sexualOrientation,
     String? genderIdentity,
     String? preferredPronouns,
@@ -115,6 +134,7 @@ class UserProfile {
       activeElderId: activeElderId ?? this.activeElderId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       sexualOrientation: sexualOrientation ?? this.sexualOrientation,
       genderIdentity: genderIdentity ?? this.genderIdentity,
       preferredPronouns: preferredPronouns ?? this.preferredPronouns,

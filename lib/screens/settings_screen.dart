@@ -17,6 +17,7 @@ import 'package:cecelia_care_flutter/providers/theme_provider.dart';
 import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/custom_entry_types_screen.dart';
+import 'package:cecelia_care_flutter/screens/accessibility_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? navigateToManageCareRecipientProfiles;
@@ -297,6 +298,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: l10n.settingsItemNotificationPreferences,
           onTap: () => Navigator.push(context,
             MaterialPageRoute(builder: (_) => const NotificationSettingsScreen())),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Accessibility
+        const _SectionHeader(label: 'Accessibility'),
+        _SettingsTile(
+          icon: Icons.accessibility_new_outlined,
+          iconColor: const Color(0xFF1565C0),
+          title: 'Accessibility Settings',
+          onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const AccessibilitySettingsScreen())),
         ),
 
         const SizedBox(height: 20),

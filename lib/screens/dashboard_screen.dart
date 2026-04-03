@@ -40,6 +40,8 @@ import 'package:cecelia_care_flutter/screens/wellness_checkin_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
 import 'package:cecelia_care_flutter/widgets/symptom_insights_card.dart';
 import 'package:cecelia_care_flutter/widgets/med_schedule_timeline.dart';
+import 'package:cecelia_care_flutter/widgets/orientation_board_card.dart';
+import 'package:cecelia_care_flutter/widgets/duty_timer_card.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -323,6 +325,12 @@ String _entrySummary(JournalEntry entry) {
       return (shift != null && shift.isNotEmpty)
           ? '$shift shift handoff'
           : 'Shift handoff';
+    case EntryType.incontinence:
+      final iType = entry.data?['incontinenceType'] as String? ?? '';
+      final severity = entry.data?['severity'] as String? ?? '';
+      return iType.isNotEmpty
+          ? '${iType[0].toUpperCase()}${iType.substring(1)} \u00B7 $severity'
+          : 'Incontinence logged';
     case EntryType.custom:
       return entry.data?['customTypeName'] as String? ?? 'Custom entry';
     default:
@@ -371,6 +379,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required DateTime endOfDay,
   }) {
     final sectionBuilders = <String, List<Widget> Function()>{
+      'orientationBoard': () => [
+        const SizedBox(height: 4),
+        const OrientationBoardCard(),
+      ],
       'wellness': () => [
         Builder(builder: (ctx) {
           final wellProv = ctx.watch<WellnessProvider>();
@@ -490,6 +502,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           );
         }),
+      ],
+      'dutyTimer': () => [
+        const SizedBox(height: 20),
+        const _SectionLabel(label: 'Duty timer'),
+        const SizedBox(height: 10),
+        const DutyTimerCard(),
       ],
     };
 
@@ -1259,6 +1277,7 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.expense: return const Color(0xFF8E24AA);
       case EntryType.message: return const Color(0xFF546E7A);
       case EntryType.handoff: return const Color(0xFF00897B);
+      case EntryType.incontinence: return const Color(0xFF795548);
       case EntryType.custom: return const Color(0xFF546E7A);
       default: return AppTheme.textSecondary;
     }
@@ -1276,6 +1295,7 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.expense: return Icons.receipt_long_outlined;
       case EntryType.message: return Icons.chat_bubble_outline;
       case EntryType.handoff: return Icons.swap_horiz_outlined;
+      case EntryType.incontinence: return Icons.water_drop_outlined;
       case EntryType.custom: return Icons.extension_outlined;
       default: return Icons.note_outlined;
     }
@@ -1293,6 +1313,7 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.expense: return 'Expenses';
       case EntryType.message: return 'Messages';
       case EntryType.handoff: return 'Handoff';
+      case EntryType.incontinence: return 'Continence';
       case EntryType.custom: return 'Custom';
       default: return t.name;
     }

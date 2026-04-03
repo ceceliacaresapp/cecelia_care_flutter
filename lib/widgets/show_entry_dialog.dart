@@ -16,6 +16,7 @@ import 'package:cecelia_care_flutter/screens/forms/pain_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/sleep_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/handoff_form.dart';
+import 'package:cecelia_care_flutter/screens/forms/incontinence_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/custom_entry_form.dart';
 import 'package:cecelia_care_flutter/providers/custom_entry_types_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
@@ -263,6 +264,22 @@ void showEntryDialog(
                   ChangeNotifierProvider.value(
                     value: journalService,
                     child: HandoffForm(
+                      onClose: () {},
+                      currentDate: currentDateStr,
+                      activeElder: activeElder,
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.water_drop_outlined,
+                    color: Color(0xFF795548)),
+                title: const Text('Incontinence'),
+                onTap: () => _showFormSheet(
+                  dialogContext,
+                  ChangeNotifierProvider.value(
+                    value: journalService,
+                    child: IncontinenceForm(
                       onClose: () {},
                       currentDate: currentDateStr,
                       activeElder: activeElder,

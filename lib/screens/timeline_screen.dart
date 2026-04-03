@@ -65,6 +65,9 @@ _EntryStyle _entryTypeStyle(EntryType type) {
     case EntryType.handoff:
       return _EntryStyle(
           accent: const Color(0xFF00897B), surface: const Color(0xFFE0F2F1));
+    case EntryType.incontinence:
+      return _EntryStyle(
+          accent: const Color(0xFF795548), surface: const Color(0xFFEFEBE9));
     case EntryType.custom:
       return _EntryStyle(
           accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
@@ -1029,6 +1032,10 @@ class TimelineScreenState extends State<TimelineScreen> {
         title = 'Shift Handoff';
         summary = _extractSummaryFromData(data, type, _l10n);
         break;
+      case EntryType.incontinence:
+        title = 'Incontinence';
+        summary = _extractSummaryFromData(data, type, _l10n);
+        break;
       case EntryType.custom:
         title = data?['customTypeName'] as String? ?? 'Custom Entry';
         summary = _extractSummaryFromData(data, type, _l10n);
@@ -1442,6 +1449,18 @@ class TimelineScreenState extends State<TimelineScreen> {
               pending.isNotEmpty ? pending.trim().split('\n').length : 0;
           return '$shiftPrefix$completedLines task${completedLines == 1 ? '' : 's'} done, '
               '$pendingLines pending';
+        case EntryType.incontinence:
+          final iType = entryData['incontinenceType'] as String? ?? '';
+          final severity = entryData['severity'] as String? ?? '';
+          final skin = entryData['skinCondition'] as String? ?? '';
+          final typeLabel = iType.isNotEmpty
+              ? '${iType[0].toUpperCase()}${iType.substring(1)}'
+              : 'Logged';
+          final sevLabel = severity.isNotEmpty ? ' \u00B7 $severity' : '';
+          final skinLabel = (skin == 'irritated' || skin == 'broken')
+              ? ' \u00B7 Skin: $skin'
+              : '';
+          return '$typeLabel$sevLabel$skinLabel';
         case EntryType.custom:
           // Build summary from custom field values, skipping metadata keys
           const metaKeys = {

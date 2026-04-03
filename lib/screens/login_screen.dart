@@ -13,11 +13,8 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 /// On successful login, AuthGate (in main.dart) will detect the user and replace
 /// this screen with TimelineScreen automatically.
 class LoginScreen extends StatefulWidget {
-  final VoidCallback? onNavigateToSignUp; // <<< MODIFICATION: Added field
-
   const LoginScreen({
     super.key,
-    this.onNavigateToSignUp, // <<< MODIFICATION: Added to constructor
   });
 
   @override

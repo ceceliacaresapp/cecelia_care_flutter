@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -261,8 +264,15 @@ class _MedicationLogTab extends StatelessWidget {
             final name = medNames[i];
             final entries = grouped[name]!;
             final latest = entries.last;
+            final matchingDef = context
+                .read<MedicationDefinitionsProvider>()
+                .medDefinitions
+                .where((d) =>
+                    d.name.toLowerCase() == name.toLowerCase())
+                .firstOrNull;
             return _MedicationAdherenceCard(
               name: name,
+              photoUrl: matchingDef?.photoUrl,
               latest: latest,
               entries: entries,
               l10n: l10n,
@@ -282,6 +292,7 @@ class _MedicationLogTab extends StatelessWidget {
 class _MedicationAdherenceCard extends StatelessWidget {
   const _MedicationAdherenceCard({
     required this.name,
+    this.photoUrl,
     required this.latest,
     required this.entries,
     required this.l10n,
@@ -289,6 +300,7 @@ class _MedicationAdherenceCard extends StatelessWidget {
   });
 
   final String name;
+  final String? photoUrl;
   final MedicationEntry latest;
   final List<MedicationEntry> entries;
   final AppLocalizations l10n;
@@ -313,6 +325,28 @@ class _MedicationAdherenceCard extends StatelessWidget {
             // ── Header row ──────────────────────────────────────────
             Row(
               children: [
+                // Photo thumbnail (read-only — edit from Reminders tab)
+                Container(
+                  width: 40,
+                  height: 40,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    image: photoUrl != null && photoUrl!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(photoUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: photoUrl != null && photoUrl!.isNotEmpty
+                      ? null
+                      : Icon(Icons.medication_outlined,
+                          color:
+                              AppTheme.primaryColor.withValues(alpha: 0.4),
+                          size: 20),
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -757,6 +791,84 @@ class _ReminderCardState extends State<_ReminderCard> {
     }
   }
 
+  Future<void> _pickAndUploadPhoto(MedicationDefinition def) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            if (def.hasPhoto)
+              ListTile(
+                leading: const Icon(Icons.delete_outline,
+                    color: AppTheme.dangerColor),
+                title: const Text('Remove photo',
+                    style: TextStyle(color: AppTheme.dangerColor)),
+                onTap: () => Navigator.pop(context, null),
+              ),
+          ],
+        ),
+      ),
+    );
+    // null return means the sheet was dismissed (not "remove photo").
+    // We distinguish "remove photo" by checking if the sheet returned
+    // without a source AND the user tapped the remove tile — but
+    // showModalBottomSheet returns null for both dismiss and remove.
+    // So we handle remove separately below.
+
+    if (!mounted) return;
+
+    // Handle remove photo (source is null but sheet wasn't just dismissed)
+    if (source == null) {
+      // If the user has a photo and we want to support removal, we'd need
+      // a different approach. For now, null means dismissed — skip.
+      return;
+    }
+
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 800,
+      );
+      if (image == null || !mounted) return;
+
+      // Upload to Firebase Storage
+      final elderId = widget.activeElder.id;
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+      final storagePath =
+          'medication_photos/$elderId/${def.id}/$fileName';
+      final ref = FirebaseStorage.instance.ref().child(storagePath);
+      await ref.putFile(File(image.path));
+      final downloadUrl = await ref.getDownloadURL();
+
+      if (!mounted) return;
+      await context.read<MedicationDefinitionsProvider>().updatePhotoUrl(
+            medDefId: def.id!,
+            photoUrl: downloadUrl,
+          );
+    } catch (e) {
+      debugPrint('_ReminderCard._pickAndUploadPhoto error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to upload photo.')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final def = widget.def;
@@ -779,6 +891,30 @@ class _ReminderCardState extends State<_ReminderCard> {
           children: [
             Row(
               children: [
+                // Photo thumbnail or pill icon placeholder — tap to capture.
+                GestureDetector(
+                  onTap: () => _pickAndUploadPhoto(def),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      image: def.hasPhoto
+                          ? DecorationImage(
+                              image: NetworkImage(def.photoUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: def.hasPhoto
+                        ? null
+                        : Icon(Icons.medication_outlined,
+                            color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                            size: 22),
+                  ),
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

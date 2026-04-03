@@ -30,6 +30,8 @@ import 'providers/custom_entry_types_provider.dart';
 import 'providers/symptom_analytics_provider.dart';
 import 'providers/gamification_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/adl_provider.dart';
+import 'providers/accessibility_provider.dart';
 import 'routing/app_router.dart';
 import 'utils/app_theme.dart';
 import 'screens/splash_screen.dart';
@@ -191,6 +193,20 @@ class _AppRootState extends State<AppRoot> {
                 return previous;
               },
             ),
+            ChangeNotifierProxyProvider<ActiveElderProvider, AdlProvider>(
+              create: (context) {
+                final provider = AdlProvider();
+                final elder = Provider.of<ActiveElderProvider>(
+                        context, listen: false)
+                    .activeElder;
+                provider.updateForElder(elder);
+                return provider;
+              },
+              update: (context, activeElderProvider, previous) {
+                previous!.updateForElder(activeElderProvider.activeElder);
+                return previous;
+              },
+            ),
             ChangeNotifierProvider(create: (_) => UserProfileProvider()),
             ChangeNotifierProvider(create: (_) => LocaleProvider()),
             ChangeNotifierProvider(create: (_) => BadgeProvider()),
@@ -198,6 +214,7 @@ class _AppRootState extends State<AppRoot> {
             ChangeNotifierProvider(create: (_) => WellnessProvider()),
             ChangeNotifierProvider(create: (_) => GamificationProvider()),
             ChangeNotifierProvider(create: (_) => ThemeProvider()),
+            ChangeNotifierProvider(create: (_) => AccessibilityProvider()),
             ChangeNotifierProvider(create: (_) => NotificationPrefsProvider()),
 
             // FIX: On elder switch, mutate the existing JournalServiceProvider

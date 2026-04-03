@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:cecelia_care_flutter/models/user_profile.dart';
+import 'package:cecelia_care_flutter/services/firestore_service.dart';
 
 class UserProfileProvider extends ChangeNotifier {
   UserProfile? _userProfile;
@@ -175,6 +176,10 @@ class UserProfileProvider extends ChangeNotifier {
           .collection('users')
           .doc(user.uid)
           .update(updates);
+
+      // Invalidate cached display name / avatar so journal writes pick up
+      // the freshly saved values instead of stale ones.
+      FirestoreService.clearProfileCache();
 
       _isLoading = false;
       notifyListeners();

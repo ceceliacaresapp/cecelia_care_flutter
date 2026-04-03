@@ -1787,6 +1787,8 @@
     "selfCareNotificationsLabel": "Self-Care Reminders",
     "chatNotificationsLabel": "Chat Message Notifications",
     "healthRemindersNotificationsLabel": "Health Reminders",
+    "sundowningAlertLabel": "Sundowning Alert",
+    "sundowningAlertSubtitle": "Daily 3 PM reminder with calming tips",
     "generalNotificationsLabel": "General App Notifications",
 
     "genericError": "An error occurred: {details}",
