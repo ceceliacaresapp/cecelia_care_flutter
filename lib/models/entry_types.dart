@@ -242,6 +242,46 @@ const List<EntrySchema> entrySchemas = <EntrySchema>[
         descriptionForAI:
             'Any additional observations.'),
   ]),
+  EntrySchema('Night Waking', [
+    EntryField('nightWaking-time', 'Time Woke',
+        isRequired: true,
+        descriptionForAI: 'Time the care recipient woke up.'),
+    EntryField('nightWaking-duration', 'Duration Awake',
+        isRequired: true,
+        descriptionForAI:
+            'How long they were awake: <15min, 15-30min, 30-60min, 1-2hrs, 2+hrs.'),
+    EntryField('nightWaking-cause', 'Cause',
+        isRequired: true,
+        descriptionForAI:
+            'Reason for waking: confusion, pain, bathroom, hunger, nightmare, noise, unknown.'),
+    EntryField('nightWaking-intervention', 'Intervention',
+        isRequired: false,
+        descriptionForAI:
+            'What the caregiver did: reassurance, bathroom assist, repositioned, medication, walked, sat, water/snack.'),
+    EntryField('nightWaking-returnedToSleep', 'Returned to Sleep',
+        isRequired: true,
+        descriptionForAI:
+            'Whether the care recipient went back to sleep.'),
+    EntryField('nightWaking-note', 'Notes',
+        isRequired: false,
+        descriptionForAI: 'Any additional observations.'),
+  ]),
+  EntrySchema('Hydration', [
+    EntryField('hydration-volume', 'Volume',
+        isRequired: true,
+        descriptionForAI: 'Amount of fluid in oz or ml.'),
+    EntryField('hydration-unit', 'Unit',
+        isRequired: true,
+        descriptionForAI: 'Unit of measurement: oz or ml.'),
+    EntryField('hydration-fluidType', 'Fluid Type',
+        isRequired: true,
+        descriptionForAI:
+            'Type: water, juice, coffee/tea, milk, broth, thickened liquid, IV, other.'),
+    EntryField('hydration-note', 'Notes',
+        isRequired: false,
+        descriptionForAI:
+            'Additional observations such as refusal or thickener used.'),
+  ]),
 ];
 
 /// A standardized enum for all journal entry types used in the app.
@@ -260,6 +300,8 @@ enum EntryType {
   caregiverJournal, // FIX: Added the missing enum member
   handoff,
   incontinence,
+  nightWaking,
+  hydration,
   custom,
   unknown; // A fallback for safety
 

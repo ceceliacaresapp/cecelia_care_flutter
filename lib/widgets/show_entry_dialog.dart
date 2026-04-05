@@ -17,6 +17,8 @@ import 'package:cecelia_care_flutter/screens/forms/sleep_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/handoff_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/incontinence_form.dart';
+import 'package:cecelia_care_flutter/screens/forms/night_waking_form.dart';
+import 'package:cecelia_care_flutter/screens/forms/hydration_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/custom_entry_form.dart';
 import 'package:cecelia_care_flutter/providers/custom_entry_types_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
@@ -281,6 +283,38 @@ void showEntryDialog(
                   ChangeNotifierProvider.value(
                     value: journalService,
                     child: IncontinenceForm(
+                      onClose: () {},
+                      currentDate: currentDateStr,
+                      activeElder: activeElder,
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.nightlight_outlined,
+                    color: Color(0xFF283593)),
+                title: const Text('Night Waking'),
+                onTap: () => _showFormSheet(
+                  dialogContext,
+                  ChangeNotifierProvider.value(
+                    value: journalService,
+                    child: NightWakingForm(
+                      onClose: () {},
+                      currentDate: currentDateStr,
+                      activeElder: activeElder,
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.local_drink_outlined,
+                    color: Color(0xFF0288D1)),
+                title: const Text('Fluid Intake'),
+                onTap: () => _showFormSheet(
+                  dialogContext,
+                  ChangeNotifierProvider.value(
+                    value: journalService,
+                    child: HydrationForm(
                       onClose: () {},
                       currentDate: currentDateStr,
                       activeElder: activeElder,

@@ -69,6 +69,12 @@ _EntryStyle _entryTypeStyle(EntryType type) {
     case EntryType.incontinence:
       return _EntryStyle(
           accent: const Color(0xFF795548), surface: const Color(0xFFEFEBE9));
+    case EntryType.nightWaking:
+      return _EntryStyle(
+          accent: const Color(0xFF283593), surface: const Color(0xFFE8EAF6));
+    case EntryType.hydration:
+      return _EntryStyle(
+          accent: const Color(0xFF0288D1), surface: const Color(0xFFE1F5FE));
     case EntryType.custom:
       return _EntryStyle(
           accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
@@ -1075,6 +1081,14 @@ class TimelineScreenState extends State<TimelineScreen> {
         title = 'Incontinence';
         summary = _extractSummaryFromData(data, type, _l10n);
         break;
+      case EntryType.nightWaking:
+        title = 'Night Waking';
+        summary = _extractSummaryFromData(data, type, _l10n);
+        break;
+      case EntryType.hydration:
+        title = 'Fluid Intake';
+        summary = _extractSummaryFromData(data, type, _l10n);
+        break;
       case EntryType.custom:
         title = data?['customTypeName'] as String? ?? 'Custom Entry';
         summary = _extractSummaryFromData(data, type, _l10n);
@@ -1613,6 +1627,22 @@ class TimelineScreenState extends State<TimelineScreen> {
               ? ' \u00B7 Skin: $skin'
               : '';
           return '$typeLabel$sevLabel$skinLabel';
+        case EntryType.nightWaking:
+          final duration = entryData['duration'] as String? ?? '';
+          final cause = entryData['cause'] as String? ?? 'Unknown';
+          final returned = entryData['returnedToSleep'] as bool? ?? false;
+          final causeLabel = cause.isNotEmpty
+              ? '${cause[0].toUpperCase()}${cause.substring(1)}'
+              : 'Unknown';
+          return '$causeLabel \u00B7 $duration \u00B7 ${returned ? 'Returned to sleep' : 'Did not return'}';
+        case EntryType.hydration:
+          final volume = entryData['volume']?.toString() ?? '';
+          final unit = entryData['unit'] as String? ?? 'oz';
+          final fluidType = entryData['fluidType'] as String? ?? '';
+          final typeLabel = fluidType.isNotEmpty
+              ? '${fluidType[0].toUpperCase()}${fluidType.substring(1)}'
+              : 'Fluid';
+          return '$typeLabel \u00B7 $volume $unit';
         case EntryType.custom:
           // Build summary from custom field values, skipping metadata keys
           const metaKeys = {

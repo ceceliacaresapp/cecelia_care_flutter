@@ -26,6 +26,7 @@ const List<Map<String, dynamic>> kDefaultSections = [
   {'key': 'dutyTimer', 'label': 'Duty Timer', 'icon': 0xe425, 'visible': true},
   {'key': 'weightTrend', 'label': 'Weight Trend', 'icon': 0xe3ba, 'visible': true},
   {'key': 'adherenceSummary', 'label': 'Med Adherence', 'icon': 0xe3ec, 'visible': true},
+  {'key': 'hydrationProgress', 'label': 'Hydration', 'icon': 0xe3e0, 'visible': true},
 ];
 
 /// Reads the saved config from SharedPreferences, falling back to defaults.
@@ -144,6 +145,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
       case 'dutyTimer': return Icons.timer_outlined;
       case 'weightTrend': return Icons.monitor_weight_outlined;
       case 'adherenceSummary': return Icons.medication_outlined;
+      case 'hydrationProgress': return Icons.local_drink_outlined;
       default: return Icons.widgets_outlined;
     }
   }

@@ -45,6 +45,7 @@ import 'package:cecelia_care_flutter/widgets/duty_timer_card.dart';
 import 'package:cecelia_care_flutter/widgets/weekly_team_summary_card.dart';
 import 'package:cecelia_care_flutter/widgets/weight_trend_card.dart';
 import 'package:cecelia_care_flutter/widgets/adherence_summary_card.dart';
+import 'package:cecelia_care_flutter/widgets/hydration_progress_card.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -334,6 +335,15 @@ String _entrySummary(JournalEntry entry) {
       return iType.isNotEmpty
           ? '${iType[0].toUpperCase()}${iType.substring(1)} \u00B7 $severity'
           : 'Incontinence logged';
+    case EntryType.nightWaking:
+      final cause = entry.data?['cause'] as String? ?? '';
+      final duration = entry.data?['duration'] as String? ?? '';
+      return cause.isNotEmpty ? '$cause \u00B7 $duration' : 'Night waking logged';
+    case EntryType.hydration:
+      final vol = entry.data?['volume']?.toString() ?? '';
+      final hUnit = entry.data?['unit'] as String? ?? 'oz';
+      final fType = entry.data?['fluidType'] as String? ?? '';
+      return fType.isNotEmpty ? '$fType \u00B7 $vol $hUnit' : '$vol $hUnit fluid';
     case EntryType.custom:
       return entry.data?['customTypeName'] as String? ?? 'Custom entry';
     default:
@@ -579,6 +589,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const _SectionLabel(label: 'Med adherence'),
           const SizedBox(height: 10),
           const AdherenceSummaryCard(),
+        ];
+      },
+      'hydrationProgress': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Hydration'),
+          const SizedBox(height: 10),
+          const HydrationProgressCard(),
         ];
       },
     };
@@ -1401,6 +1420,8 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.message: return const Color(0xFF546E7A);
       case EntryType.handoff: return const Color(0xFF00897B);
       case EntryType.incontinence: return const Color(0xFF795548);
+      case EntryType.nightWaking: return const Color(0xFF283593);
+      case EntryType.hydration: return const Color(0xFF0288D1);
       case EntryType.custom: return const Color(0xFF546E7A);
       default: return AppTheme.textSecondary;
     }
@@ -1419,6 +1440,8 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.message: return Icons.chat_bubble_outline;
       case EntryType.handoff: return Icons.swap_horiz_outlined;
       case EntryType.incontinence: return Icons.water_drop_outlined;
+      case EntryType.nightWaking: return Icons.nightlight_outlined;
+      case EntryType.hydration: return Icons.local_drink_outlined;
       case EntryType.custom: return Icons.extension_outlined;
       default: return Icons.note_outlined;
     }
@@ -1437,6 +1460,8 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.message: return 'Messages';
       case EntryType.handoff: return 'Handoff';
       case EntryType.incontinence: return 'Continence';
+      case EntryType.nightWaking: return 'Night Waking';
+      case EntryType.hydration: return 'Fluids';
       case EntryType.custom: return 'Custom';
       default: return t.name;
     }
