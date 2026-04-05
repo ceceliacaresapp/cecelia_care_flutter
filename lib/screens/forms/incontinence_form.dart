@@ -81,7 +81,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
       await journal.addJournalEntry('incontinence', payload, user.uid);
       _showSnackBar('Incontinence entry saved.', Colors.green);
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving incontinence entry: $e');

@@ -83,6 +83,72 @@ service cloud.firestore {
         allow create, delete: if isAdminRole(elderId);
         allow update: if false;
       }
+
+      // Custom entry types — all caregivers can read, admin can manage.
+      match /customEntryTypes/{entryTypeId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Shift definitions — all caregivers can read, admin can manage.
+      match /shiftDefinitions/{shiftId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Vault documents — all caregivers can read, admin can manage.
+      match /vaultDocuments/{docId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Wound entries — all caregivers can read and write.
+      match /woundEntries/{entryId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // ADL assessments — all caregivers can read, caregivers+ can write.
+      match /adlAssessments/{assessmentId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Category budgets — all caregivers can read, admin can manage.
+      match /categoryBudgets/{yearMonth} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Behavioral entries — all caregivers can read and write.
+      match /behavioralEntries/{entryId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Wandering assessments — all caregivers can read and write.
+      match /wanderingAssessments/{assessmentId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Fall risk assessments (CDC STEADI) — all caregivers can read and write.
+      match /fallRiskAssessments/{assessmentId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Skin assessments — all caregivers can read and write.
+      match /skinAssessments/{assessmentId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Turning/repositioning logs — all caregivers can read and write.
+      match /turningLogs/{logId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
     }
 
     // --- Elders Data (Timeline, Days, Meals) ---
@@ -104,8 +170,15 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && isAdminRole(resource.data.elderId);
     }
 
+    // --- Respite Providers (shared, read-only for most users) ---
+    match /respiteProviders/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+
     // --- Collection Groups & Shared Collections ---
-    
+
     // Journal Entries (Standalone collection)
     match /journalEntries/{entryId} {
       allow read: if request.auth != null;

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -458,6 +459,110 @@ class NotificationService {
   Future<void> cancelSundowningAlert() async {
     await cancel(_sundowningAlertId);
     debugPrint('NotificationService: Sundowning alert cancelled.');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Repositioning Reminder — every 2 hours during daytime (8 fixed times)
+  // ---------------------------------------------------------------------------
+
+  static const int _repositioningBaseId = 99002;
+
+  static const List<String> _repositioningTips = [
+    'Time to reposition. Check heels and sacrum for redness.',
+    'Turn to left side. Place pillow between knees for pressure relief.',
+    'Check under medical devices \u2014 tubing and sensors cause pressure injuries too.',
+    'Reposition and inspect skin. Look for non-blanchable redness.',
+    'Elevate heels off the mattress with a pillow under the calves.',
+    'Turn to right side. Ensure ears and shoulders are not compressed.',
+    'Time for a position change. Offer a drink while repositioning.',
+    'Check the sacrum and coccyx area during this turn.',
+    'Reposition to back. Use a 30\u00B0 tilt to reduce pressure.',
+    'Apply barrier cream to moisture-prone areas during this turn.',
+    'Turn and check. Early redness is reversible with timely repositioning.',
+    'Position change time. Keep linens smooth \u2014 wrinkles cause friction.',
+    'Reposition gently. Lift, don\u2019t drag \u2014 friction damages fragile skin.',
+    'Time to turn. Check bony prominences: hips, ankles, elbows.',
+    'Every reposition matters. You\u2019re preventing a pressure injury right now.',
+  ];
+
+  // 8 fixed daytime times: 6AM, 8AM, 10AM, 12PM, 2PM, 4PM, 6PM, 8PM
+  static const List<int> _repositioningHours = [6, 8, 10, 12, 14, 16, 18, 20];
+
+  Future<void> scheduleRepositioningReminders() async {
+    for (int i = 0; i < _repositioningHours.length; i++) {
+      final hour = _repositioningHours[i];
+      final tipIndex = (DateTime.now().day + i) % _repositioningTips.length;
+      await scheduleDailyRepeatingNotification(
+        notificationId: _repositioningBaseId + i,
+        time: TimeOfDay(hour: hour, minute: 0),
+        channelId: _androidHealthRemindersChannelId,
+        title: 'Repositioning reminder',
+        body: _repositioningTips[tipIndex],
+        payload: 'repositioning_reminder',
+      );
+    }
+    debugPrint(
+        'NotificationService: Repositioning reminders scheduled '
+        '(${_repositioningHours.length} daily times).');
+  }
+
+  Future<void> cancelRepositioningReminders() async {
+    for (int i = 0; i < _repositioningHours.length; i++) {
+      await cancel(_repositioningBaseId + i);
+    }
+    debugPrint('NotificationService: Repositioning reminders cancelled.');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Burnout Nudge — gentle check-in when wellbeing is sustained low
+  // ---------------------------------------------------------------------------
+
+  Future<void> fireBurnoutNudge() async {
+    if (_notificationPrefsProvider != null &&
+        !_notificationPrefsProvider!.prefs.burnoutNudges) {
+      return;
+    }
+
+    await showInstant(
+      _androidHealthRemindersChannelId,
+      'Hey, just checking in',
+      'Your wellbeing has been low lately. You\'re doing amazing work \u2014 '
+          'take a moment for yourself today.',
+      'burnout_nudge',
+    );
+    debugPrint('NotificationService: Burnout nudge fired.');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Weight Loss Alert — fires once when >5% loss detected in 30 days
+  // ---------------------------------------------------------------------------
+
+  Future<void> checkAndFireWeightAlert({
+    required double percentLoss,
+    required String elderName,
+    required String elderId,
+  }) async {
+    // Only fire once per month per elder to avoid spam.
+    final key = 'weight_alert_${elderId}_${DateTime.now().month}';
+    final sp = await SharedPreferences.getInstance();
+    if (sp.getBool(key) == true) return;
+
+    // Check if weight alerts are enabled.
+    if (_notificationPrefsProvider != null &&
+        !_notificationPrefsProvider!.prefs.weightAlerts) {
+      return;
+    }
+
+    await showInstant(
+      _androidHealthRemindersChannelId,
+      'Weight loss alert',
+      '$elderName has lost ${percentLoss.toStringAsFixed(1)}% body weight '
+          'in the past 30 days. Consider discussing with their doctor.',
+      'weight_alert|$elderId',
+    );
+
+    await sp.setBool(key, true);
+    debugPrint('NotificationService: Weight loss alert fired for $elderName.');
   }
 
   String _getAndroidChannelId(String key) {

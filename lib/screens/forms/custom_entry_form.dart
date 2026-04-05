@@ -123,7 +123,7 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
 
       if (mounted) {
         HapticUtils.success();
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       }
     } catch (e) {

@@ -86,7 +86,7 @@ class _HandoffFormState extends State<HandoffForm> {
       HapticUtils.success();
       if (mounted) {
         _showSnackBar('Handoff note saved.', Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       }
     } catch (e) {
@@ -230,7 +230,7 @@ class _HandoffFormState extends State<HandoffForm> {
                         onPressed: _isSaving
                             ? null
                             : () {
-                                Navigator.of(context).pop();
+                                Navigator.of(context, rootNavigator: true).pop();
                                 widget.onClose?.call();
                               },
                         padding: const EdgeInsets.symmetric(

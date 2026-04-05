@@ -14,6 +14,7 @@ const String kDashboardSectionsKey = 'dashboard_sections_config';
 /// Default section order and visibility.
 const List<Map<String, dynamic>> kDefaultSections = [
   {'key': 'orientationBoard', 'label': 'Orientation Board', 'icon': 0xe8df, 'visible': true},
+  {'key': 'weeklyTeamSummary', 'label': 'Weekly Team Summary', 'icon': 0xe7fb, 'visible': true},
   {'key': 'wellness', 'label': 'Wellness Summary', 'icon': 0xe559, 'visible': true},
   {'key': 'quickMeds', 'label': 'Quick Meds', 'icon': 0xf0575, 'visible': true},
   {'key': 'careLog', 'label': "Today's Care Log", 'icon': 0xe873, 'visible': true},
@@ -23,6 +24,8 @@ const List<Map<String, dynamic>> kDefaultSections = [
   {'key': 'insights', 'label': 'Symptom Insights', 'icon': 0xe3a1, 'visible': true},
   {'key': 'medSchedule', 'label': 'Med Schedule', 'icon': 0xf0575, 'visible': true},
   {'key': 'dutyTimer', 'label': 'Duty Timer', 'icon': 0xe425, 'visible': true},
+  {'key': 'weightTrend', 'label': 'Weight Trend', 'icon': 0xe3ba, 'visible': true},
+  {'key': 'adherenceSummary', 'label': 'Med Adherence', 'icon': 0xe3ec, 'visible': true},
 ];
 
 /// Reads the saved config from SharedPreferences, falling back to defaults.
@@ -129,6 +132,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
   IconData _iconForKey(String key) {
     switch (key) {
       case 'orientationBoard': return Icons.today_outlined;
+      case 'weeklyTeamSummary': return Icons.celebration_outlined;
       case 'wellness': return Icons.favorite_border;
       case 'quickMeds': return Icons.medication_outlined;
       case 'careLog': return Icons.assignment_outlined;
@@ -138,6 +142,8 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
       case 'insights': return Icons.insights_outlined;
       case 'medSchedule': return Icons.schedule_outlined;
       case 'dutyTimer': return Icons.timer_outlined;
+      case 'weightTrend': return Icons.monitor_weight_outlined;
+      case 'adherenceSummary': return Icons.medication_outlined;
       default: return Icons.widgets_outlined;
     }
   }

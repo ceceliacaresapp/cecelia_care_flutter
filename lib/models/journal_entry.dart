@@ -22,6 +22,13 @@ class JournalEntry {
 
   final bool isCaregiverJournal;
 
+  /// Reactions map: { uid: Timestamp } — caregivers acknowledging this entry.
+  final Map<String, dynamic> reactions;
+
+  int get reactionCount => reactions.length;
+  List<String> get reactedByUids => reactions.keys.toList();
+  bool hasReactedBy(String uid) => reactions.containsKey(uid);
+
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
 
@@ -41,6 +48,7 @@ class JournalEntry {
     this.createdAt,
     this.updatedAt,
     this.isCaregiverJournal = false,
+    this.reactions = const {},
   });
 
   factory JournalEntry.fromFirestore(
@@ -91,6 +99,7 @@ class JournalEntry {
       createdAt: json['createdAt'] as Timestamp?,
       updatedAt: json['updatedAt'] as Timestamp?,
       isCaregiverJournal: json['isCaregiverJournal'] as bool? ?? false,
+      reactions: (json['reactions'] as Map<String, dynamic>?) ?? const {},
     );
   }
 
@@ -112,6 +121,7 @@ class JournalEntry {
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
       'isCaregiverJournal': isCaregiverJournal,
+      if (reactions.isNotEmpty) 'reactions': reactions,
     };
   }
 
@@ -131,6 +141,7 @@ class JournalEntry {
     Timestamp? createdAt,
     Timestamp? updatedAt,
     bool? isCaregiverJournal,
+    Map<String, dynamic>? reactions,
   }) {
     return JournalEntry(
       id: id ?? this.id,
@@ -151,6 +162,7 @@ class JournalEntry {
       updatedAt: updatedAt ?? this.updatedAt,
       isCaregiverJournal:
           isCaregiverJournal ?? this.isCaregiverJournal,
+      reactions: reactions ?? this.reactions,
     );
   }
 }

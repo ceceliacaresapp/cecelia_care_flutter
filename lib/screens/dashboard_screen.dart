@@ -6,10 +6,11 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
+import 'package:cecelia_care_flutter/models/wandering_assessment.dart';
+import 'package:cecelia_care_flutter/models/fall_risk_assessment.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
@@ -18,7 +19,6 @@ import 'package:cecelia_care_flutter/models/badge.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/models/medication_definition.dart';
-import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/screens/forms/mood_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/sleep_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/meal_form.dart';
@@ -42,6 +42,9 @@ import 'package:cecelia_care_flutter/widgets/symptom_insights_card.dart';
 import 'package:cecelia_care_flutter/widgets/med_schedule_timeline.dart';
 import 'package:cecelia_care_flutter/widgets/orientation_board_card.dart';
 import 'package:cecelia_care_flutter/widgets/duty_timer_card.dart';
+import 'package:cecelia_care_flutter/widgets/weekly_team_summary_card.dart';
+import 'package:cecelia_care_flutter/widgets/weight_trend_card.dart';
+import 'package:cecelia_care_flutter/widgets/adherence_summary_card.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -373,15 +376,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Widget> _buildDynamicSections({
     required BuildContext context,
     required ElderProfile activeElder,
+    required bool isMultiView,
+    required List<ElderProfile> allElders,
     required String currentUserId,
     required String currentDateStr,
     required DateTime startOfDay,
     required DateTime endOfDay,
   }) {
+    final firestoreService = context.read<FirestoreService>();
     final sectionBuilders = <String, List<Widget> Function()>{
       'orientationBoard': () => [
         const SizedBox(height: 4),
         const OrientationBoardCard(),
+      ],
+      'weeklyTeamSummary': () => [
+        const SizedBox(height: 12),
+        const WeeklyTeamSummaryCard(),
       ],
       'wellness': () => [
         Builder(builder: (ctx) {
@@ -409,55 +419,92 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }),
       ],
-      'quickMeds': () => [
-        Builder(builder: (ctx) {
-          final medProv = ctx.watch<MedicationDefinitionsProvider>();
-          final pinned = medProv.pinnedMeds;
-          if (pinned.isEmpty) return const SizedBox.shrink();
+      'quickMeds': () {
+        // Pinned meds are provider-coupled to the active elder.
+        // In multi-view, hide — the provider only has one elder's data.
+        if (isMultiView) return <Widget>[];
+        return [
+          Builder(builder: (ctx) {
+            final medProv = ctx.watch<MedicationDefinitionsProvider>();
+            final pinned = medProv.pinnedMeds;
+            if (pinned.isEmpty) return const SizedBox.shrink();
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              const _SectionLabel(label: 'Quick meds'),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 72,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: pinned.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (context, i) => _PinnedMedCard(
-                    med: pinned[i],
-                    activeElder: activeElder,
-                    currentDateStr: currentDateStr,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                const _SectionLabel(label: 'Quick meds'),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 72,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: pinned.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, i) => _PinnedMedCard(
+                      med: pinned[i],
+                      activeElder: activeElder,
+                      currentDateStr: currentDateStr,
+                    ),
                   ),
                 ),
+              ],
+            );
+          }),
+        ];
+      },
+      'careLog': () {
+        if (isMultiView) {
+          // Show one care log summary per elder, stacked with name headers.
+          return <Widget>[
+            const SizedBox(height: 20),
+            const _SectionLabel(label: "Today's care log"),
+            const SizedBox(height: 10),
+            for (final elder in allElders) ...[
+              _ElderSubheader(
+                elder: elder,
+                index: allElders.indexOf(elder),
               ),
+              StreamBuilder<List<JournalEntry>>(
+                stream: firestoreService.getJournalEntriesStream(
+                  elderId: elder.id,
+                  currentUserId: currentUserId,
+                  startDate: startOfDay,
+                  endDate: endOfDay,
+                ),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      !snapshot.hasData) {
+                    return const _TodayLoadingCard();
+                  }
+                  return _TodaySummaryGrid(entries: snapshot.data ?? []);
+                },
+              ),
+              const SizedBox(height: 8),
             ],
-          );
-        }),
-      ],
-      'careLog': () => [
-        const SizedBox(height: 20),
-        const _SectionLabel(label: "Today's care log"),
-        const SizedBox(height: 10),
-        StreamBuilder<List<JournalEntry>>(
-          stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
-                elderId: activeElder.id,
-                currentUserId: currentUserId,
-                startDate: startOfDay,
-                endDate: endOfDay,
-              ),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting &&
-                !snapshot.hasData) {
-              return const _TodayLoadingCard();
-            }
-            return _TodaySummaryGrid(entries: snapshot.data ?? []);
-          },
-        ),
-      ],
+          ];
+        }
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: "Today's care log"),
+          const SizedBox(height: 10),
+          StreamBuilder<List<JournalEntry>>(
+            stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
+                  elderId: activeElder.id,
+                  currentUserId: currentUserId,
+                  startDate: startOfDay,
+                  endDate: endOfDay,
+                ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const _TodayLoadingCard();
+              }
+              return _TodaySummaryGrid(entries: snapshot.data ?? []);
+            },
+          ),
+        ];
+      },
       'achievements': () => [
         const SizedBox(height: 20),
         const _SectionLabel(label: 'Achievements'),
@@ -471,6 +518,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _JournalPreviewCard(currentUserId: currentUserId),
       ],
       'quickLog': () {
+        if (isMultiView) return <Widget>[];
         if (!context.watch<ActiveElderProvider>().canLog) return <Widget>[];
         return <Widget>[
           const SizedBox(height: 20),
@@ -482,33 +530,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ];
       },
-      'insights': () => [
-        const SizedBox(height: 20),
-        const _SectionLabel(label: 'Symptom insights'),
-        const SizedBox(height: 10),
-        const SymptomInsightsCard(),
-      ],
-      'medSchedule': () => [
-        Builder(builder: (ctx) {
-          final medProv = ctx.watch<MedicationDefinitionsProvider>();
-          if (medProv.medDefinitions.isEmpty) return const SizedBox.shrink();
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              SizedBox(height: 20),
-              _SectionLabel(label: 'Med schedule'),
-              SizedBox(height: 10),
-              MedScheduleTimeline(),
-            ],
-          );
-        }),
-      ],
+      'insights': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Symptom insights'),
+          const SizedBox(height: 10),
+          const SymptomInsightsCard(),
+        ];
+      },
+      'medSchedule': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          Builder(builder: (ctx) {
+            final medProv = ctx.watch<MedicationDefinitionsProvider>();
+            if (medProv.medDefinitions.isEmpty) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                SizedBox(height: 20),
+                _SectionLabel(label: 'Med schedule'),
+                SizedBox(height: 10),
+                MedScheduleTimeline(),
+              ],
+            );
+          }),
+        ];
+      },
       'dutyTimer': () => [
         const SizedBox(height: 20),
         const _SectionLabel(label: 'Duty timer'),
         const SizedBox(height: 10),
         const DutyTimerCard(),
       ],
+      'weightTrend': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Weight trend'),
+          const SizedBox(height: 10),
+          const WeightTrendCard(),
+        ];
+      },
+      'adherenceSummary': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Med adherence'),
+          const SizedBox(height: 10),
+          const AdherenceSummaryCard(),
+        ];
+      },
     };
 
     // Use saved order, or defaults if not loaded yet.
@@ -529,10 +601,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activeElder = context.watch<ActiveElderProvider>().activeElder;
-    final userProfile = context.watch<UserProfileProvider>().userProfile;
+    final elderProv = context.watch<ActiveElderProvider>();
+    final activeElder = elderProv.activeElder;
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    if (activeElder == null) {
+    final isMultiView = elderProv.isMultiView;
+    final allElders = elderProv.allElders;
+
+    // In multi-view use the first elder as fallback for methods that need one.
+    final effectiveElder = isMultiView
+        ? (activeElder ?? allElders.firstOrNull)
+        : activeElder;
+
+    if (effectiveElder == null) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -544,14 +625,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       );
     }
-
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final elderDisplayName = (activeElder.preferredName?.isNotEmpty == true)
-        ? activeElder.preferredName!
-        : activeElder.profileName;
-    final greeting = _buildGreeting(
-        userProfile?.displayName ?? 'Caregiver', elderDisplayName);
-
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
@@ -564,15 +637,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
-          _GreetingCard(
-            greeting: greeting,
-            elderName: elderDisplayName,
-            userInitial: (userProfile?.displayName.isNotEmpty == true)
-                ? userProfile!.displayName[0].toUpperCase()
-                : 'C',
-            userPhotoUrl: userProfile?.avatarUrl,
-          ),
-
           // Customize dashboard link
           Align(
             alignment: Alignment.centerRight,
@@ -597,10 +661,170 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
 
+          // Wandering risk alert (conditional — only shows for High/Critical)
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('elderProfiles')
+                .doc(effectiveElder.id)
+                .collection('wanderingAssessments')
+                .orderBy('createdAt', descending: true)
+                .limit(1)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              final data =
+                  snapshot.data!.docs.first.data() as Map<String, dynamic>;
+              final assessment = WanderingAssessment.fromFirestore(
+                  snapshot.data!.docs.first.id, data);
+              if (assessment.rawRiskScore < 6) return const SizedBox.shrink();
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: assessment.riskColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: assessment.riskColor.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_outlined,
+                        color: assessment.riskColor),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Wandering Risk: ${assessment.riskLevel}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: assessment.riskColor)),
+                          Text(assessment.riskSummary,
+                              style: const TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Fall risk alert (conditional — only shows for High/Very High)
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('elderProfiles')
+                .doc(effectiveElder.id)
+                .collection('fallRiskAssessments')
+                .orderBy('createdAt', descending: true)
+                .limit(1)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              final data =
+                  snapshot.data!.docs.first.data() as Map<String, dynamic>;
+              final assessment = FallRiskAssessment.fromFirestore(
+                  snapshot.data!.docs.first.id, data);
+              if (assessment.rawRiskScore < 8) return const SizedBox.shrink();
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: assessment.riskColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: assessment.riskColor.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.elderly_outlined,
+                        color: assessment.riskColor),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Fall Risk: ${assessment.riskLevel}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: assessment.riskColor)),
+                          Text(assessment.riskSummary,
+                              style: const TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Time since last turn alert (3h+ = overdue)
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('elderProfiles')
+                .doc(effectiveElder.id)
+                .collection('turningLogs')
+                .orderBy('timestamp', descending: true)
+                .limit(1)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              final data =
+                  snapshot.data!.docs.first.data() as Map<String, dynamic>;
+              final ts = data['timestamp'] as Timestamp?;
+              if (ts == null) return const SizedBox.shrink();
+              final elapsed = DateTime.now().difference(ts.toDate());
+              if (elapsed.inHours < 3) return const SizedBox.shrink();
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.statusAmber.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppTheme.statusAmber.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.rotate_left,
+                        color: elapsed.inHours >= 4
+                            ? AppTheme.statusRed
+                            : AppTheme.statusAmber),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Last repositioned ${elapsed.inHours}h ${elapsed.inMinutes % 60}m ago',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: elapsed.inHours >= 4
+                              ? AppTheme.statusRed
+                              : AppTheme.statusAmber,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
           // Dynamic sections
           ..._buildDynamicSections(
             context: context,
-            activeElder: activeElder,
+            activeElder: effectiveElder,
+            isMultiView: isMultiView,
+            allElders: allElders,
             currentUserId: currentUserId,
             currentDateStr: currentDateStr,
             startOfDay: startOfDay,
@@ -611,15 +835,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  String _buildGreeting(String userName, String elderName) {
-    final hour = DateTime.now().hour;
-    final String t = hour < 12
-        ? 'Good morning'
-        : hour < 17
-            ? 'Good afternoon'
-            : 'Good evening';
-    return '$t, $userName';
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1059,98 +1274,6 @@ class _MessageComposerSheetState extends State<_MessageComposerSheet> {
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Greeting card
-// ---------------------------------------------------------------------------
-
-class _GreetingCard extends StatelessWidget {
-  const _GreetingCard({
-    required this.greeting,
-    required this.elderName,
-    required this.userInitial,
-    this.userPhotoUrl,
-  });
-
-  final String greeting;
-  final String elderName;
-  final String userInitial;
-  final String? userPhotoUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasPhoto = userPhotoUrl != null && userPhotoUrl!.isNotEmpty;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.primaryColor.withOpacity(0.75),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  greeting,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Caring for $elderName today',
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.85)),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  DateFormat('EEEE, MMMM d').format(DateTime.now()),
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.7)),
-                ),
-              ],
-            ),
-          ),
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.white.withOpacity(0.2),
-            backgroundImage:
-                hasPhoto ? NetworkImage(userPhotoUrl!) : null,
-            child: hasPhoto
-                ? null
-                : Text(
-                    userInitial,
-                    style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
           ),
         ],
       ),
@@ -1908,6 +2031,45 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
 // ---------------------------------------------------------------------------
 // Section label
 // ---------------------------------------------------------------------------
+
+/// Small colored header showing an elder's name — used in multi-view to
+/// separate per-elder data within a shared section.
+class _ElderSubheader extends StatelessWidget {
+  const _ElderSubheader({required this.elder, required this.index});
+  final ElderProfile elder;
+  final int index;
+
+  static const List<Color> _palette = [
+    Color(0xFF1E88E5), Color(0xFFE53935), Color(0xFF43A047),
+    Color(0xFFF57C00), Color(0xFF8E24AA), Color(0xFF00897B),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _palette[index % _palette.length];
+    final name = elder.preferredName?.isNotEmpty == true
+        ? elder.preferredName!
+        : elder.profileName;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 8, height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(name,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: color,
+              )),
+        ],
+      ),
+    );
+  }
+}
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel({required this.label});

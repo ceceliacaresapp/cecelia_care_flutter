@@ -4,9 +4,9 @@
     "loginButton": "Login",
     "settingsTitle": "Settings",
     "languageSetting": "Language",
-    "manageElderProfilesTitle": "Manage Elder Profiles",
+    "manageElderProfilesTitle": "Manage Care Recipients",
     "createProfileButton": "Create Profile",
-    "pleaseLogInToManageProfiles": "Please log in to manage elder profiles.",
+    "pleaseLogInToManageProfiles": "Please log in to manage care recipient profiles.",
     "calendarScreenTitle": "Calendar for {elderName}",
     "@calendarScreenTitle": {
         "description": "Title for the calendar screen, includes elder's name",
@@ -78,8 +78,8 @@
     "eventFormHintSelectTime": "Select Time",
     "mealFormLabelCalories": "Calories",
     "mealFormHintCalories": "e.g., 500",
-    "sleepFormHintQuality": "Rate quality (1-10)",
-    "sleepFormValidationQualityRange": "Please enter a number between 1 and 10",
+    "sleepFormHintQuality": "Rate quality (1-5)",
+    "sleepFormValidationQualityRange": "Please enter a number between 1 and 5",
     "medFormTitleEdit": "Edit Medication",
     "medFormTitleNew": "Log Medication",
     "medFormTimePickerHelpText": "SELECT MEDICATION TIME",
@@ -215,12 +215,12 @@
             }
         }
     },
-    "settingsSelectElderFirstMedDef": "Please select an elder profile first to manage medication definitions.",
+    "settingsSelectElderFirstMedDef": "Please select a care recipient first to manage medication definitions.",
     "settingsMedNameRequired": "Medication name is required.",
     "settingsMedDefaultTimeFormatError": "Invalid time format. Please use HH:mm (e.g., 09:00).",
     "settingsMedDefAddedSuccess": "Medication definition added successfully.",
-    "settingsClearDataErrorElderOrUserMissing": "Cannot clear data: Active elder or user is missing.",
-    "settingsClearDataErrorNotAdmin": "You are not the primary admin for this elder's profile. Data can only be cleared by the primary admin.",
+    "settingsClearDataErrorElderOrUserMissing": "Cannot clear data: Active care recipient or user is missing.",
+    "settingsClearDataErrorNotAdmin": "You are not the primary admin for this care recipient's profile. Data can only be cleared by the primary admin.",
     "settingsClearDataDialogTitle": "Clear All Data for {elderName}?",
     "@settingsClearDataDialogTitle": {
         "placeholders": {
@@ -229,7 +229,7 @@
             }
         }
     },
-    "settingsClearDataDialogContent": "This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this elder. Are you sure you want to proceed?",
+    "settingsClearDataDialogContent": "This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this care recipient. Are you sure you want to proceed?",
     "settingsClearDataDialogConfirmButton": "Yes, Clear All Data",
     "settingsClearDataSuccess": "All data for {elderName} has been cleared.",
     "@settingsClearDataSuccess": {
@@ -270,8 +270,8 @@
             }
         }
     },
-    "settingsTitleElderProfileManagement": "Elder Profile Management",
-    "settingsCurrentElder": "Current Active Elder: {elderName}",
+    "settingsTitleElderProfileManagement": "Care Recipient Management",
+    "settingsCurrentElder": "Active Care Recipient: {elderName}",
     "@settingsCurrentElder": {
         "placeholders": {
             "elderName": {
@@ -279,9 +279,9 @@
             }
         }
     },
-    "settingsNoActiveElderSelected": "No active elder selected. Please select or create one.",
-    "settingsErrorNavToManageElderProfiles": "Could not navigate to manage elder profiles. User not logged in.",
-    "settingsButtonManageElderProfiles": "Manage Elder Profiles",
+    "settingsNoActiveElderSelected": "No active care recipient selected. Please select or create one.",
+    "settingsErrorNavToManageElderProfiles": "Could not navigate to manage care recipients. User not logged in.",
+    "settingsButtonManageElderProfiles": "Manage Care Recipients",
     "settingsTitleAdminActions": "Admin Actions for {elderName}",
     "@settingsTitleAdminActions": {
         "placeholders": {
@@ -290,7 +290,7 @@
             }
         }
     },
-    "settingsButtonClearAllData": "Clear All Data for This Elder",
+    "settingsButtonClearAllData": "Clear All Data for This Care Recipient",
     "settingsTitleMedicationDefinitions": "Medication Definitions",
     "settingsSubtitleAddNewMedDef": "Add New Medication Definition:",
     "settingsLabelMedName": "Medication Name",
@@ -300,8 +300,8 @@
     "settingsLabelMedDefaultTime": "Default Time (HH:mm, Optional)",
     "settingsHintMedDefaultTime": "e.g., 08:00",
     "settingsButtonAddMedDef": "Add Medication Definition",
-    "settingsSelectElderToAddMedDefs": "Select an elder profile to add medication definitions.",
-    "settingsSelectElderToViewMedDefs": "Select an elder profile to view medication definitions.",
+    "settingsSelectElderToAddMedDefs": "Select a care recipient to add medication definitions.",
+    "settingsSelectElderToViewMedDefs": "Select a care recipient to view medication definitions.",
     "settingsNoMedDefsForElder": "No medication definitions found for {elderName}.",
     "@settingsNoMedDefsForElder": {
         "placeholders": {
@@ -318,7 +318,7 @@
             }
         }
     },
-    "settingsSelectedElderFallback": "Selected Elder",
+    "settingsSelectedElderFallback": "Selected Care Recipient",
     "settingsMedDefDosePrefix": "Dose: {dose}",
     "@settingsMedDefDosePrefix": {
         "placeholders": {
@@ -355,7 +355,7 @@
     },
 
     "errorNotLoggedIn": "Error: User not logged in.",
-    "errorElderIdMissing": "Error: Elder ID is missing.",
+    "errorElderIdMissing": "Error: Care recipient ID is missing.",
     "profileUpdatedSnackbar": "Profile for {profileName} updated.",
     "@profileUpdatedSnackbar": {
         "placeholders": {
@@ -380,7 +380,7 @@
             }
         }
     },
-    "errorSelectElderAndEmail": "Please select an elder profile and enter a valid email address.",
+    "errorSelectElderAndEmail": "Please select a care recipient and enter a valid email address.",
     "invitationSentSnackbar": "Invitation sent to {email}.",
     "@invitationSentSnackbar": {
         "placeholders": {
@@ -398,7 +398,7 @@
         }
     },
     "removeCaregiverDialogTitle": "Remove Caregiver?",
-    "removeCaregiverDialogContent": "Are you sure you want to remove {caregiverIdentifier} as a caregiver for this elder?",
+    "removeCaregiverDialogContent": "Are you sure you want to remove {caregiverIdentifier} as a caregiver for this care recipient?",
     "@removeCaregiverDialogContent": {
         "placeholders": {
             "caregiverIdentifier": {
@@ -466,7 +466,7 @@
     },
     "caregiversEmailLabel": "Caregiver's Email",
     "enterEmailHint": "Enter email address",
-    "createElderProfileTitle": "Create New Elder Profile",
+    "createElderProfileTitle": "Create New Care Recipient",
     "editProfileTitle": "Edit {profileNameOrFallback}",
     "@editProfileTitle": {
         "placeholders": {
@@ -483,7 +483,7 @@
     "createNewProfileButton": "Create New Profile",
     "saveChangesButton": "Save Changes",
     "errorPrefix": "Error: ",
-    "noElderProfilesFound": "No elder profiles found.",
+    "noElderProfilesFound": "No care recipient profiles found.",
     "createNewProfileOrWait": "Create a new profile or wait for an invitation.",
     "fabNewProfile": "New Profile",
 
@@ -754,7 +754,7 @@
     "calendarUntitledEvent": "Untitled Event",
     "eventDeletedSuccess": "Event deleted successfully.",
     "errorCouldNotDeleteEvent": "Error: Could not delete event.",
-    "calendarNoElderSelected": "No elder selected. Please select an elder to view their calendar.",
+    "calendarNoElderSelected": "No care recipient selected. Please select a care recipient to view their calendar.",
     "calendarAddNewEventButton": "Add New Event",
     "calendarEventsOnDate": "Events on {formattedDate}:",
     "@calendarEventsOnDate": {
@@ -794,7 +794,7 @@
         }
     },
     "expenseUnknownUser": "Unknown User",
-    "expenseSelectElderPrompt": "Please select an elder profile to view expenses.",
+    "expenseSelectElderPrompt": "Please select a care recipient to view expenses.",
     "expenseLoading": "Loading expenses...",
     "expenseScreenTitle": "Expenses",
     "expenseForElder": "Expenses for {elderName}",
@@ -828,7 +828,7 @@
     "errorEnterEmailPassword": "Please enter both email and password.",
     "errorLoginFailedDefault": "Login failed. Please check your credentials or network connection.",
     "loginScreenTitle": "Cecelia Care",
-    "settingsLabelRelationshipToElder": "Relationship to Elder",
+    "settingsLabelRelationshipToElder": "Relationship to Care Recipient",
     "@settingsLabelRelationshipToElder": {
         "description": "Label for the relationship to elder field in user account settings"
     },
@@ -876,7 +876,7 @@
             }
         }
     },
-    "selectElderToViewCareLog": "Please select an Elder from Settings to view the Care Log.",
+    "selectElderToViewCareLog": "Please select a care recipient from Settings to view the Care Log.",
     "@selectElderToViewCareLog": {
         "description": "Message shown when no Elder is selected for the care log, using the fixed term 'Elder'."
     },
@@ -905,7 +905,7 @@
     "timelineUnknownTime": "Unknown time",
     "timelineInvalidTime": "Invalid time",
     "timelineMustBeLoggedInToPost": "You must be logged in to post a message.",
-    "timelineSelectElderToPost": "Please select an active elder profile to post to their timeline.",
+    "timelineSelectElderToPost": "Please select an active care recipient to post to their timeline.",
     "timelineAnonymousUser": "Anonymous",
     "timelineCouldNotPostMessage": "Could not post message: {errorMessage}",
     "@timelineCouldNotPostMessage": {
@@ -918,7 +918,7 @@
         }
     },
     "timelinePleaseLogInToView": "Please log in to view the timeline.",
-    "timelineSelectElderToView": "Please select an elder profile to view their timeline.",
+    "timelineSelectElderToView": "Please select a care recipient to view their timeline.",
     "timelineWriteMessageHint": "Write a message for {elderName}'s timeline...",
     "@timelineWriteMessageHint": {
         "description": "Hint text for the timeline message input field.",
@@ -1566,7 +1566,7 @@
   "@imageUploadScreenTitle": {
       "description": "Title for the Image Upload screen link in settings"
     },
-  "imageUploadErrorNoElderSelected": "Please select an active elder profile to upload images.",
+  "imageUploadErrorNoElderSelected": "Please select an active care recipient to upload images.",
   "@imageUploadErrorNoElderSelected": {
       "description": "Error message shown when trying to access image upload without an active elder."
     }
@@ -1628,7 +1628,7 @@
     "@uploadedImagesSectionTitle": {
         "description": "Title for the section displaying already uploaded images."
     },
-    "noImagesUploadedYet": "No images uploaded yet for this elder.",
+    "noImagesUploadedYet": "No images uploaded yet for this care recipient.",
     "@noImagesUploadedYet": {
         "description": "Message shown when no images are found for the selected elder."
     },
@@ -1790,6 +1790,10 @@
     "sundowningAlertLabel": "Sundowning Alert",
     "sundowningAlertSubtitle": "Daily 3 PM reminder with calming tips",
     "generalNotificationsLabel": "General App Notifications",
+
+    "multiViewAll": "All",
+    "multiViewAllCareRecipients": "All Care Recipients",
+    "multiViewSelectToAccessTools": "Select a care recipient to access care tools",
 
     "genericError": "An error occurred: {details}",
     "@genericError": {

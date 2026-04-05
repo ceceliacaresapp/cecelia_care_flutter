@@ -33,6 +33,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/screens/wellness_checkin_screen.dart';
 import 'package:cecelia_care_flutter/screens/breathing_exercise_screen.dart';
 import 'package:cecelia_care_flutter/screens/sos_screen.dart';
+import 'package:cecelia_care_flutter/screens/burnout_intervention_screen.dart';
 import 'package:cecelia_care_flutter/screens/affirmations_screen.dart';
 import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal_screen.dart';
 
@@ -254,7 +255,11 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                     builder: (_) => const BreathingExerciseScreen()),
               ),
               onTapSos: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SosScreen()),
+                MaterialPageRoute(
+                  builder: (_) => wellProv.burnoutThresholdTriggered
+                      ? const BurnoutInterventionScreen()
+                      : const SosScreen(),
+                ),
               ),
             ),
             const SizedBox(height: 14),

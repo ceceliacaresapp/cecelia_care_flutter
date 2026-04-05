@@ -13,7 +13,6 @@
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 const _kCardColor = Color(0xFF8E24AA); // purple — matches Self Care
 

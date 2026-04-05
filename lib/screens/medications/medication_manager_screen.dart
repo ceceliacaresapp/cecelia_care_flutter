@@ -22,6 +22,7 @@ import '../../utils/app_styles.dart';
 import '../../models/medication_entry.dart';
 import '../../models/medication_definition.dart';
 import 'package:cecelia_care_flutter/widgets/cecelia_bot_sheet.dart';
+import 'package:cecelia_care_flutter/screens/medication_adherence_screen.dart';
 
 class MedicationManagerScreen extends StatefulWidget {
   static const String route = '/medications';
@@ -81,6 +82,15 @@ class _MedicationManagerScreenState extends State<MedicationManagerScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(_l10n.manageMedications),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.analytics_outlined),
+            tooltip: 'Adherence Analytics',
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const MedicationAdherenceScreen())),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.textOnPrimary,

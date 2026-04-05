@@ -596,10 +596,11 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
-                        width: 110,
+                        width: 120,
                         child: DropdownButtonFormField<String>(
                           value: f.fieldType,
                           isDense: true,
+                          isExpanded: true,
                           decoration: InputDecoration(
                             isDense: true,
                             border: OutlineInputBorder(

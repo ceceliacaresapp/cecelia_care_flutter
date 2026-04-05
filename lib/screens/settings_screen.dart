@@ -115,7 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final role = activeElderProvider.currentUserRole;
     final canExport = role.canExport;
-    final canManageProfiles = role.canManageProfiles;
+    
     final canAccessProfilesScreen = role.canAccessProfilesScreen;
 
     if (_selectedLocale == null || !AppLocalizations.supportedLocales.contains(_selectedLocale)) {
@@ -126,248 +126,338 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       children: [
-        // Profile header card
+        // ── Profile header card ───────────────────────────────────
         _ProfileHeaderCard(
           userProfile: userProfile,
           isLoading: isLoadingUserProfile,
           errorText: l10n.settingsErrorLoadingProfile,
           theme: theme,
-          avatarChild: userProfile != null ? _avatarChild(userProfile, Colors.white) : null,
+          avatarChild: userProfile != null
+              ? _avatarChild(userProfile, Colors.white)
+              : null,
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
-        // Role indicator — shown to non-admin users so they know their access level
+        // ── Role indicator ────────────────────────────────────────
         if (!isPrimaryAdmin && activeElder != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(
-                color: AppTheme.backgroundGray,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.textLight.withOpacity(0.4)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    role == CaregiverRole.viewer
-                        ? Icons.visibility_outlined
-                        : Icons.favorite_border,
-                    size: 16,
-                    color: role == CaregiverRole.viewer
-                        ? const Color(0xFF8E24AA)
-                        : const Color(0xFF00897B),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      role == CaregiverRole.viewer
-                          ? 'View-only access to ${activeElder.profileName}\'s care log'
-                          : 'Caregiver for ${activeElder.profileName}',
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: AppTheme.textSecondary),
-                    ),
-                  ),
-                ],
-              ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppTheme.backgroundGray,
+              borderRadius: BorderRadius.circular(10),
+              border:
+                  Border.all(color: AppTheme.textLight.withOpacity(0.4)),
             ),
-          ),
-
-        const SizedBox(height: 8),
-
-        // Care recipient management — moved to top for quick access
-        if (canAccessProfilesScreen) ...[
-          _SectionHeader(label: l10n.settingsTitleCareRecipientManagement),
-          if (activeElder != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-              child: Text(l10n.settingsActiveCareRecipient(activeElder.profileName),
-                style: textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-              child: Text(l10n.settingsNoActiveCareRecipient,
-                style: textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
-            ),
-          _SettingsTile(
-            icon: Icons.group_outlined,
-            iconColor: const Color(0xFF1E88E5),
-            title: l10n.settingsItemManageProfiles,
-            onTap: widget.navigateToManageCareRecipientProfiles ?? () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const ManageCareRecipientProfilesScreen(),
+            child: Row(
+              children: [
+                Icon(
+                  role == CaregiverRole.viewer
+                      ? Icons.visibility_outlined
+                      : Icons.favorite_border,
+                  size: 16,
+                  color: role == CaregiverRole.viewer
+                      ? AppTheme.tilePurple
+                      : AppTheme.tileTeal,
                 ),
-              );
-            },
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    role == CaregiverRole.viewer
+                        ? 'View-only access to ${activeElder.profileName}\'s care log'
+                        : 'Caregiver for ${activeElder.profileName}',
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: AppTheme.textSecondary),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
-        ],
 
-        // Account
-        _SectionHeader(label: l10n.settingsTitleMyAccount),
-        _SettingsTile(
-          icon: Icons.account_circle_outlined,
-          iconColor: AppTheme.primaryColor,
-          title: l10n.settingsTitleMyAccount,
-          onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const MyAccountScreen())),
-        ),
-        const Divider(indent: 56, height: 1),
-        _SettingsTile(
-          icon: Icons.diversity_3_outlined,
-          iconColor: const Color(0xFF8E24AA),
-          title: l10n.inclusiveLanguageGuideTitle,
-          onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const InclusiveLanguageGuideScreen())),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Language
-        _SectionHeader(label: l10n.settingsTitleLanguage),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: DropdownButtonFormField<Locale>(
-            decoration: InputDecoration(
-              labelText: l10n.settingsLabelSelectLanguage,
-              labelStyle: textTheme.bodyMedium,
-              prefixIcon: const Icon(Icons.language_outlined, color: AppTheme.textSecondary),
-              filled: true,
-              fillColor: AppTheme.primaryColor.withOpacity(0.04),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppTheme.primaryColor.withOpacity(0.2)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: AppTheme.primaryColor.withOpacity(0.2)),
+        // ── People row ────────────────────────────────────────────
+        _SectionHeader(label: 'People'),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            if (canAccessProfilesScreen)
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.group_outlined,
+                  title: l10n.settingsItemManageProfiles,
+                  subtitle: activeElder?.profileName ?? 'Set up profiles',
+                  color: AppTheme.tileBlue,
+                  onTap: widget.navigateToManageCareRecipientProfiles ??
+                      () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const ManageCareRecipientProfilesScreen()),
+                          ),
+                ),
+              )
+            else
+              const Expanded(child: SizedBox.shrink()),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _SettingsGridTile(
+                icon: Icons.account_circle_outlined,
+                title: l10n.settingsTitleMyAccount,
+                subtitle: 'Profile & preferences',
+                color: AppTheme.primaryColor,
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) => const MyAccountScreen())),
               ),
             ),
-            value: _selectedLocale,
-            items: AppLocalizations.supportedLocales.map((Locale locale) =>
-              DropdownMenuItem<Locale>(
-                value: locale,
-                child: Text(_getLanguageDisplayName(locale, l10n), style: textTheme.bodyMedium),
-              )).toList(),
-            onChanged: (Locale? newValue) {
-              if (newValue != null) {
-                setState(() => _selectedLocale = newValue);
-                Provider.of<LocaleProvider>(context, listen: false).setLocale(newValue);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(l10n.settingsLanguageChangedConfirmation(newValue.toLanguageTag()))));
-              }
-            },
-          ),
+          ],
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
 
-        // Appearance / Dark Mode
+        // ── Customize row ─────────────────────────────────────────
+        _SectionHeader(label: 'Customize'),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: _SettingsGridTile(
+                icon: Icons.dashboard_customize_outlined,
+                title: 'Dashboard',
+                subtitle: 'Reorder sections',
+                color: AppTheme.tileTeal,
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const DashboardSettingsScreen())),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _SettingsGridTile(
+                icon: Icons.extension_outlined,
+                title: 'Entry Types',
+                subtitle: 'Custom log fields',
+                color: AppTheme.tileIndigo,
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const CustomEntryTypesScreen())),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Preferences row ───────────────────────────────────────
+        _SectionHeader(label: 'Preferences'),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: _SettingsGridTile(
+                icon: Icons.notifications_active_outlined,
+                title: 'Notifications',
+                subtitle: 'Alerts & reminders',
+                color: AppTheme.tileTeal,
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const NotificationSettingsScreen())),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _SettingsGridTile(
+                icon: Icons.accessibility_new_outlined,
+                title: 'Accessibility',
+                subtitle: 'Visual & sensory',
+                color: AppTheme.tileBlueDark,
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const AccessibilitySettingsScreen())),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── More row ──────────────────────────────────────────────
+        _SectionHeader(label: 'More'),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            if (canExport)
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.download_outlined,
+                  title: 'Export Logs',
+                  subtitle: 'CSV & PDF reports',
+                  color: AppTheme.tileIndigo,
+                  onTap: () {
+                    if (activeElder == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  'Please select a care recipient first.')));
+                      return;
+                    }
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                ExportScreen(activeElder: activeElder)));
+                  },
+                ),
+              )
+            else
+              const Expanded(child: SizedBox.shrink()),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _SettingsGridTile(
+                icon: Icons.diversity_3_outlined,
+                title: 'Language Guide',
+                subtitle: 'Inclusive care terms',
+                color: AppTheme.tilePurple,
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const InclusiveLanguageGuideScreen())),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 18),
+
+        // ── Appearance ────────────────────────────────────────────
         _SectionHeader(label: 'Appearance'),
-        _DarkModeSelector(),
-        _SettingsTile(
-          icon: Icons.dashboard_customize_outlined,
-          iconColor: const Color(0xFF00897B),
-          title: 'Customize Dashboard',
-          onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const DashboardSettingsScreen())),
-        ),
-        const Divider(indent: 56, height: 1),
-        _SettingsTile(
-          icon: Icons.extension_outlined,
-          iconColor: const Color(0xFF5C6BC0),
-          title: 'Custom Entry Types',
-          onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const CustomEntryTypesScreen())),
-        ),
+        const SizedBox(height: 6),
+        const _DarkModeSelector(),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
 
-        // Notifications
-        _SectionHeader(label: l10n.settingsItemNotificationPreferences),
-        _SettingsTile(
-          icon: Icons.notifications_active_outlined,
-          iconColor: const Color(0xFF00897B),
-          title: l10n.settingsItemNotificationPreferences,
-          onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const NotificationSettingsScreen())),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Accessibility
-        const _SectionHeader(label: 'Accessibility'),
-        _SettingsTile(
-          icon: Icons.accessibility_new_outlined,
-          iconColor: const Color(0xFF1565C0),
-          title: 'Accessibility Settings',
-          onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const AccessibilitySettingsScreen())),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Export & Reports — hidden for viewer role
-        if (canExport) ...[
-          const _SectionHeader(label: "Export & Reports"),
-          _SettingsTile(
-            icon: Icons.download_outlined,
-            iconColor: const Color(0xFF5C6BC0),
-            title: "Export care logs",
-            onTap: () {
-              if (activeElder == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please select a care recipient first.")));
-                return;
-              }
-              Navigator.push(context,
-                MaterialPageRoute(builder: (_) => ExportScreen(activeElder: activeElder)));
-            },
+        // ── Language selector ─────────────────────────────────────
+        _SectionHeader(label: l10n.settingsTitleLanguage),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<Locale>(
+          decoration: InputDecoration(
+            labelText: l10n.settingsLabelSelectLanguage,
+            labelStyle: textTheme.bodyMedium,
+            prefixIcon: const Icon(Icons.language_outlined,
+                color: AppTheme.textSecondary),
+            filled: true,
+            fillColor: AppTheme.primaryColor.withOpacity(0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                  color: AppTheme.primaryColor.withOpacity(0.2)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                  color: AppTheme.primaryColor.withOpacity(0.2)),
+            ),
           ),
-          const SizedBox(height: 20),
-        ],
+          value: _selectedLocale,
+          items: AppLocalizations.supportedLocales
+              .map((Locale locale) => DropdownMenuItem<Locale>(
+                    value: locale,
+                    child: Text(
+                        _getLanguageDisplayName(locale, l10n),
+                        style: textTheme.bodyMedium),
+                  ))
+              .toList(),
+          onChanged: (Locale? newValue) {
+            if (newValue != null) {
+              setState(() => _selectedLocale = newValue);
+              Provider.of<LocaleProvider>(context, listen: false)
+                  .setLocale(newValue);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(l10n
+                      .settingsLanguageChangedConfirmation(
+                          newValue.toLanguageTag()))));
+            }
+          },
+        ),
 
         const SizedBox(height: 24),
 
-        // Sign out
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: isLoadingUserProfile ? null : () => userProfileProvider.signOut(),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                backgroundColor: theme.primaryColor,
-                foregroundColor: Colors.white,
-              ),
-              child: Text(l10n.settingsButtonSignOut),
+        // ── Sign out ──────────────────────────────────────────────
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: isLoadingUserProfile
+                ? null
+                : () => userProfileProvider.signOut(),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              backgroundColor: theme.primaryColor,
+              foregroundColor: Colors.white,
             ),
+            child: Text(l10n.settingsButtonSignOut),
           ),
         ),
 
-        // Admin actions
+        // ── Admin danger zone ─────────────────────────────────────
         if (isPrimaryAdmin) ...[
           const SizedBox(height: 24),
-          _SectionHeader(
-            label: l10n.settingsTitleAdminActions(activeElder.profileName),
-            danger: true,
-          ),
-          _SettingsTile(
-            icon: Icons.delete_forever_outlined,
-            title: l10n.settingsItemClearData,
-            titleColor: AppTheme.dangerColor,
-            iconColor: AppTheme.dangerColor,
-            onTap: _handleClearData,
-            showChevron: false,
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppTheme.dangerColor.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: AppTheme.dangerColor.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ADMIN: ${activeElder.profileName}'.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                    color: AppTheme.dangerColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _handleClearData,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppTheme.dangerColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.delete_forever_outlined,
+                            color: AppTheme.dangerColor, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(l10n.settingsItemClearData,
+                            style: TextStyle(
+                                color: AppTheme.dangerColor,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
 
@@ -447,9 +537,8 @@ class _ProfileHeaderCard extends StatelessWidget {
 
 // Section header
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label, this.danger = false});
+  const _SectionHeader({required this.label});
   final String label;
-  final bool danger;
 
   @override
   Widget build(BuildContext context) {
@@ -457,47 +546,69 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
       child: Text(label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: danger ? AppTheme.dangerColor : AppTheme.textSecondary,
+          color: AppTheme.textSecondary,
           letterSpacing: 0.8, fontWeight: FontWeight.w600)));
   }
 }
 
-// Settings tile with colored icon badge
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
+// Settings grid tile — matches the Care screen's colorful tile pattern
+class _SettingsGridTile extends StatelessWidget {
+  const _SettingsGridTile({
     required this.icon,
     required this.title,
+    required this.color,
     required this.onTap,
-    this.titleColor,
-    this.iconColor,
-    this.showChevron = true,
+    this.subtitle,
   });
 
   final IconData icon;
   final String title;
+  final Color color;
   final VoidCallback onTap;
-  final Color? titleColor;
-  final Color? iconColor;
-  final bool showChevron;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = iconColor ?? AppTheme.textSecondary;
-    return ListTile(
-      leading: Container(
-        width: 36, height: 36,
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.10),
-          borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: color, size: 20),
-      ),
-      title: Text(title,
-        style: theme.textTheme.bodyLarge?.copyWith(color: titleColor)),
-      trailing: showChevron
-        ? const Icon(Icons.chevron_right, color: AppTheme.textLight, size: 20) : null,
+    return GestureDetector(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 22, color: color),
+            ),
+            const SizedBox(height: 10),
+            Text(title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+            if (subtitle != null) ...[
+              const SizedBox(height: 2),
+              Text(subtitle!,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color.withOpacity(0.6),
+                  )),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

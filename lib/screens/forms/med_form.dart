@@ -208,7 +208,7 @@ class _MedFormState extends State<MedForm> {
         _showSnackBar(_l10n.formSuccessMedSaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating medication: $e');
@@ -246,7 +246,7 @@ class _MedFormState extends State<MedForm> {
         await journal.deleteJournalEntry(
             'medication', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMedDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting medication: $e');
@@ -462,7 +462,7 @@ class _MedFormState extends State<MedForm> {
                         variant: BtnVariant.secondaryOutline,
                         onPressed: _isSaving
                             ? null
-                            : () => Navigator.of(context).pop(),
+                            : () => Navigator.of(context, rootNavigator: true).pop(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),

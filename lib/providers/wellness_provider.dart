@@ -14,6 +14,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:intl/intl.dart';
 import 'package:cecelia_care_flutter/models/wellness_checkin.dart';
 
@@ -177,6 +178,24 @@ class WellnessProvider with ChangeNotifier {
     };
   }
 
+  /// True when average wellbeingScore across the most recent 3+ days is <= 40.
+  bool get burnoutThresholdTriggered {
+    if (_recentCheckins.length < 3) return false;
+    final recent3 = _recentCheckins.take(3).toList();
+    return recent3.every((c) => c.wellbeingScore <= 40);
+  }
+
+  /// The dimension with the lowest average this week, or null.
+  String? get weakestDimension {
+    final avgs = dimensionAverages;
+    if (avgs.isEmpty) return null;
+    final sorted = avgs.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+    return sorted.first.key;
+  }
+
+  bool _burnoutNudgeFired = false;
+
   // ---------------------------------------------------------------------------
   // Save / update today's check-in
   // ---------------------------------------------------------------------------
@@ -212,6 +231,15 @@ class WellnessProvider with ChangeNotifier {
           .doc(docId)
           .set(checkin.toFirestore(), SetOptions(merge: true));
       // The stream listener will pick up the change and update state.
+
+      // Fire burnout nudge on threshold transition (not every save).
+      if (burnoutThresholdTriggered && !_burnoutNudgeFired) {
+        _burnoutNudgeFired = true;
+        NotificationService.instance.fireBurnoutNudge();
+      }
+      if (!burnoutThresholdTriggered) {
+        _burnoutNudgeFired = false;
+      }
     } catch (e) {
       _error = 'Could not save check-in: $e';
       debugPrint('WellnessProvider.saveCheckin error: $e');

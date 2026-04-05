@@ -41,10 +41,11 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 //  - Forms no longer have AppBars — they use FormSheetHeader instead.
 // ---------------------------------------------------------------------------
 void _showFormSheet(BuildContext context, Widget form) {
-  Navigator.of(context).pop(); // dismiss the entry-type picker dialog
+  Navigator.of(context, rootNavigator: true).pop(); // dismiss the entry-type picker dialog
 
   showModalBottomSheet(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,

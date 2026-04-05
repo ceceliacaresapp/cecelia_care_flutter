@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @manageElderProfilesTitle.
   ///
   /// In en, this message translates to:
-  /// **'Manage Elder Profiles'**
+  /// **'Manage Care Recipients'**
   String get manageElderProfilesTitle;
 
   /// No description provided for @createProfileButton.
@@ -143,7 +143,7 @@ abstract class AppLocalizations {
   /// No description provided for @pleaseLogInToManageProfiles.
   ///
   /// In en, this message translates to:
-  /// **'Please log in to manage elder profiles.'**
+  /// **'Please log in to manage care recipient profiles.'**
   String get pleaseLogInToManageProfiles;
 
   /// Title for the calendar screen, includes elder's name
@@ -503,13 +503,13 @@ abstract class AppLocalizations {
   /// No description provided for @sleepFormHintQuality.
   ///
   /// In en, this message translates to:
-  /// **'Rate quality (1-10)'**
+  /// **'Rate quality (1-5)'**
   String get sleepFormHintQuality;
 
   /// No description provided for @sleepFormValidationQualityRange.
   ///
   /// In en, this message translates to:
-  /// **'Please enter a number between 1 and 10'**
+  /// **'Please enter a number between 1 and 5'**
   String get sleepFormValidationQualityRange;
 
   /// No description provided for @medFormTitleEdit.
@@ -1253,7 +1253,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSelectElderFirstMedDef.
   ///
   /// In en, this message translates to:
-  /// **'Please select an elder profile first to manage medication definitions.'**
+  /// **'Please select a care recipient first to manage medication definitions.'**
   String get settingsSelectElderFirstMedDef;
 
   /// No description provided for @settingsMedNameRequired.
@@ -1277,13 +1277,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsClearDataErrorElderOrUserMissing.
   ///
   /// In en, this message translates to:
-  /// **'Cannot clear data: Active elder or user is missing.'**
+  /// **'Cannot clear data: Active care recipient or user is missing.'**
   String get settingsClearDataErrorElderOrUserMissing;
 
   /// No description provided for @settingsClearDataErrorNotAdmin.
   ///
   /// In en, this message translates to:
-  /// **'You are not the primary admin for this elder\'s profile. Data can only be cleared by the primary admin.'**
+  /// **'You are not the primary admin for this care recipient\'s profile. Data can only be cleared by the primary admin.'**
   String get settingsClearDataErrorNotAdmin;
 
   /// No description provided for @settingsClearDataDialogTitle.
@@ -1295,7 +1295,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsClearDataDialogContent.
   ///
   /// In en, this message translates to:
-  /// **'This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this elder. Are you sure you want to proceed?'**
+  /// **'This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this care recipient. Are you sure you want to proceed?'**
   String get settingsClearDataDialogContent;
 
   /// No description provided for @settingsClearDataDialogConfirmButton.
@@ -1415,31 +1415,31 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTitleElderProfileManagement.
   ///
   /// In en, this message translates to:
-  /// **'Elder Profile Management'**
+  /// **'Care Recipient Management'**
   String get settingsTitleElderProfileManagement;
 
   /// No description provided for @settingsCurrentElder.
   ///
   /// In en, this message translates to:
-  /// **'Current Active Elder: {elderName}'**
+  /// **'Active Care Recipient: {elderName}'**
   String settingsCurrentElder(String elderName);
 
   /// No description provided for @settingsNoActiveElderSelected.
   ///
   /// In en, this message translates to:
-  /// **'No active elder selected. Please select or create one.'**
+  /// **'No active care recipient selected. Please select or create one.'**
   String get settingsNoActiveElderSelected;
 
   /// No description provided for @settingsErrorNavToManageElderProfiles.
   ///
   /// In en, this message translates to:
-  /// **'Could not navigate to manage elder profiles. User not logged in.'**
+  /// **'Could not navigate to manage care recipients. User not logged in.'**
   String get settingsErrorNavToManageElderProfiles;
 
   /// No description provided for @settingsButtonManageElderProfiles.
   ///
   /// In en, this message translates to:
-  /// **'Manage Elder Profiles'**
+  /// **'Manage Care Recipients'**
   String get settingsButtonManageElderProfiles;
 
   /// No description provided for @settingsTitleAdminActions.
@@ -1451,7 +1451,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsButtonClearAllData.
   ///
   /// In en, this message translates to:
-  /// **'Clear All Data for This Elder'**
+  /// **'Clear All Data for This Care Recipient'**
   String get settingsButtonClearAllData;
 
   /// No description provided for @settingsTitleMedicationDefinitions.
@@ -1511,13 +1511,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSelectElderToAddMedDefs.
   ///
   /// In en, this message translates to:
-  /// **'Select an elder profile to add medication definitions.'**
+  /// **'Select a care recipient to add medication definitions.'**
   String get settingsSelectElderToAddMedDefs;
 
   /// No description provided for @settingsSelectElderToViewMedDefs.
   ///
   /// In en, this message translates to:
-  /// **'Select an elder profile to view medication definitions.'**
+  /// **'Select a care recipient to view medication definitions.'**
   String get settingsSelectElderToViewMedDefs;
 
   /// No description provided for @settingsNoMedDefsForElder.
@@ -1535,7 +1535,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSelectedElderFallback.
   ///
   /// In en, this message translates to:
-  /// **'Selected Elder'**
+  /// **'Selected Care Recipient'**
   String get settingsSelectedElderFallback;
 
   /// No description provided for @settingsMedDefDosePrefix.
@@ -1583,7 +1583,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorElderIdMissing.
   ///
   /// In en, this message translates to:
-  /// **'Error: Elder ID is missing.'**
+  /// **'Error: Care recipient ID is missing.'**
   String get errorElderIdMissing;
 
   /// No description provided for @profileUpdatedSnackbar.
@@ -1607,7 +1607,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorSelectElderAndEmail.
   ///
   /// In en, this message translates to:
-  /// **'Please select an elder profile and enter a valid email address.'**
+  /// **'Please select a care recipient and enter a valid email address.'**
   String get errorSelectElderAndEmail;
 
   /// No description provided for @invitationSentSnackbar.
@@ -1631,7 +1631,7 @@ abstract class AppLocalizations {
   /// No description provided for @removeCaregiverDialogContent.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to remove {caregiverIdentifier} as a caregiver for this elder?'**
+  /// **'Are you sure you want to remove {caregiverIdentifier} as a caregiver for this care recipient?'**
   String removeCaregiverDialogContent(String caregiverIdentifier);
 
   /// No description provided for @caregiverRemovedSnackbar.
@@ -1745,7 +1745,7 @@ abstract class AppLocalizations {
   /// No description provided for @createElderProfileTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create New Elder Profile'**
+  /// **'Create New Care Recipient'**
   String get createElderProfileTitle;
 
   /// No description provided for @editProfileTitle.
@@ -1805,7 +1805,7 @@ abstract class AppLocalizations {
   /// No description provided for @noElderProfilesFound.
   ///
   /// In en, this message translates to:
-  /// **'No elder profiles found.'**
+  /// **'No care recipient profiles found.'**
   String get noElderProfilesFound;
 
   /// No description provided for @createNewProfileOrWait.
@@ -2376,7 +2376,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendarNoElderSelected.
   ///
   /// In en, this message translates to:
-  /// **'No elder selected. Please select an elder to view their calendar.'**
+  /// **'No care recipient selected. Please select a care recipient to view their calendar.'**
   String get calendarNoElderSelected;
 
   /// No description provided for @calendarAddNewEventButton.
@@ -2448,7 +2448,7 @@ abstract class AppLocalizations {
   /// No description provided for @expenseSelectElderPrompt.
   ///
   /// In en, this message translates to:
-  /// **'Please select an elder profile to view expenses.'**
+  /// **'Please select a care recipient to view expenses.'**
   String get expenseSelectElderPrompt;
 
   /// No description provided for @expenseLoading.
@@ -2538,7 +2538,7 @@ abstract class AppLocalizations {
   /// Label for the relationship to elder field in user account settings
   ///
   /// In en, this message translates to:
-  /// **'Relationship to Elder'**
+  /// **'Relationship to Care Recipient'**
   String get settingsLabelRelationshipToElder;
 
   /// Hint text for the relationship to elder field
@@ -2628,7 +2628,7 @@ abstract class AppLocalizations {
   /// Message shown when no Elder is selected for the care log, using the fixed term 'Elder'.
   ///
   /// In en, this message translates to:
-  /// **'Please select an Elder from Settings to view the Care Log.'**
+  /// **'Please select a care recipient from Settings to view the Care Log.'**
   String get selectElderToViewCareLog;
 
   /// No description provided for @goToSettingsButton.
@@ -2694,7 +2694,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineSelectElderToPost.
   ///
   /// In en, this message translates to:
-  /// **'Please select an active elder profile to post to their timeline.'**
+  /// **'Please select an active care recipient to post to their timeline.'**
   String get timelineSelectElderToPost;
 
   /// No description provided for @timelineAnonymousUser.
@@ -2718,7 +2718,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineSelectElderToView.
   ///
   /// In en, this message translates to:
-  /// **'Please select an elder profile to view their timeline.'**
+  /// **'Please select a care recipient to view their timeline.'**
   String get timelineSelectElderToView;
 
   /// Hint text for the timeline message input field.
@@ -4018,7 +4018,7 @@ abstract class AppLocalizations {
   /// Error message shown when trying to access image upload without an active elder.
   ///
   /// In en, this message translates to:
-  /// **'Please select an active elder profile to upload images.'**
+  /// **'Please select an active care recipient to upload images.'**
   String get imageUploadErrorNoElderSelected;
 
   /// Error message when image picking fails.
@@ -4120,7 +4120,7 @@ abstract class AppLocalizations {
   /// Message shown when no images are found for the selected elder.
   ///
   /// In en, this message translates to:
-  /// **'No images uploaded yet for this elder.'**
+  /// **'No images uploaded yet for this care recipient.'**
   String get noImagesUploadedYet;
 
   /// Placeholder text when an image URL is invalid or image cannot be loaded in the grid.
@@ -4914,6 +4914,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'General App Notifications'**
   String get generalNotificationsLabel;
+
+  /// No description provided for @multiViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get multiViewAll;
+
+  /// No description provided for @multiViewAllCareRecipients.
+  ///
+  /// In en, this message translates to:
+  /// **'All Care Recipients'**
+  String get multiViewAllCareRecipients;
+
+  /// No description provided for @multiViewSelectToAccessTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a care recipient to access care tools'**
+  String get multiViewSelectToAccessTools;
 
   /// No description provided for @genericError.
   ///

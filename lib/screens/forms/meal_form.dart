@@ -119,7 +119,7 @@ class _MealFormState extends State<MealForm> {
         _showSnackBar(_l10n.formSuccessMealSaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating meal: $e');
@@ -160,7 +160,7 @@ class _MealFormState extends State<MealForm> {
         await journal.deleteJournalEntry(
             'meal', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMealDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting meal: $e');
@@ -256,7 +256,7 @@ class _MealFormState extends State<MealForm> {
                         variant: BtnVariant.secondaryOutline,
                         onPressed: _isSaving
                             ? null
-                            : () => Navigator.of(context).pop(),
+                            : () => Navigator.of(context, rootNavigator: true).pop(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),

@@ -97,6 +97,10 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: fs.getShiftDefinitionsStream(elder.id),
         builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Something went wrong.',
+                      style: TextStyle(color: Colors.red)));
+                }
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());

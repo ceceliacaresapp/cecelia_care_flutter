@@ -12,7 +12,6 @@ import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
-import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 
 class ExpenseForm extends StatefulWidget {
@@ -153,7 +152,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
         await journal.addJournalEntry('expense', payload, user.uid);
         _showSnackBar(_l10n.formSuccessExpenseSaved, Colors.green);
       }
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Save/update error: $e');
@@ -194,7 +193,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
         await journal.deleteJournalEntry(
             'expense', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessExpenseDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Delete error: $e');
@@ -371,7 +370,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                         onPressed: _isSaving
                             ? null
                             : () {
-                                Navigator.of(context).pop();
+                                Navigator.of(context, rootNavigator: true).pop();
                                 widget.onClose?.call();
                               },
                         padding: const EdgeInsets.symmetric(

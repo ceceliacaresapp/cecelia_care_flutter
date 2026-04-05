@@ -703,6 +703,7 @@ class FirestoreService {
         .where('startDateTime', isGreaterThanOrEqualTo: startTimestamp)
         .where('startDateTime', isLessThanOrEqualTo: endTimestamp)
         .orderBy('startDateTime')
+        .limit(200)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => doc.data()).toList())
@@ -884,10 +885,11 @@ class FirestoreService {
     String? creatorId,
     DateTime? timestamp,
   }) async {
-    final String creatorId0 = creatorId ?? AuthService.currentUserId!;
-    if (creatorId0.isEmpty) {
+    final String? resolvedCreatorId = creatorId ?? AuthService.currentUserId;
+    if (resolvedCreatorId == null || resolvedCreatorId.isEmpty) {
       throw Exception('User not logged in or creatorId not provided.');
     }
+    final String creatorId0 = resolvedCreatorId;
 
     final DateTime timestamp0 = timestamp ?? DateTime.now();
     final String dateOnly = DateFormat('yyyy-MM-dd').format(timestamp0);
@@ -994,11 +996,60 @@ class FirestoreService {
 
     return query
         .orderBy('entryTimestamp', descending: true)
+        .limit(200)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => doc.data()).toList())
         .handleError((e, st) {
       debugPrint('FirestoreService.getJournalEntriesStream error: $e\n$st');
+      return <JournalEntry>[];
+    });
+  }
+
+  /// Streams journal entries across multiple elders (for multi-view mode).
+  /// Uses Firestore whereIn on elderIds — supports up to 30 IDs.
+  /// Visibility filtering is done client-side because Firestore prohibits
+  /// combining whereIn with arrayContainsAny in the same query.
+  Stream<List<JournalEntry>> getJournalEntriesStreamForElders({
+    required List<String> elderIds,
+    required String currentUserId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    if (elderIds.isEmpty) return const Stream.empty();
+
+    Query<JournalEntry> query = _journalEntriesRef
+        .where('elderId', whereIn: elderIds);
+
+    if (startDate != null) {
+      query = query.where('entryTimestamp',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+    }
+    if (endDate != null) {
+      final adjusted = DateTime(
+          endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
+      query = query.where('entryTimestamp',
+          isLessThanOrEqualTo: Timestamp.fromDate(adjusted));
+    }
+
+    return query
+        .orderBy('entryTimestamp', descending: true)
+        .limit(200)
+        .snapshots()
+        .map((snap) {
+      // Client-side visibility filter (can't combine whereIn + arrayContainsAny).
+      return snap.docs
+          .map((d) => d.data())
+          .where((entry) {
+            final visible = entry.visibleToUserIds ?? [];
+            return visible.contains(currentUserId) ||
+                visible.contains('all') ||
+                (entry.isPublic ?? false);
+          })
+          .toList();
+    }).handleError((e, st) {
+      debugPrint(
+          'FirestoreService.getJournalEntriesStreamForElders error: $e\n$st');
       return <JournalEntry>[];
     });
   }
@@ -1014,8 +1065,8 @@ class FirestoreService {
     String? creatorId,
     DateTime? timestamp,
   }) async {
-    final String creatorId0 = creatorId ?? AuthService.currentUserId!;
-    if (creatorId0.isEmpty) {
+    final String? resolvedId = creatorId ?? AuthService.currentUserId;
+    if (resolvedId == null || resolvedId.isEmpty) {
       throw Exception('User not logged in or creatorId not provided.');
     }
     if (entryId.isEmpty) {
@@ -1048,6 +1099,26 @@ class FirestoreService {
       throw Exception('Entry ID cannot be empty for delete.');
     }
     await _journalEntriesRef.doc(entryId).delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Journal Entry Reactions
+  // ---------------------------------------------------------------------------
+
+  /// Adds a reaction (acknowledgment) from [userId] on journal entry [entryId].
+  Future<void> addReaction(String entryId, String userId) async {
+    if (entryId.isEmpty || userId.isEmpty) return;
+    await _db.collection(_journalEntriesCollection).doc(entryId).update({
+      'reactions.$userId': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Removes a reaction from [userId] on journal entry [entryId].
+  Future<void> removeReaction(String entryId, String userId) async {
+    if (entryId.isEmpty || userId.isEmpty) return;
+    await _db.collection(_journalEntriesCollection).doc(entryId).update({
+      'reactions.$userId': FieldValue.delete(),
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -1437,6 +1508,7 @@ class FirestoreService {
         .doc(elderId)
         .collection(_vaultDocumentsSubcollection)
         .orderBy('createdAt', descending: true)
+        .limit(100)
         .snapshots()
         .map((snap) => snap.docs
             .map((d) => {'id': d.id, ...d.data()})
@@ -1480,6 +1552,328 @@ class FirestoreService {
         .doc(elderId)
         .collection(_vaultDocumentsSubcollection)
         .doc(docId)
+        .delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Behavioral Entries (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _behavioralEntriesSubcollection = 'behavioralEntries';
+
+  Stream<List<Map<String, dynamic>>> getBehavioralEntriesStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_behavioralEntriesSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getBehavioralEntriesStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addBehavioralEntry(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_behavioralEntriesSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateBehavioralEntry(
+      String elderId, String entryId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || entryId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_behavioralEntriesSubcollection)
+        .doc(entryId)
+        .update(data);
+  }
+
+  Future<void> deleteBehavioralEntry(
+      String elderId, String entryId) async {
+    if (elderId.isEmpty || entryId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_behavioralEntriesSubcollection)
+        .doc(entryId)
+        .delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Wandering Assessments (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _wanderingAssessmentsSubcollection =
+      'wanderingAssessments';
+
+  Stream<List<Map<String, dynamic>>> getWanderingAssessmentsStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_wanderingAssessmentsSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(6)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint(
+          'FirestoreService.getWanderingAssessmentsStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addWanderingAssessment(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_wanderingAssessmentsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateWanderingAssessment(
+      String elderId, String assessmentId,
+      Map<String, dynamic> data) async {
+    if (elderId.isEmpty || assessmentId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_wanderingAssessmentsSubcollection)
+        .doc(assessmentId)
+        .update(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Fall Risk Assessments (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _fallRiskAssessmentsSubcollection =
+      'fallRiskAssessments';
+
+  Stream<List<Map<String, dynamic>>> getFallRiskAssessmentsStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_fallRiskAssessmentsSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(6)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint(
+          'FirestoreService.getFallRiskAssessmentsStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addFallRiskAssessment(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_fallRiskAssessmentsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateFallRiskAssessment(
+      String elderId, String assessmentId,
+      Map<String, dynamic> data) async {
+    if (elderId.isEmpty || assessmentId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_fallRiskAssessmentsSubcollection)
+        .doc(assessmentId)
+        .update(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Skin Assessments (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _skinAssessmentsSubcollection = 'skinAssessments';
+
+  Stream<List<Map<String, dynamic>>> getSkinAssessmentsStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_skinAssessmentsSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(6)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getSkinAssessmentsStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addSkinAssessment(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_skinAssessmentsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateSkinAssessment(
+      String elderId, String assessmentId,
+      Map<String, dynamic> data) async {
+    if (elderId.isEmpty || assessmentId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_skinAssessmentsSubcollection)
+        .doc(assessmentId)
+        .update(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Turning Logs (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _turningLogsSubcollection = 'turningLogs';
+
+  Stream<List<Map<String, dynamic>>> getTurningLogsStream(
+      String elderId, {DateTime? startDate}) {
+    if (elderId.isEmpty) return const Stream.empty();
+    Query query = _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_turningLogsSubcollection);
+
+    if (startDate != null) {
+      query = query.where('timestamp',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+    }
+
+    return query
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data() as Map<String, dynamic>})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getTurningLogsStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addTurningLog(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_turningLogsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Wound Entries (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _woundEntriesSubcollection = 'woundEntries';
+
+  Stream<List<Map<String, dynamic>>> getWoundEntriesStream(
+      String elderId) {
+    if (elderId.isEmpty) return const Stream.empty();
+    return _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_woundEntriesSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(100)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getWoundEntriesStream error: $e');
+      return <Map<String, dynamic>>[];
+    });
+  }
+
+  Future<String> addWoundEntry(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_woundEntriesSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateWoundEntry(
+      String elderId, String entryId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || entryId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_woundEntriesSubcollection)
+        .doc(entryId)
+        .update(data);
+  }
+
+  Future<void> deleteWoundEntry(
+      String elderId, String entryId) async {
+    if (elderId.isEmpty || entryId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_woundEntriesSubcollection)
+        .doc(entryId)
         .delete();
   }
 

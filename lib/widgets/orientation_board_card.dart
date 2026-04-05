@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:cecelia_care_flutter/models/calendar_event.dart';
 import 'package:cecelia_care_flutter/models/shift_definition.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
+import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/services/weather_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
@@ -105,14 +106,10 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
               textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                if (cityCtl.text.trim().isEmpty) return;
-                final success = await _weather.setLocation(
-                    cityCtl.text, stateCtl.text);
-                if (ctx.mounted) Navigator.pop(ctx, success);
-              },
-              child: const Text('Save'),
+            _LocationSaveButton(
+              weather: _weather,
+              cityCtl: cityCtl,
+              stateCtl: stateCtl,
             ),
           ],
         ),
@@ -124,13 +121,29 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
 
   // ── Build ───────────────────────────────────────────────────────
 
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final dayOfWeek = DateFormat('EEEE').format(now);
     final fullDate = DateFormat('MMMM d, yyyy').format(now);
     final elderProvider = context.watch<ActiveElderProvider>();
+    final isMultiView = elderProvider.isMultiView;
     final elderId = elderProvider.activeElder?.id ?? '';
+    final elderName = isMultiView
+        ? '${elderProvider.allElders.length} recipients'
+        : elderProvider.activeElder?.preferredName?.isNotEmpty == true
+            ? elderProvider.activeElder!.preferredName!
+            : elderProvider.activeElder?.profileName ?? '';
+    final userProfile = context.watch<UserProfileProvider>().userProfile;
+    final userName = userProfile?.displayName ?? 'Caregiver';
+    final userInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'C';
 
     return Card(
       elevation: 2,
@@ -148,7 +161,50 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Row 1: Date ────────────────────────────────────
+            // ── Greeting row (absorbed from _GreetingCard) ─────
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${_greeting()}, $userName',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4E342E),
+                          )),
+                      if (elderName.isNotEmpty)
+                        Text('Caring for $elderName today',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF5D4037),
+                            )),
+                    ],
+                  ),
+                ),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.white.withValues(alpha: 0.7),
+                  backgroundImage: userProfile?.avatarUrl != null &&
+                          userProfile!.avatarUrl!.isNotEmpty
+                      ? NetworkImage(userProfile.avatarUrl!)
+                      : null,
+                  child: userProfile?.avatarUrl == null ||
+                          userProfile!.avatarUrl!.isEmpty
+                      ? Text(userInitial,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF5D4037),
+                          ))
+                      : null,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // ── Date row ──────────────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -177,19 +233,29 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
 
             const SizedBox(height: 16),
 
-            // ── Row 2: Weather ─────────────────────────────────
+            // ── Weather ───────────────────────────────────────
             _buildWeatherRow(),
 
             const SizedBox(height: 14),
 
-            // ── Row 3: Who's on duty ───────────────────────────
-            if (elderId.isNotEmpty) _buildShiftRow(elderId),
+            // ── Who's on duty ─────────────────────────────────
+            if (!isMultiView && elderId.isNotEmpty)
+              _buildShiftRow(elderId),
 
-            // ── Row 4: Upcoming events ─────────────────────────
-            if (elderId.isNotEmpty) ...[
+            // ── Upcoming events ───────────────────────────────
+            if (!isMultiView && elderId.isNotEmpty) ...[
               const SizedBox(height: 14),
               _buildEventsRow(elderId),
             ],
+            // In multi-view, show a summary count instead
+            if (isMultiView)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Viewing all ${elderProvider.allElders.length} care recipients',
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF8D6E63)),
+                ),
+              ),
           ],
         ),
       ),
@@ -396,6 +462,66 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
           }).toList(),
         );
       },
+    );
+  }
+}
+
+/// Extracted as a StatefulWidget so `saving` and `error` survive rebuilds.
+class _LocationSaveButton extends StatefulWidget {
+  const _LocationSaveButton({
+    required this.weather,
+    required this.cityCtl,
+    required this.stateCtl,
+  });
+  final WeatherService weather;
+  final TextEditingController cityCtl;
+  final TextEditingController stateCtl;
+
+  @override
+  State<_LocationSaveButton> createState() => _LocationSaveButtonState();
+}
+
+class _LocationSaveButtonState extends State<_LocationSaveButton> {
+  bool _saving = false;
+  String? _error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(_error!,
+                style: const TextStyle(color: Colors.red, fontSize: 13)),
+          ),
+        ElevatedButton(
+          onPressed: _saving
+              ? null
+              : () async {
+                  if (widget.cityCtl.text.trim().isEmpty) return;
+                  setState(() { _saving = true; _error = null; });
+                  final success = await widget.weather.setLocation(
+                      widget.cityCtl.text, widget.stateCtl.text);
+                  if (!mounted) return;
+                  if (success) {
+                    Navigator.pop(context, true);
+                  } else {
+                    setState(() {
+                      _saving = false;
+                      _error = 'Location not found. Try a different city name.';
+                    });
+                  }
+                },
+          child: _saving
+              ? const SizedBox(
+                  width: 18, height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : const Text('Save'),
+        ),
+      ],
     );
   }
 }

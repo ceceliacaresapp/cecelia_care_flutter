@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/multi_elder_timeline_badge.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
@@ -638,23 +639,35 @@ class TimelineScreenState extends State<TimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final User? user = FirebaseAuth.instance.currentUser;
-    final activeElder =
-        Provider.of<ActiveElderProvider>(context).activeElder;
+    final elderProv = Provider.of<ActiveElderProvider>(context);
+    final activeElder = elderProv.activeElder;
+    final isMultiView = elderProv.isMultiView;
 
     Stream<List<JournalEntry>>? journalEntriesStream;
-    if (user != null && activeElder != null) {
+    if (user != null) {
       final firestoreService = context.read<FirestoreService>();
-      journalEntriesStream = firestoreService.getJournalEntriesStream(
-        elderId: activeElder.id,
-        currentUserId: user.uid,
-        startDate: _startDate,
-        endDate: _endDate,
-        onlyMyLogs: _onlyMyLogs,
-      );
+      if (isMultiView && elderProv.allElderIds.isNotEmpty) {
+        journalEntriesStream =
+            firestoreService.getJournalEntriesStreamForElders(
+          elderIds: elderProv.allElderIds,
+          currentUserId: user.uid,
+          startDate: _startDate,
+          endDate: _endDate,
+        );
+      } else if (activeElder != null) {
+        journalEntriesStream = firestoreService.getJournalEntriesStream(
+          elderId: activeElder.id,
+          currentUserId: user.uid,
+          startDate: _startDate,
+          endDate: _endDate,
+          onlyMyLogs: _onlyMyLogs,
+        );
+      }
     }
 
     return Scaffold(
-      floatingActionButton: Provider.of<ActiveElderProvider>(context, listen: false).canLog
+      // Hide FAB in multi-view (posting requires a specific elder context).
+      floatingActionButton: !isMultiView && Provider.of<ActiveElderProvider>(context, listen: false).canLog
           ? FloatingActionButton.extended(
               heroTag: 'timelineLogFab',
               onPressed: () =>
@@ -861,12 +874,38 @@ class TimelineScreenState extends State<TimelineScreen> {
                         final isOwned = user != null &&
                             entry.loggedByUserId == user.uid;
 
-                        final card = _buildTimelineCard(
+                        Widget card = _buildTimelineCard(
                           context,
                           entry,
                           user,
                           activeElder,
                         );
+
+                        // In multi-view, prepend an elder badge.
+                        if (isMultiView && entry.elderId != null) {
+                          final matchedElder = elderProv.allElders
+                              .where((e) => e.id == entry.elderId)
+                              .firstOrNull;
+                          if (matchedElder != null) {
+                            final idx = elderProv.allElders
+                                .indexOf(matchedElder);
+                            card = Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 16, top: 6),
+                                  child: MultiElderTimelineBadge(
+                                    elder: matchedElder,
+                                    elderIndex: idx,
+                                  ),
+                                ),
+                                card,
+                              ],
+                            );
+                          }
+                        }
 
                         // Swipe-to-delete — only on entries the current user owns
                         if (!isOwned || entry.id == null) return card;
@@ -1304,6 +1343,17 @@ class TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ],
                             ),
+                            // ── Reaction row ────────────────────────
+                            if (entry.id != null &&
+                                user != null &&
+                                entry.loggedByUserId != user.uid)
+                              _buildReactionRow(entry, user),
+                            // Show reaction count even on own entries
+                            if (entry.id != null &&
+                                user != null &&
+                                entry.loggedByUserId == user.uid &&
+                                entry.reactionCount > 0)
+                              _buildReactionCount(entry),
                           ],
                         ),
                       ),
@@ -1316,6 +1366,108 @@ class TimelineScreenState extends State<TimelineScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildReactionRow(JournalEntry entry, User user) {
+    final hasReacted = entry.hasReactedBy(user.uid);
+    final count = entry.reactionCount;
+    final firestoreService = context.read<FirestoreService>();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () async {
+              try {
+                if (hasReacted) {
+                  await firestoreService.removeReaction(entry.id!, user.uid);
+                } else {
+                  await firestoreService.addReaction(entry.id!, user.uid);
+                  HapticUtils.success();
+                }
+              } catch (e) {
+                debugPrint('Reaction toggle error: $e');
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  hasReacted ? Icons.favorite : Icons.favorite_border,
+                  size: 18,
+                  color: hasReacted
+                      ? const Color(0xFFE91E63)
+                      : AppTheme.textLight,
+                ),
+                if (count > 0) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: hasReacted
+                          ? const Color(0xFFE91E63)
+                          : AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (count > 0) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _reactionLabel(entry),
+                style: TextStyle(
+                    fontSize: 10, color: AppTheme.textLight),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReactionCount(JournalEntry entry) {
+    final count = entry.reactionCount;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.favorite, size: 14, color: Color(0xFFE91E63)),
+          const SizedBox(width: 4),
+          Text(
+            '$count',
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFE91E63)),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              _reactionLabel(entry),
+              style: TextStyle(fontSize: 10, color: AppTheme.textLight),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _reactionLabel(JournalEntry entry) {
+    final uids = entry.reactedByUids;
+    if (uids.isEmpty) return '';
+    // Try to resolve names from the entry's reactor UIDs.
+    // For simplicity, show "N caregivers" — name resolution would require
+    // an async lookup that's not worth the complexity for a label.
+    if (uids.length == 1) return '1 caregiver acknowledged';
+    return '${uids.length} caregivers acknowledged';
   }
 
   Widget _buildErrorCard(int index, Object error) {

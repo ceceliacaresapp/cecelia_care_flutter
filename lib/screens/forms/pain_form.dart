@@ -170,7 +170,7 @@ class _PainFormState extends State<PainForm> {
         _showSnackBar(_l10n.formSuccessPainSaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating pain: $e');
@@ -212,7 +212,7 @@ class _PainFormState extends State<PainForm> {
         await journal.deleteJournalEntry(
             'pain', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessPainDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting pain: $e');
@@ -434,7 +434,7 @@ class _PainFormState extends State<PainForm> {
                         onPressed: _isSaving
                             ? null
                             : () {
-                                Navigator.of(context).pop();
+                                Navigator.of(context, rootNavigator: true).pop();
                                 widget.onClose?.call();
                               },
                         padding: const EdgeInsets.symmetric(

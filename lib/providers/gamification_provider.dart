@@ -229,16 +229,25 @@ class GamificationProvider with ChangeNotifier {
     final docId = '${_userId}_$weekStart';
 
     try {
-      final doc =
-          await _db.collection(_challengeCollection).doc(docId).get();
-      if (!doc.exists) {
+      // Use a query (not doc get) so Firestore security rules can evaluate
+      // resource.data.userId == request.auth.uid.
+      final snap = await _db
+          .collection(_challengeCollection)
+          .where('userId', isEqualTo: _userId)
+          .where('weekStart', isEqualTo: weekStart)
+          .limit(1)
+          .get();
+      if (snap.docs.isEmpty) {
         // Pick a random challenge, avoiding last week's.
         final lastWeek = _weekStartOffset(-1);
-        final lastDocId = '${_userId}_$lastWeek';
-        final lastDoc =
-            await _db.collection(_challengeCollection).doc(lastDocId).get();
-        final lastChallengeId = lastDoc.exists
-            ? (lastDoc.data()?['challengeId'] as String?)
+        final lastSnap = await _db
+            .collection(_challengeCollection)
+            .where('userId', isEqualTo: _userId)
+            .where('weekStart', isEqualTo: lastWeek)
+            .limit(1)
+            .get();
+        final lastChallengeId = lastSnap.docs.isNotEmpty
+            ? (lastSnap.docs.first.data()['challengeId'] as String?)
             : null;
 
         final candidates = ChallengeDef.pool
@@ -441,11 +450,14 @@ class GamificationProvider with ChangeNotifier {
 
   void _subscribeToCurrentChallenge(String uid) {
     final weekStart = _currentWeekStart();
-    final docId = '${uid}_$weekStart';
 
+    // Query by userId field (not doc ID) so Firestore security rules can
+    // evaluate resource.data.userId == request.auth.uid.
     _challengeSub = _db
         .collection(_challengeCollection)
-        .where(FieldPath.documentId, isEqualTo: docId)
+        .where('userId', isEqualTo: uid)
+        .where('weekStart', isEqualTo: weekStart)
+        .limit(1)
         .snapshots()
         .listen(
       (snapshot) {

@@ -9,6 +9,8 @@ import '../services/firestore_service.dart';
 
 // --- I18N UPDATE ---
 /// A data class to hold structured error information for localization.
+enum ElderViewMode { single, all }
+
 class ActiveElderError {
   /// A key to identify the type of error, e.g., 'load_failed', 'update_failed'.
   final String type;
@@ -30,12 +32,17 @@ class ActiveElderProvider with ChangeNotifier {
   final FirestoreService _firestoreService;
   final SharedPreferences _prefs;
   StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<List<ElderProfile>>? _allEldersSubscription;
 
   static const String _prefsKey = 'activeElderId';
 
   // --- State Properties ---
   ElderProfile? _activeElder;
   bool _isLoading = true;
+
+  // --- Multi-Elder View ---
+  ElderViewMode _viewMode = ElderViewMode.single;
+  List<ElderProfile> _allElders = [];
   // --- I18N UPDATE ---
   // Replaced the simple String with a structured error object.
   ActiveElderError? _errorInfo;
@@ -72,6 +79,24 @@ class ActiveElderProvider with ChangeNotifier {
   /// Convenience — true when the current user can send messages.
   bool get canMessage => currentUserRole.canMessage;
 
+  // --- Multi-Elder View Getters ---
+  ElderViewMode get viewMode => _viewMode;
+  bool get isMultiView => _viewMode == ElderViewMode.all;
+  List<ElderProfile> get allElders => List.unmodifiable(_allElders);
+  List<String> get allElderIds => _allElders.map((e) => e.id).toList();
+
+  void setViewMode(ElderViewMode mode) {
+    if (_viewMode == mode) return;
+    // Can't go multi-view with fewer than 2 elders.
+    if (mode == ElderViewMode.all && _allElders.length < 2) return;
+    _viewMode = mode;
+    // If switching to single and no active elder, auto-select first.
+    if (mode == ElderViewMode.single && _activeElder == null && _allElders.isNotEmpty) {
+      _activeElder = _allElders.first;
+    }
+    notifyListeners();
+  }
+
   ActiveElderProvider(this._firestoreService, this._prefs) {
     _authSubscription =
         FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -87,6 +112,9 @@ class ActiveElderProvider with ChangeNotifier {
 
     if (uid == null) {
       debugPrint('ActiveElderProvider: User logged out. Clearing state.');
+      _allEldersSubscription?.cancel();
+      _allElders = [];
+      _viewMode = ElderViewMode.single;
       _activeElder = null;
       _isLoading = false;
       _errorInfo = null;
@@ -103,6 +131,18 @@ class ActiveElderProvider with ChangeNotifier {
     notifyListeners();
 
     await _loadAndSetInitialElder(uid);
+
+    // Subscribe to the full list of elders for multi-view support.
+    _allEldersSubscription?.cancel();
+    _allEldersSubscription =
+        _firestoreService.getMyEldersStream(uid).listen((elders) {
+      _allElders = elders;
+      // Force single view if we drop below 2 elders.
+      if (_allElders.length < 2 && _viewMode == ElderViewMode.all) {
+        _viewMode = ElderViewMode.single;
+      }
+      notifyListeners();
+    });
   }
 
   Future<void> _loadAndSetInitialElder(String uid) async {
@@ -156,7 +196,9 @@ class ActiveElderProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-    if (elder.id == _activeElder?.id) return;
+    if (elder.id == _activeElder?.id && _viewMode == ElderViewMode.single) return;
+    // Switching to a specific elder implies single-view.
+    _viewMode = ElderViewMode.single;
 
     _isLoading = true;
     _errorInfo = null;
@@ -209,6 +251,7 @@ class ActiveElderProvider with ChangeNotifier {
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _allEldersSubscription?.cancel();
     super.dispose();
   }
 }

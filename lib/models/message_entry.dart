@@ -106,6 +106,7 @@ class MessageEntry extends JournalEntry {
     Timestamp? createdAt,
     Timestamp? updatedAt,
     bool? isCaregiverJournal,
+    Map<String, dynamic>? reactions,
   }) {
     return MessageEntry(
       text: text ?? this.text,

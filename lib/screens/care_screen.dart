@@ -9,7 +9,7 @@ import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
-import 'package:cecelia_care_flutter/screens/resources_screen.dart';
+import 'package:cecelia_care_flutter/screens/training_library_screen.dart';
 import 'package:cecelia_care_flutter/screens/emergency_card_screen.dart';
 import 'package:cecelia_care_flutter/screens/doctor_summary_screen.dart';
 import 'package:cecelia_care_flutter/screens/appointment_prep_screen.dart';
@@ -19,6 +19,13 @@ import 'package:cecelia_care_flutter/screens/document_vault_screen.dart';
 import 'package:cecelia_care_flutter/screens/respite_care_finder_screen.dart';
 import 'package:cecelia_care_flutter/screens/adl_assessment_screen.dart';
 import 'package:cecelia_care_flutter/screens/communication_cards_screen.dart';
+import 'package:cecelia_care_flutter/screens/wound_tracking_screen.dart';
+import 'package:cecelia_care_flutter/screens/behavioral_log_screen.dart';
+import 'package:cecelia_care_flutter/screens/wandering_risk_screen.dart';
+import 'package:cecelia_care_flutter/screens/elopement_protocol_screen.dart';
+import 'package:cecelia_care_flutter/screens/fall_risk_screen.dart';
+import 'package:cecelia_care_flutter/screens/skin_integrity_screen.dart';
+import 'package:cecelia_care_flutter/screens/weight_trend_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';
@@ -35,10 +42,56 @@ class CareScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final role = context.watch<ActiveElderProvider>().currentUserRole;
-    final activeElder =
-        context.watch<ActiveElderProvider>().activeElder;
+    final elderProv = context.watch<ActiveElderProvider>();
+    final role = elderProv.currentUserRole;
+    final activeElder = elderProv.activeElder;
     final medDefs = context.watch<MedicationDefinitionsProvider>();
+
+    // In multi-view, care tools need a specific elder — show a picker prompt.
+    if (elderProv.isMultiView) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            Icon(Icons.touch_app_outlined,
+                size: 48, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            const Text('Select a care recipient to access care tools',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 4),
+            Text('Care tools operate on a specific person\'s data.',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: elderProv.allElders.map((elder) {
+                final name = elder.preferredName?.isNotEmpty == true
+                    ? elder.preferredName!
+                    : elder.profileName;
+                return ActionChip(
+                  avatar: CircleAvatar(
+                    radius: 12,
+                    backgroundImage: elder.photoUrl != null &&
+                            elder.photoUrl!.isNotEmpty
+                        ? NetworkImage(elder.photoUrl!)
+                        : null,
+                    child: elder.photoUrl == null || elder.photoUrl!.isEmpty
+                        ? Text(name.isNotEmpty ? name[0] : '?',
+                            style: const TextStyle(fontSize: 10))
+                        : null,
+                  ),
+                  label: Text(name),
+                  onPressed: () => elderProv.setActive(elder),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      );
+    }
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -47,7 +100,7 @@ class CareScreen extends StatelessWidget {
         _FeaturedTile(
           icon: Icons.medication_liquid_outlined,
           title: l10n.manageMedications,
-          color: const Color(0xFF1E88E5),
+          color: AppTheme.tileBlue,
           subtitle: medDefs.medDefinitions.isNotEmpty
               ? '${medDefs.medDefinitions.length} active medication${medDefs.medDefinitions.length == 1 ? '' : 's'}'
               : 'Add and track medications',
@@ -97,10 +150,9 @@ class CareScreen extends StatelessWidget {
         _FeaturedTile(
           icon: Icons.document_scanner_outlined,
           title: l10n.imageUploadScreenTitle,
-          color: const Color(0xFF5C6BC0),
+          color: AppTheme.tileIndigo,
           subtitle: 'Upload photos, receipts, and documents',
           actionLabel: 'Open',
-          // Show folder count if available
           trailingWidget: activeElder != null
               ? StreamBuilder<List<Map<String, dynamic>>>(
                   stream: context
@@ -113,7 +165,7 @@ class CareScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5C6BC0).withOpacity(0.1),
+                        color: AppTheme.tileIndigo.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -136,18 +188,18 @@ class CareScreen extends StatelessWidget {
 
         const SizedBox(height: 14),
 
-        // ── Standard tiles row ────────────────────────────────────
+        // ── Row 1: Resources + Budget ─────────────────────────────
         Row(
           children: [
             Expanded(
               child: _StandardTile(
                 icon: Icons.menu_book_outlined,
                 title: l10n.helpfulResourcesTitle,
-                subtitle: '25+ guides & links',
-                color: const Color(0xFF00897B),
+                subtitle: 'Training & resources',
+                color: AppTheme.tileTeal,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => ResourcesScreen()),
+                  MaterialPageRoute(builder: (_) => const TrainingLibraryScreen()),
                 ),
               ),
             ),
@@ -158,7 +210,7 @@ class CareScreen extends StatelessWidget {
                   icon: Icons.account_balance_wallet_outlined,
                   title: l10n.budgetTrackerTitle,
                   subtitle: 'Budgets & income',
-                  color: const Color(0xFFF57C00),
+                  color: AppTheme.tileOrange,
                   onTap: () {
                     if (activeElder != null) {
                       Navigator.push(
@@ -185,7 +237,7 @@ class CareScreen extends StatelessWidget {
 
         const SizedBox(height: 14),
 
-        // ── Second standard tiles row ─────────────────────────────
+        // ── Row 2: Emergency Card + Doctor Summary ────────────────
         Row(
           children: [
             Expanded(
@@ -207,7 +259,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.summarize_outlined,
                 title: 'Doctor Summary',
                 subtitle: 'Last 7 days PDF',
-                color: const Color(0xFF5C6BC0),
+                color: AppTheme.tileIndigo,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -220,7 +272,7 @@ class CareScreen extends StatelessWidget {
 
         const SizedBox(height: 14),
 
-        // ── Third standard tiles row ──────────────────────────────
+        // ── Row 3: Appointment Prep + Care Plans ──────────────────
         Row(
           children: [
             Expanded(
@@ -228,7 +280,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.checklist_outlined,
                 title: 'Appointment Prep',
                 subtitle: '30-day summary',
-                color: const Color(0xFF3949AB),
+                color: AppTheme.tileIndigoDark,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -242,7 +294,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.auto_fix_high_outlined,
                 title: 'Care Plans',
                 subtitle: 'Auto-fill calendar',
-                color: const Color(0xFF00897B),
+                color: AppTheme.tileTeal,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -255,7 +307,7 @@ class CareScreen extends StatelessWidget {
 
         const SizedBox(height: 14),
 
-        // ── Fourth standard tiles row ─────────────────────────────
+        // ── Row 4: Shift Schedule + Document Vault ────────────────
         Row(
           children: [
             Expanded(
@@ -263,7 +315,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.schedule_outlined,
                 title: 'Shift Schedule',
                 subtitle: 'Assign caregivers',
-                color: const Color(0xFF1565C0),
+                color: AppTheme.tileBlueDark,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -277,7 +329,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.folder_special_outlined,
                 title: 'Document Vault',
                 subtitle: 'Legal & financial',
-                color: const Color(0xFF5C6BC0),
+                color: AppTheme.tileIndigo,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -290,7 +342,7 @@ class CareScreen extends StatelessWidget {
 
         const SizedBox(height: 14),
 
-        // ── Fifth standard tiles row ──────────────────────────────
+        // ── Row 5: Respite Finder + ADL Score ─────────────────────
         Row(
           children: [
             Expanded(
@@ -298,7 +350,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.location_on_outlined,
                 title: 'Respite Finder',
                 subtitle: 'Find local services',
-                color: const Color(0xFF00897B),
+                color: AppTheme.tileTeal,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -312,7 +364,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.accessibility_new_outlined,
                 title: 'ADL Score',
                 subtitle: 'Weekly assessment',
-                color: const Color(0xFF1565C0),
+                color: AppTheme.tileBlueDark,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -325,7 +377,7 @@ class CareScreen extends StatelessWidget {
 
         const SizedBox(height: 14),
 
-        // ── Sixth standard tiles row ──────────────────────────────
+        // ── Row 6: Comm Cards + Wound Tracker ─────────────────────
         Row(
           children: [
             Expanded(
@@ -333,7 +385,7 @@ class CareScreen extends StatelessWidget {
                 icon: Icons.sign_language_outlined,
                 title: 'Comm Cards',
                 subtitle: 'Picture + ASL signs',
-                color: const Color(0xFF8E24AA),
+                color: AppTheme.tilePurple,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -342,7 +394,124 @@ class CareScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            const Expanded(child: SizedBox.shrink()),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.healing_outlined,
+                title: 'Wound Tracker',
+                subtitle: 'Photo documentation',
+                color: AppTheme.statusRed,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const WoundTrackingScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Row 7: Behavioral Log + Wandering Risk ────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.psychology_outlined,
+                title: 'Behavioral Log',
+                subtitle: 'Track behaviors',
+                color: AppTheme.tileOrangeDeep,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const BehavioralLogScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.directions_walk_outlined,
+                title: 'Wandering Risk',
+                subtitle: 'Safety assessment',
+                color: AppTheme.tileRedDeep,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const WanderingRiskScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Row 8: Elopement Protocol ─────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.emergency_outlined,
+                title: 'Elopement Protocol',
+                subtitle: 'Missing person response',
+                color: AppTheme.statusRedDeep,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ElopementProtocolScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.elderly_outlined,
+                title: 'Fall Risk',
+                subtitle: 'STEADI assessment',
+                color: AppTheme.tilePink,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const FallRiskScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Row 9: Skin Integrity ─────────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.airline_seat_flat_outlined,
+                title: 'Skin Integrity',
+                subtitle: 'Pressure & turning',
+                color: const Color(0xFF00838F),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const SkinIntegrityScreen()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _StandardTile(
+                icon: Icons.monitor_weight_outlined,
+                title: 'Weight Trends',
+                subtitle: 'Track & alert',
+                color: const Color(0xFF00695C),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const WeightTrendScreen()),
+                ),
+              ),
+            ),
           ],
         ),
       ],
@@ -396,7 +565,6 @@ class _FeaturedTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row
             Row(
               children: [
                 Container(
@@ -439,8 +607,6 @@ class _FeaturedTile extends StatelessWidget {
                     size: 14, color: color.withOpacity(0.4)),
               ],
             ),
-
-            // Preview chips — show up to 3 medication names
             if (previewChips.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(

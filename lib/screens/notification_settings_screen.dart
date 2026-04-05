@@ -104,6 +104,86 @@ class NotificationSettingsScreen extends StatelessWidget {
               secondary: const Icon(Icons.wb_twilight_outlined),
             ),
             const Divider(height: 1, indent: 16, endIndent: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'SKIN & MOBILITY',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
+              ),
+            ),
+            SwitchListTile(
+              title: const Text('Repositioning Reminders'),
+              subtitle: const Text(
+                'Every 2 hours during daytime (6 AM \u2013 8 PM)',
+                style: TextStyle(fontSize: 12),
+              ),
+              value: prefsProvider.prefs.repositioningReminder,
+              onChanged: (bool value) async {
+                await prefsProvider.toggleRepositioningReminder(value);
+                if (value) {
+                  await NotificationService.instance
+                      .scheduleRepositioningReminders();
+                } else {
+                  await NotificationService.instance
+                      .cancelRepositioningReminders();
+                }
+              },
+              secondary: const Icon(Icons.rotate_left_outlined),
+            ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'NUTRITION & WEIGHT',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
+              ),
+            ),
+            SwitchListTile(
+              title: const Text('Weight Loss Alerts'),
+              subtitle: const Text(
+                'Alert when >5% weight loss in 30 days',
+                style: TextStyle(fontSize: 12),
+              ),
+              value: prefsProvider.prefs.weightAlerts,
+              onChanged: (bool value) =>
+                  prefsProvider.toggleWeightAlerts(value),
+              secondary: const Icon(Icons.monitor_weight_outlined),
+            ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'CAREGIVER WELLBEING',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
+              ),
+            ),
+            SwitchListTile(
+              title: const Text('Burnout Check-in Nudges'),
+              subtitle: const Text(
+                'Gentle reminder when your wellbeing has been low',
+                style: TextStyle(fontSize: 12),
+              ),
+              value: prefsProvider.prefs.burnoutNudges,
+              onChanged: (bool value) =>
+                  prefsProvider.toggleBurnoutNudges(value),
+              secondary: const Icon(Icons.favorite_border),
+            ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
             SwitchListTile(
               title: Text(l10n.generalNotificationsLabel),
               value: prefsProvider.prefs.generalDefault,

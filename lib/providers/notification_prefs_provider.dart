@@ -127,6 +127,27 @@ class NotificationPrefsProvider with ChangeNotifier {
     }
   }
 
+  Future<void> toggleRepositioningReminder(bool value) async {
+    if (_prefs.repositioningReminder != value) {
+      _prefs.repositioningReminder = value;
+      await _savePrefs();
+    }
+  }
+
+  Future<void> toggleWeightAlerts(bool value) async {
+    if (_prefs.weightAlerts != value) {
+      _prefs.weightAlerts = value;
+      await _savePrefs();
+    }
+  }
+
+  Future<void> toggleBurnoutNudges(bool value) async {
+    if (_prefs.burnoutNudges != value) {
+      _prefs.burnoutNudges = value;
+      await _savePrefs();
+    }
+  }
+
   /// Checks if notifications are enabled for a specific channel ID.
   Future<bool> areNotificationsEnabledForChannel(String channelId) async {
     if (_isLoading) {

@@ -28,6 +28,8 @@ import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/utils/string_extensions.dart';
+import 'package:cecelia_care_flutter/models/fall_risk_assessment.dart';
+import 'package:cecelia_care_flutter/services/firestore_service.dart';
 
 const _kColor = Color(0xFF3949AB); // deep indigo — distinct from DoctorSummary
 
@@ -439,7 +441,22 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
     if (_isGenerating) return;
     setState(() => _isGenerating = true);
     try {
-      final pdfBytes = await _buildPdf(data, elderName, caregiverName);
+      // Fetch latest fall risk assessment for the PDF.
+      final elderId =
+          context.read<ActiveElderProvider>().activeElder?.id ?? '';
+      FallRiskAssessment? fallRisk;
+      if (elderId.isNotEmpty) {
+        final fallSnap = await context
+            .read<FirestoreService>()
+            .getFallRiskAssessmentsStream(elderId)
+            .first;
+        if (fallSnap.isNotEmpty) {
+          fallRisk = FallRiskAssessment.fromFirestore(
+              fallSnap.first['id'] as String? ?? '', fallSnap.first);
+        }
+      }
+      final pdfBytes =
+          await _buildPdf(data, elderName, caregiverName, fallRisk);
 
       final tempDir = await getTemporaryDirectory();
       final slug =
@@ -472,6 +489,7 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
     _PrepData d,
     String elderName,
     String caregiverName,
+    FallRiskAssessment? fallRisk,
   ) async {
     final pdf = pw.Document();
     final dateFmt = DateFormat('MMM d, yyyy');
@@ -632,6 +650,86 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                           : PdfColors.blueGrey700),
                 ),
               ));
+            }
+          }
+
+          // Fall Risk Assessment (CDC STEADI)
+          if (fallRisk != null) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader(
+                'Fall Risk Assessment (CDC STEADI)'));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(pw.Text(
+              '${fallRisk.riskLevel} Risk — Score: ${fallRisk.rawRiskScore}/20',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: fallRisk.rawRiskScore >= 8
+                    ? PdfColors.red800
+                    : fallRisk.rawRiskScore >= 4
+                        ? PdfColors.orange800
+                        : PdfColors.green800,
+              ),
+            ));
+            widgets.add(pw.Text(
+              fallRisk.riskSummary,
+              style: const pw.TextStyle(fontSize: 10),
+            ));
+            widgets.add(pw.SizedBox(height: 4));
+            widgets.add(pw.Text(
+              fallRisk.steadiRecommendation,
+              style: pw.TextStyle(
+                  fontSize: 9, fontStyle: pw.FontStyle.italic),
+            ));
+            if (fallRisk.missingProtections.isNotEmpty) {
+              widgets.add(pw.SizedBox(height: 4));
+              widgets.add(pw.Text('Missing protections:',
+                  style: pw.TextStyle(
+                      fontSize: 9, fontWeight: pw.FontWeight.bold)));
+              for (final p in fallRisk.missingProtections) {
+                widgets.add(pw.Text('  \u2022 $p',
+                    style: const pw.TextStyle(fontSize: 9)));
+              }
+            }
+            widgets.add(pw.Text(
+              'Assessed ${fallRisk.dateString} by ${fallRisk.assessedByName}',
+              style: const pw.TextStyle(
+                  fontSize: 8, color: PdfColors.grey600),
+            ));
+          }
+
+          // Weight loss warning (if >5% loss detected in vitals)
+          final wtSummary = d.vitals['WT'];
+          if (wtSummary != null &&
+              wtSummary.numericMax != null &&
+              wtSummary.count >= 2) {
+            final peakWeight = wtSummary.numericMax!;
+            final currentWeight =
+                double.tryParse(wtSummary.latestValue) ?? peakWeight;
+            if (peakWeight > 0) {
+              final pctChange =
+                  ((currentWeight - peakWeight) / peakWeight) * 100;
+              if (pctChange <= -5) {
+                widgets.add(pw.SizedBox(height: 12));
+                widgets.add(pw.Container(
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    color: PdfColors.red50,
+                    border: pw.Border.all(color: PdfColors.red200),
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Text(
+                    '\u26A0 WEIGHT ALERT: ${pctChange.abs().toStringAsFixed(1)}% '
+                    'loss in this period '
+                    '(${peakWeight.toStringAsFixed(1)} \u2192 '
+                    '${currentWeight.toStringAsFixed(1)} ${wtSummary.unit})',
+                    style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.red800),
+                  ),
+                ));
+              }
             }
           }
 
@@ -894,6 +992,77 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                         color: const Color(0xFFF57C00),
                         child: _NotableEventsSection(
                             events: prepData.notableEvents),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Fall Risk Assessment (CDC STEADI)
+                      StreamBuilder<List<Map<String, dynamic>>>(
+                        stream: context
+                            .read<FirestoreService>()
+                            .getFallRiskAssessmentsStream(activeElder.id),
+                        builder: (context, fallSnap) {
+                          if (!fallSnap.hasData ||
+                              fallSnap.data!.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          final fallData = fallSnap.data!.first;
+                          final fall = FallRiskAssessment.fromFirestore(
+                              fallData['id'] as String? ?? '', fallData);
+                          return _SectionCard(
+                            title: 'Fall Risk (CDC STEADI)',
+                            icon: Icons.elderly_outlined,
+                            color: fall.riskColor,
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${fall.riskLevel} Risk',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: fall.riskColor,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Score: ${fall.rawRiskScore}/20',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(fall.riskSummary,
+                                    style: const TextStyle(fontSize: 12)),
+                                if (fall.missingProtections.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  ...fall.missingProtections.map((p) =>
+                                      Text('\u26A0 $p',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: fall.riskColor))),
+                                ],
+                                const SizedBox(height: 6),
+                                Text(fall.steadiRecommendation,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                      color: AppTheme.textSecondary,
+                                    )),
+                                Text(
+                                    'Assessed ${fall.dateString} by ${fall.assessedByName}',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppTheme.textLight)),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 14),
 

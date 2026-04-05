@@ -18,7 +18,6 @@ import 'package:http/http.dart' as http;
 
 import 'package:cecelia_care_flutter/models/vault_document.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
-import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
@@ -72,6 +71,10 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: fs.getVaultDocumentsStream(elder.id),
         builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Something went wrong.',
+                      style: TextStyle(color: Colors.red)));
+                }
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());

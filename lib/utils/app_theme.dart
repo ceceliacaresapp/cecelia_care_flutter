@@ -67,6 +67,40 @@ class AppTheme {
   /// Indicates errors or destructive actions.
   static const Color dangerColor = Color(0xFFD32F2F);
 
+  // ---------------------------------------------------------------------------
+  // STATUS COLORS — used for risk levels, severity, and progress indicators
+  // ---------------------------------------------------------------------------
+
+  static const Color statusGreen = Color(0xFF43A047);
+  static const Color statusAmber = Color(0xFFF57C00);
+  static const Color statusRed = Color(0xFFE53935);
+  static const Color statusRedDeep = Color(0xFFD32F2F);
+
+  // ---------------------------------------------------------------------------
+  // TILE / FEATURE COLORS — consistent palette for Care, Settings, Dashboard
+  // ---------------------------------------------------------------------------
+
+  static const Color tileBlue = Color(0xFF1E88E5);
+  static const Color tileBlueDark = Color(0xFF1565C0);
+  static const Color tileIndigo = Color(0xFF5C6BC0);
+  static const Color tileIndigoDark = Color(0xFF3949AB);
+  static const Color tileTeal = Color(0xFF00897B);
+  static const Color tileOrange = Color(0xFFF57C00);
+  static const Color tileOrangeDeep = Color(0xFFE65100);
+  static const Color tilePurple = Color(0xFF8E24AA);
+  static const Color tileBrown = Color(0xFF795548);
+  static const Color tilePink = Color(0xFFAD1457);
+  static const Color tileRedDeep = Color(0xFFD84315);
+
+  // ---------------------------------------------------------------------------
+  // BORDER RADIUS SCALE — use these instead of raw doubles
+  // ---------------------------------------------------------------------------
+
+  static const double radiusS = 8.0;
+  static const double radiusM = 12.0;
+  static const double radiusL = 16.0;
+  static const double radiusXL = 20.0;
+
   /// Indicates warnings or cautionary states.
   static const Color warningColor = Colors.orange;
 

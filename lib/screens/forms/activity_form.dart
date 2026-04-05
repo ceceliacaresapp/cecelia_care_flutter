@@ -157,7 +157,7 @@ class _ActivityFormState extends State<ActivityForm> {
         _showSnackBar(_l10n.formSuccessActivitySaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating activity: $e');
@@ -200,7 +200,7 @@ class _ActivityFormState extends State<ActivityForm> {
             'activity', widget.editingItem!.firestoreId);
         _showSnackBar(
             _l10n.formSuccessActivityDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting activity: $e');
@@ -351,7 +351,7 @@ class _ActivityFormState extends State<ActivityForm> {
                         onPressed: _isSaving
                             ? null
                             : () {
-                                Navigator.of(context).pop();
+                                Navigator.of(context, rootNavigator: true).pop();
                                 widget.onClose?.call();
                               },
                         padding: const EdgeInsets.symmetric(

@@ -220,11 +220,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mealFormHintCalories => 'e.g., 500';
 
   @override
-  String get sleepFormHintQuality => 'Rate quality (1-10)';
+  String get sleepFormHintQuality => 'Rate quality (1-5)';
 
   @override
   String get sleepFormValidationQualityRange =>
-      'Please enter a number between 1 and 10';
+      'Please enter a number between 1 and 5';
 
   @override
   String get medFormTitleEdit => 'Editar Medicación';
@@ -2317,7 +2317,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get imageUploadErrorNoElderSelected =>
-      'Please select an active elder profile to upload images.';
+      'Please select an active care recipient to upload images.';
 
   @override
   String imageUploadErrorPicking(String errorDetails) {
@@ -2376,7 +2376,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get uploadedImagesSectionTitle => 'Uploaded Images';
 
   @override
-  String get noImagesUploadedYet => 'No images uploaded yet for this elder.';
+  String get noImagesUploadedYet =>
+      'No images uploaded yet for this care recipient.';
 
   @override
   String get imageUnavailable => 'Image unavailable';
@@ -2801,6 +2802,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get generalNotificationsLabel => 'General App Notifications';
+
+  @override
+  String get multiViewAll => 'All';
+
+  @override
+  String get multiViewAllCareRecipients => 'All Care Recipients';
+
+  @override
+  String get multiViewSelectToAccessTools =>
+      'Select a care recipient to access care tools';
 
   @override
   String genericError(String details) {

@@ -73,6 +73,7 @@ class _DutyTimerCardState extends State<DutyTimerCard> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,

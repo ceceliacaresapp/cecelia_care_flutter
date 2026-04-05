@@ -522,7 +522,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
             final transaction = transactions[index];
             
             // Determine colors and icon based on whether it's income or expense
-            final color = transaction.isIncome ? Colors.green.shade700 : Colors.red;
             final icon = transaction.isIncome ? Icons.add : Icons.remove;
             final amountPrefix = transaction.isIncome ? '+\$' : '-\$';
 

@@ -170,7 +170,7 @@ class _VitalFormState extends State<VitalForm> {
         _showSnackBar(_l10n.formSuccessVitalSaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating vital: $e');
@@ -208,7 +208,7 @@ class _VitalFormState extends State<VitalForm> {
         await journalService.deleteJournalEntry(
             'vital', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessVitalDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting vital: $e');
@@ -360,7 +360,7 @@ class _VitalFormState extends State<VitalForm> {
                         variant: BtnVariant.secondaryOutline,
                         onPressed: _isSaving
                             ? null
-                            : () => Navigator.of(context).pop(),
+                            : () => Navigator.of(context, rootNavigator: true).pop(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),

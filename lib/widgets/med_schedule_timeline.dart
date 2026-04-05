@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import 'package:cecelia_care_flutter/models/medication_definition.dart';
-import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';

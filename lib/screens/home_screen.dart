@@ -20,6 +20,9 @@ import 'settings_screen.dart';
 import 'self_care_screen.dart';
 import 'manage_care_recipient_profiles_screen.dart';
 import 'onboarding_screen.dart';
+import 'package:cecelia_care_flutter/widgets/elder_view_toggle.dart';
+import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
+import 'package:cecelia_care_flutter/screens/burnout_intervention_screen.dart';
  
 // ---------------------------------------------------------------------------
 // Tab accent colors — 6 tabs. Settings lives in the AppBar gear icon.
@@ -47,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   bool _greetingShown = false;
   bool _onboardingChecked = false;
+  bool _burnoutCheckDone = false;
  
   // One navigator per tab — pushes stay scoped inside the tab so the
   // bottom nav remains visible on every sub-screen.
@@ -92,6 +96,24 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
  
+  void _maybeShowBurnoutIntervention() {
+    if (_burnoutCheckDone) return;
+    final wellProv = Provider.of<WellnessProvider>(context, listen: false);
+    if (wellProv.recentCheckins.isEmpty) return;
+    if (!wellProv.burnoutThresholdTriggered) return;
+
+    _burnoutCheckDone = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final suppressed = await BurnoutInterventionScreen.shouldSuppress();
+      if (suppressed || !mounted) return;
+      Navigator.of(context).push(MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const BurnoutInterventionScreen(),
+      ));
+    });
+  }
+
   void _onItemTapped(int index) {
     if (index == _selectedIndex) {
       // Same tab tapped again → pop to root (standard mobile pattern).
@@ -217,7 +239,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // Check onboarding reactively — fires once when the provider
     // delivers a new-user profile with onboardingCompleted == false.
     _maybeShowOnboarding(userProfileProvider);
- 
+    _maybeShowBurnoutIntervention();
+
     final activeElderProvider =
         Provider.of<ActiveElderProvider>(context);
     final activeElder = activeElderProvider.activeElder;
@@ -387,11 +410,13 @@ class _TabScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final activeElder = context.watch<ActiveElderProvider>().activeElder;
+    final elderProv = context.watch<ActiveElderProvider>();
+    final activeElder = elderProv.activeElder;
+    final isMultiView = elderProv.isMultiView;
     final userProfile = context.watch<UserProfileProvider>().userProfile;
     final preferredTerm =
         userProfile?.preferredTerm ?? l10n.termElderDefault;
- 
+
     final baseTitles = [
       'Home',
       l10n.homeScreenBaseTitleTimeline,
@@ -400,30 +425,38 @@ class _TabScaffold extends StatelessWidget {
       l10n.homeScreenBaseTitleExpenses,
       l10n.selfCareScreenTitle,
     ];
- 
+
     String appBarTitle = baseTitles[tabIndex];
-    if (activeElder != null && tabIndex > 0 && tabIndex < 5) {
+    if (isMultiView) {
+      appBarTitle = 'All Care Recipients';
+      if (tabIndex > 0) appBarTitle = 'All - ${baseTitles[tabIndex]}';
+    } else if (activeElder != null && tabIndex > 0 && tabIndex < 5) {
       final elderDisplayName =
           (activeElder.preferredName?.isNotEmpty == true)
               ? activeElder.preferredName!
               : activeElder.profileName;
       appBarTitle = '$elderDisplayName - ${baseTitles[tabIndex]}';
     }
- 
+
+    // Show toggle when 2+ elders, otherwise show the title pill.
+    final bool showToggle = elderProv.allElders.length >= 2;
+
     return Scaffold(
       appBar: AppBar(
-        title: Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            appBarTitle,
-            style: const TextStyle(fontSize: 17),
-          ),
-        ),
+        title: showToggle
+            ? const ElderViewToggle()
+            : Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  appBarTitle,
+                  style: const TextStyle(fontSize: 17),
+                ),
+              ),
         centerTitle: true,
         // No back arrow on the tab's root page.
         automaticallyImplyLeading: false,

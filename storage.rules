@@ -16,6 +16,36 @@ service firebase.storage {
     }
 
     // -----------------------------------------------------------------------
+    // Wound photos — uploaded from WoundTrackingScreen.
+    // Path pattern: wound_photos/{elderId}/{bodyRegion}/{fileName}
+    // -----------------------------------------------------------------------
+    match /wound_photos/{elderId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // -----------------------------------------------------------------------
+    // Medication photos — uploaded from MedicationManagerScreen.
+    // Path pattern: medication_photos/{elderId}/{medDefId}/{fileName}
+    // -----------------------------------------------------------------------
+    match /medication_photos/{elderId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // -----------------------------------------------------------------------
+    // Elder documents — uploaded from DocumentVaultScreen.
+    // Path pattern: elder_documents/{elderId}/{category}/{fileName}
+    // -----------------------------------------------------------------------
+    match /elder_documents/{elderId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // -----------------------------------------------------------------------
     // Profile photos — uploaded from elder profile edit or user account.
     // Path pattern: profile_photos/{userId}/{fileName}
     //

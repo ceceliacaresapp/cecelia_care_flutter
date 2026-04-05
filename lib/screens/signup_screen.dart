@@ -24,7 +24,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _handleJoinWaitlist() async {
-    final l10n = AppLocalizations.of(context)!;
     final String email = _emailController.text.trim();
 
     if (email.isEmpty || !email.contains('@')) {

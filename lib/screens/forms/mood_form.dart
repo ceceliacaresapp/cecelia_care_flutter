@@ -120,7 +120,7 @@ class _MoodFormState extends State<MoodForm> {
         _showSnackBar(_l10n.formSuccessMoodSaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating mood: $e');
@@ -158,7 +158,7 @@ class _MoodFormState extends State<MoodForm> {
         await journal.deleteJournalEntry(
             'mood', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessMoodDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting mood: $e');
@@ -280,7 +280,7 @@ class _MoodFormState extends State<MoodForm> {
                         variant: BtnVariant.secondaryOutline,
                         onPressed: _isSaving
                             ? null
-                            : () => Navigator.of(context).pop(),
+                            : () => Navigator.of(context, rootNavigator: true).pop(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),

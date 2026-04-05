@@ -21,14 +21,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSetting => 'Language';
 
   @override
-  String get manageElderProfilesTitle => 'Manage Elder Profiles';
+  String get manageElderProfilesTitle => 'Manage Care Recipients';
 
   @override
   String get createProfileButton => 'Create Profile';
 
   @override
   String get pleaseLogInToManageProfiles =>
-      'Please log in to manage elder profiles.';
+      'Please log in to manage care recipient profiles.';
 
   @override
   String calendarScreenTitle(String elderName) {
@@ -216,11 +216,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealFormHintCalories => 'e.g., 500';
 
   @override
-  String get sleepFormHintQuality => 'Rate quality (1-10)';
+  String get sleepFormHintQuality => 'Rate quality (1-5)';
 
   @override
   String get sleepFormValidationQualityRange =>
-      'Please enter a number between 1 and 10';
+      'Please enter a number between 1 and 5';
 
   @override
   String get medFormTitleEdit => 'Edit Medication';
@@ -618,7 +618,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSelectElderFirstMedDef =>
-      'Please select an elder profile first to manage medication definitions.';
+      'Please select a care recipient first to manage medication definitions.';
 
   @override
   String get settingsMedNameRequired => 'Medication name is required.';
@@ -633,11 +633,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClearDataErrorElderOrUserMissing =>
-      'Cannot clear data: Active elder or user is missing.';
+      'Cannot clear data: Active care recipient or user is missing.';
 
   @override
   String get settingsClearDataErrorNotAdmin =>
-      'You are not the primary admin for this elder\'s profile. Data can only be cleared by the primary admin.';
+      'You are not the primary admin for this care recipient\'s profile. Data can only be cleared by the primary admin.';
 
   @override
   String settingsClearDataDialogTitle(String elderName) {
@@ -646,7 +646,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsClearDataDialogContent =>
-      'This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this elder. Are you sure you want to proceed?';
+      'This action is irreversible and will delete all associated records (medications, meals, vitals, etc.) for this care recipient. Are you sure you want to proceed?';
 
   @override
   String get settingsClearDataDialogConfirmButton => 'Yes, Clear All Data';
@@ -712,23 +712,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsTitleElderProfileManagement => 'Elder Profile Management';
+  String get settingsTitleElderProfileManagement => 'Care Recipient Management';
 
   @override
   String settingsCurrentElder(String elderName) {
-    return 'Current Active Elder: $elderName';
+    return 'Active Care Recipient: $elderName';
   }
 
   @override
   String get settingsNoActiveElderSelected =>
-      'No active elder selected. Please select or create one.';
+      'No active care recipient selected. Please select or create one.';
 
   @override
   String get settingsErrorNavToManageElderProfiles =>
-      'Could not navigate to manage elder profiles. User not logged in.';
+      'Could not navigate to manage care recipients. User not logged in.';
 
   @override
-  String get settingsButtonManageElderProfiles => 'Manage Elder Profiles';
+  String get settingsButtonManageElderProfiles => 'Manage Care Recipients';
 
   @override
   String settingsTitleAdminActions(String elderName) {
@@ -736,7 +736,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsButtonClearAllData => 'Clear All Data for This Elder';
+  String get settingsButtonClearAllData =>
+      'Clear All Data for This Care Recipient';
 
   @override
   String get settingsTitleMedicationDefinitions => 'Medication Definitions';
@@ -767,11 +768,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSelectElderToAddMedDefs =>
-      'Select an elder profile to add medication definitions.';
+      'Select a care recipient to add medication definitions.';
 
   @override
   String get settingsSelectElderToViewMedDefs =>
-      'Select an elder profile to view medication definitions.';
+      'Select a care recipient to view medication definitions.';
 
   @override
   String settingsNoMedDefsForElder(String elderName) {
@@ -784,7 +785,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsSelectedElderFallback => 'Selected Elder';
+  String get settingsSelectedElderFallback => 'Selected Care Recipient';
 
   @override
   String settingsMedDefDosePrefix(String dose) {
@@ -817,7 +818,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNotLoggedIn => 'Error: User not logged in.';
 
   @override
-  String get errorElderIdMissing => 'Error: Elder ID is missing.';
+  String get errorElderIdMissing => 'Error: Care recipient ID is missing.';
 
   @override
   String profileUpdatedSnackbar(String profileName) {
@@ -836,7 +837,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSelectElderAndEmail =>
-      'Please select an elder profile and enter a valid email address.';
+      'Please select a care recipient and enter a valid email address.';
 
   @override
   String invitationSentSnackbar(String email) {
@@ -853,7 +854,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String removeCaregiverDialogContent(String caregiverIdentifier) {
-    return 'Are you sure you want to remove $caregiverIdentifier as a caregiver for this elder?';
+    return 'Are you sure you want to remove $caregiverIdentifier as a caregiver for this care recipient?';
   }
 
   @override
@@ -923,7 +924,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterEmailHint => 'Enter email address';
 
   @override
-  String get createElderProfileTitle => 'Create New Elder Profile';
+  String get createElderProfileTitle => 'Create New Care Recipient';
 
   @override
   String editProfileTitle(String profileNameOrFallback) {
@@ -956,7 +957,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorPrefix => 'Error: ';
 
   @override
-  String get noElderProfilesFound => 'No elder profiles found.';
+  String get noElderProfilesFound => 'No care recipient profiles found.';
 
   @override
   String get createNewProfileOrWait =>
@@ -1292,7 +1293,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarNoElderSelected =>
-      'No elder selected. Please select an elder to view their calendar.';
+      'No care recipient selected. Please select a care recipient to view their calendar.';
 
   @override
   String get calendarAddNewEventButton => 'Add New Event';
@@ -1335,7 +1336,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get expenseSelectElderPrompt =>
-      'Please select an elder profile to view expenses.';
+      'Please select a care recipient to view expenses.';
 
   @override
   String get expenseLoading => 'Loading expenses...';
@@ -1387,7 +1388,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginScreenTitle => 'Cecelia Care';
 
   @override
-  String get settingsLabelRelationshipToElder => 'Relationship to Elder';
+  String get settingsLabelRelationshipToElder =>
+      'Relationship to Care Recipient';
 
   @override
   String get settingsHintRelationshipToElder =>
@@ -1442,7 +1444,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectElderToViewCareLog =>
-      'Please select an Elder from Settings to view the Care Log.';
+      'Please select a care recipient from Settings to view the Care Log.';
 
   @override
   String get goToSettingsButton => 'Go to Settings';
@@ -1483,7 +1485,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineSelectElderToPost =>
-      'Please select an active elder profile to post to their timeline.';
+      'Please select an active care recipient to post to their timeline.';
 
   @override
   String get timelineAnonymousUser => 'Anonymous';
@@ -1498,7 +1500,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineSelectElderToView =>
-      'Please select an elder profile to view their timeline.';
+      'Please select a care recipient to view their timeline.';
 
   @override
   String timelineWriteMessageHint(String elderName) {
@@ -2260,7 +2262,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageUploadErrorNoElderSelected =>
-      'Please select an active elder profile to upload images.';
+      'Please select an active care recipient to upload images.';
 
   @override
   String imageUploadErrorPicking(String errorDetails) {
@@ -2319,7 +2321,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadedImagesSectionTitle => 'Uploaded Images';
 
   @override
-  String get noImagesUploadedYet => 'No images uploaded yet for this elder.';
+  String get noImagesUploadedYet =>
+      'No images uploaded yet for this care recipient.';
 
   @override
   String get imageUnavailable => 'Image unavailable';
@@ -2744,6 +2747,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get generalNotificationsLabel => 'General App Notifications';
+
+  @override
+  String get multiViewAll => 'All';
+
+  @override
+  String get multiViewAllCareRecipients => 'All Care Recipients';
+
+  @override
+  String get multiViewSelectToAccessTools =>
+      'Select a care recipient to access care tools';
 
   @override
   String genericError(String details) {

@@ -6,7 +6,6 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';

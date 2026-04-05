@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(flutter analyze:*)",
-      "Bash(flutter gen-l10n:*)"
+      "Bash(flutter gen-l10n:*)",
+      "Bash(grep -E \"BorderRadius\\\\.circular\\\\\\(\\([0-9]+\\)\\\\\\)\" \"c:\\\\Users\\\\duked\\\\Projects\\\\cecelia_care_flutter-main/lib/screens\"/*.dart \"c:\\\\Users\\\\duked\\\\Projects\\\\cecelia_care_flutter-main/lib/widgets\"/*.dart)"
     ]
   }
 }

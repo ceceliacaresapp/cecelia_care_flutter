@@ -345,7 +345,7 @@ const List<CarePlanTemplate> carePlanTemplates = [
   // ─── 4. General Elder Care ──────────────────────────────────────
   CarePlanTemplate(
     id: 'general_elder',
-    name: 'General Elder Care',
+    name: 'General Care',
     description:
         'Basic daily routine for any care recipient — meals, medications, '
         'activity, and check-ins. A great starting template.',

@@ -120,7 +120,7 @@ class _SleepFormState extends State<SleepForm> {
         _showSnackBar(_l10n.formSuccessSleepSaved, Colors.green);
       }
       HapticUtils.success();
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving/updating sleep: $e');
@@ -158,7 +158,7 @@ class _SleepFormState extends State<SleepForm> {
         await journal.deleteJournalEntry(
             'sleep', widget.editingItem!.firestoreId);
         _showSnackBar(_l10n.formSuccessSleepDeleted, Colors.green);
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onClose?.call();
       } catch (e) {
         debugPrint('Error deleting sleep: $e');
@@ -258,7 +258,7 @@ class _SleepFormState extends State<SleepForm> {
                         variant: BtnVariant.secondaryOutline,
                         onPressed: _isSaving
                             ? null
-                            : () => Navigator.of(context).pop(),
+                            : () => Navigator.of(context, rootNavigator: true).pop(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 12),
                       ),
