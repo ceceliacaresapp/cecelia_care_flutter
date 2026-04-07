@@ -18,32 +18,17 @@ import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/handoff_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/incontinence_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/night_waking_form.dart';
+import 'package:cecelia_care_flutter/screens/forms/visitor_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/hydration_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/custom_entry_form.dart';
 import 'package:cecelia_care_flutter/providers/custom_entry_types_provider.dart';
+import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
 
-// ---------------------------------------------------------------------------
-// FIX: _navigateToForm replaced with _showFormSheet.
-//
-// Previously each form was pushed as a full Scaffold page via
-// MaterialPageRoute, which navigated the user completely away from the
-// timeline — jarring and context-breaking.
-//
-// Now every form opens as a modal bottom sheet. The user stays visually
-// oriented in the app, and dismissal (swipe down or the × button) returns
-// them exactly where they were.
-//
-// Implementation notes:
-//  - isScrollControlled: true lets the sheet grow up to 92% screen height
-//    so even the longer forms (med, pain, vital) have enough room.
-//  - useSafeArea: true keeps content clear of notches / home indicators.
-//  - viewInsets.bottom padding pushes content up when the keyboard appears,
-//    preventing fields from being hidden.
-//  - Forms no longer have AppBars — they use FormSheetHeader instead.
-// ---------------------------------------------------------------------------
+// Opens a form as a modal bottom sheet (popping the picker screen first).
 void _showFormSheet(BuildContext context, Widget form) {
-  Navigator.of(context, rootNavigator: true).pop(); // dismiss the entry-type picker dialog
+  Navigator.of(context).pop(); // dismiss the picker screen
 
   showModalBottomSheet(
     context: context,
@@ -75,7 +60,6 @@ void _showFormSheet(BuildContext context, Widget form) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 0),
                 width: 40,
@@ -111,249 +95,324 @@ void showEntryDialog(
     return;
   }
 
-  final String currentDateStr =
-      DateFormat('yyyy-MM-dd').format(DateTime.now());
+  Navigator.of(context, rootNavigator: true).push(
+    MaterialPageRoute(
+      builder: (_) => _AddLogScreen(
+        l10n: l10n,
+        activeElder: activeElder,
+        journalService: journalService,
+        onNewMessage: onNewMessage,
+      ),
+    ),
+  );
+}
 
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text(l10n.dialogTitleAddNewLog),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.message_outlined),
-                title: Text(l10n.timelineNewMessageButton),
-                onTap: () {
-                  Navigator.of(dialogContext).pop();
-                  onNewMessage();
-                },
+class _AddLogScreen extends StatelessWidget {
+  final AppLocalizations l10n;
+  final ElderProfile activeElder;
+  final JournalServiceProvider journalService;
+  final VoidCallback onNewMessage;
+
+  const _AddLogScreen({
+    required this.l10n,
+    required this.activeElder,
+    required this.journalService,
+    required this.onNewMessage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String currentDateStr =
+        DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    final tiles = <_LogTile>[
+      _LogTile(
+        icon: Icons.message_outlined,
+        label: l10n.timelineNewMessageButton,
+        color: AppTheme.tileIndigo,
+        onTap: () {
+          Navigator.of(context).pop();
+          onNewMessage();
+        },
+      ),
+      _LogTile(
+        icon: Icons.medical_services_outlined,
+        label: l10n.careScreenButtonAddMed,
+        color: AppTheme.tileRedDeep,
+        onTap: () => _showFormSheet(
+          context,
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider.value(value: journalService),
+              ChangeNotifierProvider(
+                create: (_) => MedicationDefinitionsProvider()
+                  ..updateForElder(activeElder),
               ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.medical_services_outlined),
-                title: Text(l10n.careScreenButtonAddMed),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider.value(value: journalService),
-                      ChangeNotifierProvider(
-                        create: (_) => MedicationDefinitionsProvider()
-                          ..updateForElder(activeElder),
-                      ),
-                    ],
-                    child: MedForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.hotel_outlined),
-                title: Text(l10n.careScreenButtonAddSleep),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: SleepForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.restaurant_menu_outlined),
-                title: Text(l10n.careScreenButtonAddFoodWater),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: MealForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.sentiment_satisfied_alt_outlined),
-                title: Text(l10n.careScreenButtonAddMood),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: MoodForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.personal_injury_outlined),
-                title: Text(l10n.careScreenButtonAddPain),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: PainForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.directions_walk_outlined),
-                title: Text(l10n.careScreenButtonAddActivity),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: ActivityForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.monitor_heart_outlined),
-                title: Text(l10n.careScreenButtonAddVital),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: VitalForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.money_outlined),
-                title: Text(l10n.careScreenButtonAddExpense),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: ExpenseForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.swap_horiz_outlined),
-                title: const Text('Shift Handoff'),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: HandoffForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.water_drop_outlined,
-                    color: Color(0xFF795548)),
-                title: const Text('Incontinence'),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: IncontinenceForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.nightlight_outlined,
-                    color: Color(0xFF283593)),
-                title: const Text('Night Waking'),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: NightWakingForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.local_drink_outlined,
-                    color: Color(0xFF0288D1)),
-                title: const Text('Fluid Intake'),
-                onTap: () => _showFormSheet(
-                  dialogContext,
-                  ChangeNotifierProvider.value(
-                    value: journalService,
-                    child: HydrationForm(
-                      onClose: () {},
-                      currentDate: currentDateStr,
-                      activeElder: activeElder,
-                    ),
-                  ),
-                ),
-              ),
-              // ── Custom entry types ──────────────────────────────
-              Builder(builder: (ctx) {
-                final customTypes =
-                    ctx.watch<CustomEntryTypesProvider>().types;
-                if (customTypes.isEmpty) return const SizedBox.shrink();
-                return Column(
-                  children: [
-                    const Divider(),
-                    ...customTypes.map((t) => ListTile(
-                          leading: Icon(t.iconData, color: t.color),
-                          title: Text(t.name),
-                          onTap: () => _showFormSheet(
-                            dialogContext,
-                            ChangeNotifierProvider.value(
-                              value: journalService,
-                              child: CustomEntryForm(
-                                typeDef: t,
-                                activeElder: activeElder,
-                                currentDate: currentDateStr,
-                              ),
-                            ),
-                          ),
-                        )),
-                  ],
-                );
-              }),
             ],
+            child: MedForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
           ),
         ),
-      );
-    },
-  );
+      ),
+      _LogTile(
+        icon: Icons.hotel_outlined,
+        label: l10n.careScreenButtonAddSleep,
+        color: AppTheme.tileIndigoDark,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: SleepForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.restaurant_menu_outlined,
+        label: l10n.careScreenButtonAddFoodWater,
+        color: AppTheme.tileOrange,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: MealForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.local_drink_outlined,
+        label: 'Fluid Intake',
+        color: AppTheme.tileBlue,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: HydrationForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.sentiment_satisfied_alt_outlined,
+        label: l10n.careScreenButtonAddMood,
+        color: AppTheme.tilePurple,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: MoodForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.personal_injury_outlined,
+        label: l10n.careScreenButtonAddPain,
+        color: AppTheme.tileOrangeDeep,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: PainForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.directions_walk_outlined,
+        label: l10n.careScreenButtonAddActivity,
+        color: AppTheme.tileTeal,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: ActivityForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.monitor_heart_outlined,
+        label: l10n.careScreenButtonAddVital,
+        color: AppTheme.tilePink,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: VitalForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.money_outlined,
+        label: l10n.careScreenButtonAddExpense,
+        color: AppTheme.tileBlueDark,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: ExpenseForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.swap_horiz_outlined,
+        label: 'Shift Handoff',
+        color: AppTheme.tileIndigo,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: HandoffForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.water_drop_outlined,
+        label: 'Incontinence',
+        color: AppTheme.tileBrown,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: IncontinenceForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.people_outline,
+        label: 'Visitor Log',
+        color: AppTheme.tilePurple,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: VisitorForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+      _LogTile(
+        icon: Icons.nightlight_outlined,
+        label: 'Night Waking',
+        color: AppTheme.tileIndigoDark,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: NightWakingForm(
+              onClose: () {},
+              currentDate: currentDateStr,
+              activeElder: activeElder,
+            ),
+          ),
+        ),
+      ),
+    ];
+
+    final customTypes = context.watch<CustomEntryTypesProvider>().types;
+    for (final t in customTypes) {
+      tiles.add(_LogTile(
+        icon: t.iconData,
+        label: t.name,
+        color: t.color,
+        onTap: () => _showFormSheet(
+          context,
+          ChangeNotifierProvider.value(
+            value: journalService,
+            child: CustomEntryForm(
+              typeDef: t,
+              activeElder: activeElder,
+              currentDate: currentDateStr,
+            ),
+          ),
+        ),
+      ));
+    }
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundGray,
+      appBar: AppBar(
+        title: Text(l10n.dialogTitleAddNewLog),
+      ),
+      body: SafeArea(
+        child: GridView.builder(
+          padding: const EdgeInsets.all(12),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.95,
+          ),
+          itemCount: tiles.length,
+          itemBuilder: (_, i) {
+            final t = tiles[i];
+            return CompactGridTile(
+              icon: t.icon,
+              title: t.label,
+              color: t.color,
+              onTap: t.onTap,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _LogTile {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  _LogTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 }
 
 void _noOp() {}

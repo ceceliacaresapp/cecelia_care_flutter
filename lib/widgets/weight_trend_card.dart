@@ -13,8 +13,17 @@ import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/screens/weight_trend_screen.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
-class WeightTrendCard extends StatelessWidget {
+class WeightTrendCard extends StatefulWidget {
   const WeightTrendCard({super.key});
+
+  @override
+  State<WeightTrendCard> createState() => _WeightTrendCardState();
+}
+
+class _WeightTrendCardState extends State<WeightTrendCard> {
+  Stream<List<JournalEntry>>? _stream;
+  String? _streamElderId;
+  String? _streamUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +33,25 @@ class WeightTrendCard extends StatelessWidget {
 
     if (elderId.isEmpty) return const SizedBox.shrink();
 
-    return StreamBuilder<List<JournalEntry>>(
-      stream: context
+    // Cache the stream so we don't create a new Firestore listener on
+    // every parent rebuild (which happens whenever any provider on the
+    // dashboard notifies).
+    if (_stream == null ||
+        _streamElderId != elderId ||
+        _streamUserId != currentUserId) {
+      _stream = context
           .read<JournalServiceProvider>()
           .getJournalEntriesStream(
             elderId: elderId,
             currentUserId: currentUserId,
             entryTypeFilter: 'vital',
-          ),
+          );
+      _streamElderId = elderId;
+      _streamUserId = currentUserId;
+    }
+
+    return StreamBuilder<List<JournalEntry>>(
+      stream: _stream,
       builder: (context, snapshot) {
         final entries = snapshot.data ?? [];
         final weights = <_Pt>[];
@@ -49,7 +69,36 @@ class WeightTrendCard extends StatelessWidget {
         }
         weights.sort((a, b) => a.date.compareTo(b.date));
 
-        if (weights.isEmpty) return const SizedBox.shrink();
+        if (weights.isEmpty) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox.shrink();
+          }
+          return Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(
+                  color: AppTheme.textLight.withValues(alpha: 0.4)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Icon(Icons.monitor_weight_outlined,
+                      size: 20, color: AppTheme.textSecondary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Log a weight vital to start tracking trends.',
+                      style: TextStyle(
+                          fontSize: 12, color: AppTheme.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         final latest = weights.last;
         double? pct30;
@@ -178,7 +227,8 @@ class _SparklinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _SparklinePainter oldDelegate) =>
+      oldDelegate.values != values || oldDelegate.color != color;
 }
 
 class _Pt {

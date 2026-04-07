@@ -7,6 +7,8 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
+import 'package:cecelia_care_flutter/widgets/pain_body_map.dart';
+import 'package:cecelia_care_flutter/screens/pain_history_map_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -41,6 +43,7 @@ class _PainFormState extends State<PainForm> {
   late TextEditingController _descriptionController;
   late TextEditingController _noteController;
   String _selectedDescriptionChip = '';
+  List<PainPoint> _painPoints = [];
 
   bool _isSaving = false;
 
@@ -96,6 +99,9 @@ class _PainFormState extends State<PainForm> {
       _locationController.text = editing.location ?? '';
       _intensityController.text = editing.intensity?.toString() ?? '';
       _noteController.text = editing.note ?? '';
+      _painPoints = (editing.painPoints ?? const [])
+          .map((m) => PainPoint.fromMap(m))
+          .toList();
       final storedDescription = editing.description ?? '';
       if (_painDescriptionOptions.contains(storedDescription) &&
           storedDescription != _otherPainDescriptionOption) {
@@ -114,8 +120,27 @@ class _PainFormState extends State<PainForm> {
       _descriptionController.clear();
       _noteController.clear();
       _selectedDescriptionChip = '';
+      _painPoints = [];
     }
     if (mounted) setState(() {});
+  }
+
+  /// Auto-derive a comma-separated location string from the placed points,
+  /// keeping each region only once. Used both as the legacy `location`
+  /// payload field for backwards compat and on the timeline summary.
+  String _derivedLocation() {
+    final regions = <String>{};
+    for (final p in _painPoints) {
+      regions.add(PainPoint.labelForRegion(p.bodyRegion));
+    }
+    return regions.join(', ');
+  }
+
+  int _derivedIntensity() {
+    if (_painPoints.isEmpty) return 0;
+    return _painPoints
+        .map((p) => p.intensity)
+        .reduce((a, b) => a > b ? a : b);
   }
 
   @override
@@ -143,9 +168,17 @@ class _PainFormState extends State<PainForm> {
               : (_selectedDescriptionChip.isNotEmpty
                   ? _selectedDescriptionChip
                   : _descriptionController.text.trim());
+      final derivedLoc = _derivedLocation();
+      final derivedInt = _derivedIntensity();
       final payload = <String, dynamic>{
-        'location': _locationController.text.trim(),
-        'intensity': int.tryParse(_intensityController.text.trim()),
+        // Backwards-compat fields auto-derived from the body map.
+        'location': derivedLoc.isNotEmpty
+            ? derivedLoc
+            : _locationController.text.trim(),
+        'intensity': derivedInt > 0
+            ? derivedInt
+            : int.tryParse(_intensityController.text.trim()),
+        'painPoints': _painPoints.map((p) => p.toMap()).toList(),
         'description': descriptionToSave,
         'note': _noteController.text.trim(),
         'stamp': Timestamp.now(),
@@ -256,50 +289,65 @@ class _PainFormState extends State<PainForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${_l10n.painFormLabelLocation}*',
-                    style: _theme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Pain location & intensity*',
+                          style: _theme.textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  const PainHistoryMapScreen()),
+                        ),
+                        icon: const Icon(Icons.history, size: 16),
+                        label: const Text('History',
+                            style: TextStyle(fontSize: 12)),
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _locationController,
-                    decoration: InputDecoration(
-                        hintText: _l10n.painFormHintLocation),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return _l10n.painFormValidationLocation;
-                      }
-                      return null;
-                    },
+                  PainBodyMap(
+                    initialPoints: _painPoints,
+                    onChanged: (pts) =>
+                        setState(() => _painPoints = pts),
                   ),
+                  // Hidden validator that ensures at least one marker is placed.
+                  Opacity(
+                    opacity: 0,
+                    child: SizedBox(
+                      height: 0,
+                      child: TextFormField(
+                        key: ValueKey('points_${_painPoints.length}'),
+                        initialValue:
+                            _painPoints.isEmpty ? null : 'valid',
+                        validator: (_) => _painPoints.isEmpty
+                            ? 'Tap the body to mark at least one pain location'
+                            : null,
+                      ),
+                    ),
+                  ),
+                  if (_painPoints.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '${_painPoints.length} marker${_painPoints.length == 1 ? '' : 's'} · Peak ${_derivedIntensity()}/10',
+                        style: const TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.textSecondary),
+                      ),
+                    ),
                   const SizedBox(height: 20),
-                  Text(
-                    '${_l10n.painFormLabelIntensity}*',
-                    style: _theme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _intensityController,
-                    decoration: InputDecoration(
-                        hintText: _l10n.painFormHintIntensity),
-                    keyboardType: TextInputType.number,
-                    maxLength: 2,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return _l10n
-                            .painFormValidationIntensityEmpty;
-                      }
-                      final p = int.tryParse(value.trim());
-                      if (p == null || p < 0 || p > 10) {
-                        return _l10n
-                            .painFormValidationIntensityRange;
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
                   Text(
                     '${_l10n.painFormLabelDescription}*',
                     style: _theme.textTheme.bodyLarge

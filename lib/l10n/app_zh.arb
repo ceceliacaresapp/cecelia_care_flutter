@@ -573,7 +573,7 @@
     "careScreenTooltipEditFoodWater": "编辑食物/饮水条目",
     "careScreenTooltipDeleteFoodWater": "删除食物/饮水条目",
     "careScreenErrorMissingIdDelete": "错误：无法删除条目，缺少ID。",
-    "careScreenButtonAddFoodWater": "添加食物/饮水",
+    "careScreenButtonAddFoodWater": "添加餐食",
     "careScreenSectionTitleMoodBehavior": "心情与行为",
     "careScreenNoMoodBehaviorLogged": "今日无心情或行为记录。",
     "careScreenMood": "心情：{mood}",

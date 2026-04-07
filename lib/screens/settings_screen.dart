@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/screens/settings/inclusive_language_guide_s
 import 'package:cecelia_care_flutter/screens/export_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
 import 'package:cecelia_care_flutter/providers/theme_provider.dart';
 import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
@@ -569,46 +570,11 @@ class _SettingsGridTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return CompactGridTile(
+      icon: icon,
+      title: title,
+      color: color,
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 22, color: color),
-            ),
-            const SizedBox(height: 10),
-            Text(title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-            if (subtitle != null) ...[
-              const SizedBox(height: 2),
-              Text(subtitle!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: color.withOpacity(0.6),
-                  )),
-            ],
-          ],
-        ),
-      ),
     );
   }
 }

@@ -14,6 +14,7 @@ class PainEntry {
   final String loggedBy; // Display name of the user who logged the entry
   final Timestamp createdAt;
   final Timestamp updatedAt;
+  final List<Map<String, dynamic>>? painPoints;
 
   PainEntry({
     required this.firestoreId,
@@ -29,6 +30,7 @@ class PainEntry {
     required this.loggedBy,
     required this.createdAt,
     required this.updatedAt,
+    this.painPoints,
   });
 
   /// Creates a [PainEntry] from a standard JSON map.
@@ -102,6 +104,10 @@ class PainEntry {
       loggedBy: data['loggedByDisplayName'] as String? ?? 'Unknown User', // From 'loggedByDisplayName'
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp? ?? Timestamp.now(),
+      painPoints: (data['painPoints'] as List?)
+          ?.whereType<Map>()
+          .map((m) => Map<String, dynamic>.from(m))
+          .toList(),
     );
   }
 

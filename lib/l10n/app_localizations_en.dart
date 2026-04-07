@@ -1103,7 +1103,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to load records for this day. Please try again.';
 
   @override
-  String get careScreenButtonAddFoodWater => 'Add Food / Water';
+  String get careScreenButtonAddFoodWater => 'Add Meal';
 
   @override
   String get careScreenSectionTitleMoodBehavior => 'Mood & Behavior';

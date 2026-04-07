@@ -1062,7 +1062,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get careScreenErrorFailedToLoad => '이날의 기록을 불러오는데 실패했습니다. 다시 시도해 주세요.';
 
   @override
-  String get careScreenButtonAddFoodWater => '음식/물 추가';
+  String get careScreenButtonAddFoodWater => '식사 추가';
 
   @override
   String get careScreenSectionTitleMoodBehavior => '기분 및 행동';

@@ -2063,7 +2063,7 @@ abstract class AppLocalizations {
   /// No description provided for @careScreenButtonAddFoodWater.
   ///
   /// In en, this message translates to:
-  /// **'Add Food / Water'**
+  /// **'Add Meal'**
   String get careScreenButtonAddFoodWater;
 
   /// No description provided for @careScreenSectionTitleMoodBehavior.

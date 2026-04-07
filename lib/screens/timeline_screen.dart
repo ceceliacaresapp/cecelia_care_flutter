@@ -75,6 +75,9 @@ _EntryStyle _entryTypeStyle(EntryType type) {
     case EntryType.hydration:
       return _EntryStyle(
           accent: const Color(0xFF0288D1), surface: const Color(0xFFE1F5FE));
+    case EntryType.visitor:
+      return _EntryStyle(
+          accent: const Color(0xFF6A1B9A), surface: const Color(0xFFF3E5F5));
     case EntryType.custom:
       return _EntryStyle(
           accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
@@ -1089,6 +1092,10 @@ class TimelineScreenState extends State<TimelineScreen> {
         title = 'Fluid Intake';
         summary = _extractSummaryFromData(data, type, _l10n);
         break;
+      case EntryType.visitor:
+        title = 'Visitor';
+        summary = _extractSummaryFromData(data, type, _l10n);
+        break;
       case EntryType.custom:
         title = data?['customTypeName'] as String? ?? 'Custom Entry';
         summary = _extractSummaryFromData(data, type, _l10n);
@@ -1555,6 +1562,25 @@ class TimelineScreenState extends State<TimelineScreen> {
               : '';
           return l10n.timelineSummaryMoodFormat(moodLevel, notes);
         case EntryType.pain:
+          // Prefer the new painPoints body-map data when present.
+          final points = entryData['painPoints'] as List?;
+          if (points != null && points.isNotEmpty) {
+            final regions = <String>{};
+            int peak = 0;
+            for (final raw in points) {
+              if (raw is Map) {
+                final region = raw['bodyRegion']?.toString() ?? '';
+                if (region.isNotEmpty) regions.add(region);
+                final i = (raw['intensity'] as num?)?.toInt() ?? 0;
+                if (i > peak) peak = i;
+              }
+            }
+            final regionLabel = regions.length == 1
+                ? regions.first
+                : '${regions.length} locations';
+            return '$regionLabel \u00B7 Peak $peak/10';
+          }
+          // Fallback for legacy text-only entries.
           final intensity = entryData['intensity']?.toString() ??
               l10n.timelineSummaryNotApplicable;
           final locationValue =
@@ -1619,14 +1645,32 @@ class TimelineScreenState extends State<TimelineScreen> {
           final iType = entryData['incontinenceType'] as String? ?? '';
           final severity = entryData['severity'] as String? ?? '';
           final skin = entryData['skinCondition'] as String? ?? '';
+          final bristol = entryData['bristolType'] as int?;
+          final urine = entryData['urineColor'] as String?;
           final typeLabel = iType.isNotEmpty
               ? '${iType[0].toUpperCase()}${iType.substring(1)}'
               : 'Logged';
           final sevLabel = severity.isNotEmpty ? ' \u00B7 $severity' : '';
+          final bristolLabel =
+              bristol != null ? ' \u00B7 Bristol $bristol' : '';
+          final urineLabel = urine != null ? ' \u00B7 Urine: $urine' : '';
           final skinLabel = (skin == 'irritated' || skin == 'broken')
               ? ' \u00B7 Skin: $skin'
               : '';
-          return '$typeLabel$sevLabel$skinLabel';
+          return '$typeLabel$sevLabel$bristolLabel$urineLabel$skinLabel';
+        case EntryType.visitor:
+          final name = entryData['visitorName'] as String? ?? 'Unknown';
+          final relationship =
+              entryData['relationship'] as String? ?? '';
+          final duration = entryData['duration'] as String? ?? '';
+          final response = entryData['response'] as String? ?? '';
+          final relLabel =
+              relationship.isNotEmpty ? ' ($relationship)' : '';
+          final respLabel = response.isNotEmpty
+              ? ' \u00B7 ${response[0].toUpperCase()}${response.substring(1)}'
+              : '';
+          final durLabel = duration.isNotEmpty ? ' \u00B7 $duration' : '';
+          return '$name$relLabel$durLabel$respLabel';
         case EntryType.nightWaking:
           final duration = entryData['duration'] as String? ?? '';
           final cause = entryData['cause'] as String? ?? 'Unknown';

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -12,9 +13,12 @@ import 'package:cecelia_care_flutter/models/budget_entry.dart';
 import 'package:cecelia_care_flutter/models/income_entry.dart';
 import 'package:cecelia_care_flutter/models/financial_asset.dart';
 import 'package:cecelia_care_flutter/models/financial_liability.dart';
+import 'package:cecelia_care_flutter/models/insurance_plan.dart';
 import 'package:cecelia_care_flutter/screens/forms/budget_entry_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/set_budgets_form.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/expense_breakdown_chart.dart';
+import 'package:cecelia_care_flutter/widgets/insurance_tracker_card.dart';
 
 import 'package:cecelia_care_flutter/screens/forms/income_entry_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/asset_entry_form.dart';
@@ -57,6 +61,24 @@ class BudgetScreen extends StatefulWidget {
 class _BudgetScreenState extends State<BudgetScreen> {
   DateTime _selectedMonth = DateTime.now();
   BudgetFilter _selectedFilter = BudgetFilter.activeRecipient;
+  InsurancePlan? _insurancePlan;
+  bool _planLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInsurancePlan();
+  }
+
+  Future<void> _loadInsurancePlan() async {
+    final plan = await InsurancePlan.load(DateTime.now().year);
+    if (mounted) {
+      setState(() {
+        _insurancePlan = plan;
+        _planLoaded = true;
+      });
+    }
+  }
 
   void _changeMonth(int increment) {
     setState(() {
@@ -290,11 +312,366 @@ class _BudgetScreenState extends State<BudgetScreen> {
         children: [
           _buildNetWorthCard(context, currentUserId, careRecipientId),
           const SizedBox(height: 16),
+          _buildInsuranceSection(context, currentUserId, careRecipientId),
+          const SizedBox(height: 16),
           _buildCashFlowCard(context, currentUserId, careRecipientId),
           const SizedBox(height: 16),
           _buildBudgetStatusCard(context, currentUserId, careRecipientId, canSetBudgets),
+          const SizedBox(height: 16),
+          _buildTaxDeductionCard(context, currentUserId, careRecipientId),
+          const SizedBox(height: 16),
+          _buildExpenseBreakdownSection(context, currentUserId, careRecipientId),
         ],
       ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Insurance OOP tracker
+  // ─────────────────────────────────────────────────────────
+
+  Widget _buildInsuranceSection(
+      BuildContext context, String currentUserId, String? careRecipientId) {
+    if (!_planLoaded) {
+      return const SizedBox.shrink();
+    }
+    final firestoreService = context.read<FirestoreService>();
+    final year = DateTime.now().year;
+    return StreamBuilder<List<BudgetEntry>>(
+      stream: firestoreService.getBudgetStreamForYear(
+        userId: currentUserId,
+        careRecipientId: careRecipientId,
+        year: year,
+      ),
+      builder: (context, snap) {
+        final entries = snap.data ?? const <BudgetEntry>[];
+        final medical = entries
+            .where((e) => e.category == 'Medical & Health')
+            .toList();
+        final ytdMedicalSpend =
+            medical.fold<double>(0, (s, e) => s + e.amount);
+        final ytdTaxDeductible = entries
+            .where((e) => e.isTaxDeductible)
+            .fold<double>(0, (s, e) => s + e.amount);
+        final monthsElapsed = DateTime.now().month;
+        final monthlyAvg =
+            monthsElapsed > 0 ? ytdMedicalSpend / monthsElapsed : 0.0;
+        return InsuranceTrackerCard(
+          plan: _insurancePlan,
+          ytdMedicalSpend: ytdMedicalSpend,
+          ytdTaxDeductible: ytdTaxDeductible,
+          monthlyAverage: monthlyAvg,
+          onSetup: _showInsuranceSetupSheet,
+        );
+      },
+    );
+  }
+
+  void _showInsuranceSetupSheet() {
+    final year = DateTime.now().year;
+    final existing = _insurancePlan;
+    final deductibleCtrl = TextEditingController(
+        text: existing?.deductibleAmount.toStringAsFixed(0) ?? '');
+    final oopCtrl = TextEditingController(
+        text: existing?.outOfPocketMax.toStringAsFixed(0) ?? '');
+    final premiumCtrl = TextEditingController(
+        text: existing?.monthlyPremium?.toStringAsFixed(0) ?? '');
+    final agiCtrl = TextEditingController(
+        text: existing?.adjustedGrossIncome?.toStringAsFixed(0) ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Insurance Plan · $year',
+                style: Theme.of(ctx).textTheme.titleLarge),
+            const SizedBox(height: 4),
+            const Text(
+              'Saved on this device only. Update once a year.',
+              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: deductibleCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Annual deductible',
+                prefixText: '\$',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: oopCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Out-of-pocket maximum',
+                prefixText: '\$',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: premiumCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Monthly premium (optional)',
+                prefixText: '\$',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: agiCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Adjusted Gross Income (optional)',
+                helperText:
+                    'Used for the IRS 7.5% medical-deduction threshold',
+                prefixText: '\$',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                if (existing != null)
+                  TextButton(
+                    onPressed: () async {
+                      await InsurancePlan.clear(year);
+                      if (!ctx.mounted) return;
+                      Navigator.of(ctx).pop();
+                      setState(() => _insurancePlan = null);
+                    },
+                    child: const Text('Clear',
+                        style: TextStyle(color: AppTheme.dangerColor)),
+                  ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: () async {
+                    final deductible =
+                        double.tryParse(deductibleCtrl.text.trim()) ?? 0;
+                    final oop =
+                        double.tryParse(oopCtrl.text.trim()) ?? 0;
+                    if (deductible <= 0 || oop <= 0) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Please enter both deductible and OOP max.')),
+                      );
+                      return;
+                    }
+                    final plan = InsurancePlan(
+                      year: year,
+                      deductibleAmount: deductible,
+                      outOfPocketMax: oop,
+                      monthlyPremium:
+                          double.tryParse(premiumCtrl.text.trim()),
+                      adjustedGrossIncome:
+                          double.tryParse(agiCtrl.text.trim()),
+                    );
+                    await plan.save();
+                    if (!ctx.mounted) return;
+                    Navigator.of(ctx).pop();
+                    setState(() => _insurancePlan = plan);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1565C0),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Tax deduction summary
+  // ─────────────────────────────────────────────────────────
+
+  Widget _buildTaxDeductionCard(
+      BuildContext context, String currentUserId, String? careRecipientId) {
+    final firestoreService = context.read<FirestoreService>();
+    final year = DateTime.now().year;
+    final money = NumberFormat.simpleCurrency(decimalDigits: 0);
+    return StreamBuilder<List<BudgetEntry>>(
+      stream: firestoreService.getBudgetStreamForYear(
+        userId: currentUserId,
+        careRecipientId: careRecipientId,
+        year: year,
+      ),
+      builder: (context, snap) {
+        final all = snap.data ?? const <BudgetEntry>[];
+        final deductible = all.where((e) => e.isTaxDeductible).toList();
+        final ytd = deductible.fold<double>(0, (s, e) => s + e.amount);
+        final plan = _insurancePlan;
+        final hasAgi = plan?.hasAgi ?? false;
+        final threshold = plan?.irsMedicalThreshold ?? 0;
+        final aboveThreshold =
+            hasAgi ? (ytd - threshold).clamp(0, double.infinity) : 0;
+
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+                color: const Color(0xFF7B1FA2).withValues(alpha: 0.25)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color:
+                          const Color(0xFF7B1FA2).withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.receipt_long_outlined,
+                        color: Color(0xFF7B1FA2), size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text('Tax Deductions · YTD',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 14)),
+                  ),
+                  if (deductible.isNotEmpty)
+                    TextButton.icon(
+                      onPressed: () => _exportTaxDeductibleCsv(deductible, year),
+                      icon: const Icon(Icons.ios_share, size: 14),
+                      label: const Text('Export',
+                          style: TextStyle(fontSize: 11)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF7B1FA2),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (deductible.isEmpty)
+                const Text(
+                  'No tax-deductible expenses logged this year. Toggle "Potentially Tax-Deductible" on relevant expenses.',
+                  style: TextStyle(
+                      fontSize: 12, color: AppTheme.textSecondary),
+                )
+              else ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total deductible',
+                        style: TextStyle(fontSize: 12)),
+                    Text(money.format(ytd),
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF7B1FA2))),
+                  ],
+                ),
+                Text('${deductible.length} entries',
+                    style: const TextStyle(
+                        fontSize: 11, color: AppTheme.textSecondary)),
+                if (hasAgi) ...[
+                  const Divider(height: 18),
+                  _kvRow('IRS threshold (7.5% AGI)',
+                      money.format(threshold)),
+                  const SizedBox(height: 4),
+                  _kvRow(
+                    'Deductible above threshold',
+                    money.format(aboveThreshold),
+                    highlight: aboveThreshold > 0,
+                  ),
+                ] else ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add your AGI in the Insurance settings to see how much of this is actually deductible (IRS allows medical expenses above 7.5% of AGI).',
+                    style: TextStyle(
+                        fontSize: 10, color: Colors.grey.shade600),
+                  ),
+                ],
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _kvRow(String label, String value, {bool highlight = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12)),
+        Text(value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: highlight
+                  ? const Color(0xFF43A047)
+                  : AppTheme.textPrimary,
+            )),
+      ],
+    );
+  }
+
+  void _exportTaxDeductibleCsv(List<BudgetEntry> entries, int year) {
+    final money = NumberFormat.currency(decimalDigits: 2, symbol: '\$');
+    final buf = StringBuffer();
+    buf.writeln('Date,Category,Subcategory,Description,Amount');
+    final sorted = [...entries]..sort((a, b) => a.date.compareTo(b.date));
+    double total = 0;
+    for (final e in sorted) {
+      buf.writeln('${DateFormat('yyyy-MM-dd').format(e.date)},'
+          '"${e.category}",'
+          '"${e.subCategory ?? ''}",'
+          '"${e.description.replaceAll('"', '""')}",'
+          '${e.amount.toStringAsFixed(2)}');
+      total += e.amount;
+    }
+    buf.writeln(',,,,${total.toStringAsFixed(2)}');
+    Share.share(buf.toString(),
+        subject: 'Tax-Deductible Expenses $year — ${money.format(total)}');
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Expense breakdown chart
+  // ─────────────────────────────────────────────────────────
+
+  Widget _buildExpenseBreakdownSection(
+      BuildContext context, String currentUserId, String? careRecipientId) {
+    final firestoreService = context.read<FirestoreService>();
+    return StreamBuilder<List<BudgetEntry>>(
+      stream: firestoreService.getBudgetStreamForMonth(
+        userId: currentUserId,
+        careRecipientId: careRecipientId,
+        month: _selectedMonth,
+      ),
+      builder: (context, snap) {
+        final entries = snap.data ?? const <BudgetEntry>[];
+        if (entries.isEmpty) return const SizedBox.shrink();
+        return ExpenseBreakdownChart(
+          expenses: entries,
+          monthLabel: DateFormat.yMMM().format(_selectedMonth),
+        );
+      },
     );
   }
   
@@ -474,7 +851,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
         // 2. Map both lists to the common Transaction type
         final expenseTransactions = expenses.map((e) => Transaction(
           id: e.id!,
-          description: e.description,
+          description: e.isRecurring
+              ? '${e.description} \u21BB'
+              : e.description,
           category: e.category,
           amount: e.amount,
           date: e.date,

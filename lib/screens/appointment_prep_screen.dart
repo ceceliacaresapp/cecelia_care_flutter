@@ -28,6 +28,7 @@ import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/utils/string_extensions.dart';
+import 'package:cecelia_care_flutter/models/cognitive_assessment.dart';
 import 'package:cecelia_care_flutter/models/fall_risk_assessment.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 
@@ -441,22 +442,32 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
     if (_isGenerating) return;
     setState(() => _isGenerating = true);
     try {
-      // Fetch latest fall risk assessment for the PDF.
+      // Fetch latest fall risk + cognitive assessment for the PDF.
       final elderId =
           context.read<ActiveElderProvider>().activeElder?.id ?? '';
       FallRiskAssessment? fallRisk;
+      CognitiveAssessment? cognitive;
+      List<CognitiveAssessment> cognitiveHistory = const [];
       if (elderId.isNotEmpty) {
-        final fallSnap = await context
-            .read<FirestoreService>()
-            .getFallRiskAssessmentsStream(elderId)
-            .first;
+        final fs = context.read<FirestoreService>();
+        final fallSnap =
+            await fs.getFallRiskAssessmentsStream(elderId).first;
         if (fallSnap.isNotEmpty) {
           fallRisk = FallRiskAssessment.fromFirestore(
               fallSnap.first['id'] as String? ?? '', fallSnap.first);
         }
+        final cogSnap =
+            await fs.getCognitiveAssessmentsStream(elderId).first;
+        cognitiveHistory = cogSnap
+            .map((d) => CognitiveAssessment.fromFirestore(
+                d['id'] as String? ?? '', d))
+            .toList();
+        if (cognitiveHistory.isNotEmpty) {
+          cognitive = cognitiveHistory.first;
+        }
       }
-      final pdfBytes =
-          await _buildPdf(data, elderName, caregiverName, fallRisk);
+      final pdfBytes = await _buildPdf(
+          data, elderName, caregiverName, fallRisk, cognitive, cognitiveHistory);
 
       final tempDir = await getTemporaryDirectory();
       final slug =
@@ -490,6 +501,8 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
     String elderName,
     String caregiverName,
     FallRiskAssessment? fallRisk,
+    CognitiveAssessment? cognitive,
+    List<CognitiveAssessment> cognitiveHistory,
   ) async {
     final pdf = pw.Document();
     final dateFmt = DateFormat('MMM d, yyyy');
@@ -693,6 +706,70 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
             }
             widgets.add(pw.Text(
               'Assessed ${fallRisk.dateString} by ${fallRisk.assessedByName}',
+              style: const pw.TextStyle(
+                  fontSize: 8, color: PdfColors.grey600),
+            ));
+          }
+
+          // Cognitive Screening Assessment
+          if (cognitive != null) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader('Cognitive Screening'));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(pw.Text(
+              'Score: ${cognitive.totalScore}/${cognitive.maxPossibleScore} \u2014 ${cognitive.cognitiveLevel}',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: cognitive.scorePercent >= 0.85
+                    ? PdfColors.green800
+                    : cognitive.scorePercent >= 0.70
+                        ? PdfColors.blue800
+                        : cognitive.scorePercent >= 0.50
+                            ? PdfColors.orange800
+                            : PdfColors.red800,
+              ),
+            ));
+            if (cognitive.weakestDomain != null) {
+              widgets.add(pw.Text(
+                'Weakest domain: ${cognitive.weakestDomain}',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            if (cognitive.strongestDomain != null) {
+              widgets.add(pw.Text(
+                'Strongest domain: ${cognitive.strongestDomain}',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            // Per-domain breakdown
+            widgets.add(pw.SizedBox(height: 4));
+            widgets.add(pw.Text('Domain breakdown:',
+                style: pw.TextStyle(
+                    fontSize: 9, fontWeight: pw.FontWeight.bold)));
+            cognitive.domainScores.forEach((name, pct) {
+              final max = CognitiveAssessment.kDomainMax[name] ?? 5;
+              final raw = pct == null ? '—' : '${(pct * max).round()}/$max';
+              widgets.add(pw.Text('  \u2022 $name: $raw',
+                  style: const pw.TextStyle(fontSize: 9)));
+            });
+            // Trend (compare to oldest in history)
+            if (cognitiveHistory.length >= 2) {
+              final oldest = cognitiveHistory.last;
+              final delta = cognitive.totalScore - oldest.totalScore;
+              final trendStr = delta == 0
+                  ? 'Stable'
+                  : delta > 0
+                      ? 'Improved by $delta over ${cognitiveHistory.length} assessments'
+                      : 'Declined by ${delta.abs()} over ${cognitiveHistory.length} assessments';
+              widgets.add(pw.SizedBox(height: 2));
+              widgets.add(pw.Text('Trend: $trendStr',
+                  style: pw.TextStyle(
+                      fontSize: 9, fontStyle: pw.FontStyle.italic)));
+            }
+            widgets.add(pw.SizedBox(height: 2));
+            widgets.add(pw.Text(
+              'Assessed ${cognitive.createdAt != null ? DateFormat('MMM d, yyyy').format(cognitive.createdAt!.toDate()) : cognitive.monthString} by ${cognitive.assessedByName}',
               style: const pw.TextStyle(
                   fontSize: 8, color: PdfColors.grey600),
             ));

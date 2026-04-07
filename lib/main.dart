@@ -30,6 +30,7 @@ import 'providers/symptom_analytics_provider.dart';
 import 'providers/gamification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/adl_provider.dart';
+import 'providers/cognitive_provider.dart';
 import 'providers/accessibility_provider.dart';
 import 'routing/app_router.dart';
 import 'utils/app_theme.dart';
@@ -195,6 +196,21 @@ class _AppRootState extends State<AppRoot> {
             ChangeNotifierProxyProvider<ActiveElderProvider, AdlProvider>(
               create: (context) {
                 final provider = AdlProvider();
+                final elder = Provider.of<ActiveElderProvider>(
+                        context, listen: false)
+                    .activeElder;
+                provider.updateForElder(elder);
+                return provider;
+              },
+              update: (context, activeElderProvider, previous) {
+                previous!.updateForElder(activeElderProvider.activeElder);
+                return previous;
+              },
+            ),
+            ChangeNotifierProxyProvider<ActiveElderProvider,
+                CognitiveProvider>(
+              create: (context) {
+                final provider = CognitiveProvider();
                 final elder = Provider.of<ActiveElderProvider>(
                         context, listen: false)
                     .activeElder;

@@ -19,6 +19,7 @@ class BudgetEntry {
   final DateTime date;
   final String? notes;
   final bool isTaxDeductible;
+  final bool isRecurring;
 
   BudgetEntry({
     this.id,
@@ -32,6 +33,7 @@ class BudgetEntry {
     required this.date,
     this.notes,
     this.isTaxDeductible = false,
+    this.isRecurring = false,
   });
 
   /// **CORRECTED: Converts a Firestore DocumentSnapshot into a BudgetEntry object.**
@@ -58,6 +60,7 @@ class BudgetEntry {
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       notes: data['notes'],
       isTaxDeductible: data['isTaxDeductible'] ?? false,
+      isRecurring: data['isRecurring'] ?? false,
     );
   }
 
@@ -76,6 +79,7 @@ class BudgetEntry {
       'date': Timestamp.fromDate(date),
       if (notes != null) 'notes': notes,
       'isTaxDeductible': isTaxDeductible,
+      'isRecurring': isRecurring,
     };
   }
 }

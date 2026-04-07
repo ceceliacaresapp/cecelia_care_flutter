@@ -573,7 +573,7 @@
     "careScreenTooltipEditFoodWater": "食事/水分エントリを編集",
     "careScreenTooltipDeleteFoodWater": "食事/水分エントリを削除",
     "careScreenErrorMissingIdDelete": "エラー: IDがないためエントリを削除できません。",
-    "careScreenButtonAddFoodWater": "食事/水分を追加",
+    "careScreenButtonAddFoodWater": "食事を追加",
     "careScreenSectionTitleMoodBehavior": "気分と行動",
     "careScreenNoMoodBehaviorLogged": "この日の気分や行動の記録はありません。",
     "careScreenMood": "気分: {mood}",

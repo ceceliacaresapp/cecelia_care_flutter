@@ -137,6 +137,18 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: _selectedTemplate == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _selectedTemplate != null) {
+          setState(() => _selectedTemplate = null);
+        }
+      },
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_selectedTemplate == null

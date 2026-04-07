@@ -11,8 +11,16 @@ import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/screens/medication_adherence_screen.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
-class AdherenceSummaryCard extends StatelessWidget {
+class AdherenceSummaryCard extends StatefulWidget {
   const AdherenceSummaryCard({super.key});
+
+  @override
+  State<AdherenceSummaryCard> createState() => _AdherenceSummaryCardState();
+}
+
+class _AdherenceSummaryCardState extends State<AdherenceSummaryCard> {
+  Stream<List<MedicationEntry>>? _stream;
+  String? _streamElderId;
 
   Color _color(double pct) {
     if (pct >= 90) return AppTheme.statusGreen;
@@ -26,8 +34,13 @@ class AdherenceSummaryCard extends StatelessWidget {
         context.watch<ActiveElderProvider>().activeElder?.id ?? '';
     if (elderId.isEmpty) return const SizedBox.shrink();
 
+    if (_stream == null || _streamElderId != elderId) {
+      _stream = context.read<FirestoreService>().medsForElder(elderId);
+      _streamElderId = elderId;
+    }
+
     return StreamBuilder<List<MedicationEntry>>(
-      stream: context.read<FirestoreService>().medsForElder(elderId),
+      stream: _stream,
       builder: (context, snapshot) {
         final allEntries = snapshot.data ?? [];
         final cutoff =

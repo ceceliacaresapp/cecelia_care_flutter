@@ -578,7 +578,7 @@
     "careScreenTooltipDeleteFoodWater": "Delete Food/Water Entry",
     "careScreenErrorMissingIdDelete": "Error: Cannot delete entry, ID is missing.",
     "careScreenErrorFailedToLoad": "Failed to load records for this day. Please try again.",
-    "careScreenButtonAddFoodWater": "Add Food / Water",
+    "careScreenButtonAddFoodWater": "Add Meal",
     "careScreenSectionTitleMoodBehavior": "Mood & Behavior",
     "careScreenNoMoodBehaviorLogged": "No mood or behavior logged for this day.",
     "careScreenMood": "Mood: {mood}",

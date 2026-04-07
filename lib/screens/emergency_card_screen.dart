@@ -2,12 +2,14 @@
 //
 // Lock-screen-style emergency info card for the active care recipient.
 // Displays: name, DOB, allergies, dietary restrictions, current medications,
-// and emergency contact. "Share as PDF" generates a one-page PDF and opens
-// the system share sheet.
+// emergency contact, and rescue medication dosing references. "Share as PDF"
+// generates a one-page PDF and opens the system share sheet.
 //
-// Reads from ElderProfile (already has all fields) and
-// MedicationDefinitionsProvider (for current med list).
+// Reads from ElderProfile, MedicationDefinitionsProvider, and a static
+// rescue-medication data set. Per-elder rescue-med toggles persist via
+// SharedPreferences.
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -15,18 +17,176 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
+import 'package:cecelia_care_flutter/models/rescue_med.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 
-class EmergencyCardScreen extends StatelessWidget {
+class EmergencyCardScreen extends StatefulWidget {
   const EmergencyCardScreen({super.key});
+
+  @override
+  State<EmergencyCardScreen> createState() => _EmergencyCardScreenState();
+}
+
+class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
+  Set<String> _activeRescueMeds = <String>{};
+  String? _loadedForElderId;
+
+  String _prefsKey(String elderId) => 'rescue_meds_$elderId';
+
+  Future<void> _loadRescueMeds(String elderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_prefsKey(elderId));
+    Set<String> ids = <String>{};
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is List) {
+          ids = decoded.map((e) => e.toString()).toSet();
+        }
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    setState(() {
+      _activeRescueMeds = ids;
+      _loadedForElderId = elderId;
+    });
+  }
+
+  Future<void> _saveRescueMeds(String elderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        _prefsKey(elderId), jsonEncode(_activeRescueMeds.toList()));
+  }
+
+  void _openRescueMedEditor(String elderId) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(builder: (sbCtx, setSheetState) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sbCtx).size.height * 0.85,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.textLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 8, 20, 4),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Rescue Medications',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Toggle on the rescue meds prescribed for this care recipient. They will appear on this screen and on the shared PDF.',
+                      style: TextStyle(
+                          fontSize: 12, color: AppTheme.textSecondary),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                Flexible(
+                  child: ListView.builder(
+                    itemCount: kRescueMeds.length,
+                    itemBuilder: (_, i) {
+                      final med = kRescueMeds[i];
+                      final isOn = _activeRescueMeds.contains(med.id);
+                      return SwitchListTile(
+                        value: isOn,
+                        activeThumbColor: med.color,
+                        secondary: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: med.color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(med.icon, color: med.color),
+                        ),
+                        title: Text(
+                          med.name,
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          med.indication,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        onChanged: (v) {
+                          setSheetState(() {
+                            if (v) {
+                              _activeRescueMeds.add(med.id);
+                            } else {
+                              _activeRescueMeds.remove(med.id);
+                            }
+                          });
+                          setState(() {});
+                          _saveRescueMeds(elderId);
+                          HapticUtils.warning();
+                        },
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(sbCtx).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.dangerColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Done',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +205,19 @@ class EmergencyCardScreen extends StatelessWidget {
       );
     }
 
+    // Lazy-load (or reload when the active elder changes).
+    if (_loadedForElderId != activeElder.id) {
+      _loadRescueMeds(activeElder.id);
+    }
+
     final displayName = activeElder.preferredName?.isNotEmpty == true
         ? activeElder.preferredName!
         : activeElder.profileName;
     final meds = medDefs.medDefinitions;
+
+    final activeRescue = kRescueMeds
+        .where((m) => _activeRescueMeds.contains(m.id))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -59,7 +228,7 @@ class EmergencyCardScreen extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -78,10 +247,11 @@ class EmergencyCardScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: AppTheme.dangerColor.withOpacity(0.3), width: 2),
+                    color: AppTheme.dangerColor.withValues(alpha: 0.3),
+                    width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.dangerColor.withOpacity(0.08),
+                    color: AppTheme.dangerColor.withValues(alpha: 0.08),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -138,7 +308,6 @@ class EmergencyCardScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        // Date of Birth
                         if (activeElder.dateOfBirth.isNotEmpty)
                           _InfoRow(
                             icon: Icons.cake_outlined,
@@ -146,8 +315,6 @@ class EmergencyCardScreen extends StatelessWidget {
                             value: activeElder.dateOfBirth,
                             color: const Color(0xFF5C6BC0),
                           ),
-
-                        // Allergies
                         _InfoRow(
                           icon: Icons.warning_amber_outlined,
                           label: 'Allergies',
@@ -157,8 +324,6 @@ class EmergencyCardScreen extends StatelessWidget {
                           color: const Color(0xFFF57C00),
                           isWarning: activeElder.allergies.isNotEmpty,
                         ),
-
-                        // Dietary Restrictions
                         if (activeElder.dietaryRestrictions.isNotEmpty)
                           _InfoRow(
                             icon: Icons.restaurant_outlined,
@@ -166,8 +331,6 @@ class EmergencyCardScreen extends StatelessWidget {
                             value: activeElder.dietaryRestrictions,
                             color: const Color(0xFF43A047),
                           ),
-
-                        // Current Medications
                         _InfoRow(
                           icon: Icons.medication_outlined,
                           label: 'Current Medications',
@@ -181,11 +344,7 @@ class EmergencyCardScreen extends StatelessWidget {
                               : 'None listed',
                           color: const Color(0xFF1E88E5),
                         ),
-
-                        // Divider before emergency contact
                         const Divider(height: 32),
-
-                        // Emergency Contact
                         if (activeElder.emergencyContactName != null &&
                             activeElder
                                 .emergencyContactName!.isNotEmpty) ...[
@@ -208,7 +367,8 @@ class EmergencyCardScreen extends StatelessWidget {
                           _InfoRow(
                             icon: Icons.contact_phone_outlined,
                             label: 'Emergency Contact',
-                            value: 'Not set — add in Settings → Manage Care Recipients',
+                            value:
+                                'Not set — add in Settings → Manage Care Recipients',
                             color: AppTheme.textLight,
                           ),
                       ],
@@ -218,7 +378,15 @@ class EmergencyCardScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
+
+            // ── Rescue Medications section ──────────────────────────
+            _RescueMedsSection(
+              activeMeds: activeRescue,
+              onEdit: () => _openRescueMedEditor(activeElder.id),
+            ),
+
+            const SizedBox(height: 16),
 
             // Disclaimer
             Text(
@@ -243,6 +411,7 @@ class EmergencyCardScreen extends StatelessWidget {
                   meds.map((m) => m.dose != null && m.dose!.isNotEmpty
                       ? '${m.name} (${m.dose})'
                       : m.name).toList(),
+                  activeRescue,
                 ),
                 icon: const Icon(Icons.share_outlined, size: 20),
                 label: const Text(
@@ -263,7 +432,7 @@ class EmergencyCardScreen extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            Text(
+            const Text(
               'Share with doctors, nurses, or family members',
               style: TextStyle(
                 fontSize: 12,
@@ -284,6 +453,7 @@ class EmergencyCardScreen extends StatelessWidget {
     BuildContext context,
     ElderProfile elder,
     List<String> medNames,
+    List<RescueMed> activeRescue,
   ) async {
     try {
       final displayName = elder.preferredName?.isNotEmpty == true
@@ -293,119 +463,123 @@ class EmergencyCardScreen extends StatelessWidget {
       final pdf = pw.Document();
 
       pdf.addPage(
-        pw.Page(
+        pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(40),
           build: (pw.Context ctx) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                // Header
+            return [
+              // Header
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.all(16),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromHex('#E53935'),
+                  borderRadius: pw.BorderRadius.circular(8),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      'EMERGENCY INFORMATION',
+                      style: pw.TextStyle(
+                        fontSize: 11,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.white,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      displayName,
+                      style: pw.TextStyle(
+                        fontSize: 24,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              if (elder.dateOfBirth.isNotEmpty)
+                _pdfInfoRow('Date of Birth', elder.dateOfBirth),
+              _pdfInfoRow(
+                'Allergies',
+                elder.allergies.isNotEmpty
+                    ? elder.allergies.join(', ')
+                    : 'None listed',
+                isHighlight: elder.allergies.isNotEmpty,
+              ),
+              if (elder.dietaryRestrictions.isNotEmpty)
+                _pdfInfoRow('Dietary Restrictions', elder.dietaryRestrictions),
+              _pdfInfoRow(
+                'Current Medications',
+                medNames.isNotEmpty ? medNames.join('\n') : 'None listed',
+              ),
+              pw.SizedBox(height: 6),
+              pw.Divider(color: PdfColors.grey300),
+              pw.SizedBox(height: 6),
+              if (elder.emergencyContactName != null &&
+                  elder.emergencyContactName!.isNotEmpty)
+                _pdfInfoRow(
+                  'Emergency Contact',
+                  [
+                    elder.emergencyContactName!,
+                    if (elder.emergencyContactRelationship != null)
+                      '(${elder.emergencyContactRelationship})',
+                    if (elder.emergencyContactPhone != null)
+                      elder.emergencyContactPhone!,
+                  ].join('\n'),
+                )
+              else
+                _pdfInfoRow('Emergency Contact', 'Not set'),
+
+              // ── Rescue Medications PDF section ──────────────────
+              if (activeRescue.isNotEmpty) ...[
+                pw.SizedBox(height: 14),
                 pw.Container(
                   width: double.infinity,
-                  padding: const pw.EdgeInsets.all(16),
+                  padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
                   decoration: pw.BoxDecoration(
                     color: PdfColor.fromHex('#E53935'),
-                    borderRadius: pw.BorderRadius.circular(8),
+                    borderRadius: pw.BorderRadius.circular(6),
                   ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        'EMERGENCY INFORMATION',
-                        style: pw.TextStyle(
-                          fontSize: 11,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.white,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        displayName,
-                        style: pw.TextStyle(
-                          fontSize: 24,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                pw.SizedBox(height: 20),
-
-                // Date of Birth
-                if (elder.dateOfBirth.isNotEmpty)
-                  _pdfInfoRow('Date of Birth', elder.dateOfBirth),
-
-                // Allergies
-                _pdfInfoRow(
-                  'Allergies',
-                  elder.allergies.isNotEmpty
-                      ? elder.allergies.join(', ')
-                      : 'None listed',
-                  isHighlight: elder.allergies.isNotEmpty,
-                ),
-
-                // Dietary Restrictions
-                if (elder.dietaryRestrictions.isNotEmpty)
-                  _pdfInfoRow(
-                      'Dietary Restrictions', elder.dietaryRestrictions),
-
-                // Medications
-                _pdfInfoRow(
-                  'Current Medications',
-                  medNames.isNotEmpty
-                      ? medNames.join('\n')
-                      : 'None listed',
-                ),
-
-                pw.SizedBox(height: 10),
-                pw.Divider(color: PdfColors.grey300),
-                pw.SizedBox(height: 10),
-
-                // Emergency Contact
-                if (elder.emergencyContactName != null &&
-                    elder.emergencyContactName!.isNotEmpty) ...[
-                  _pdfInfoRow(
-                    'Emergency Contact',
-                    [
-                      elder.emergencyContactName!,
-                      if (elder.emergencyContactRelationship != null)
-                        '(${elder.emergencyContactRelationship})',
-                      if (elder.emergencyContactPhone != null)
-                        elder.emergencyContactPhone!,
-                    ].join('\n'),
-                  ),
-                ] else
-                  _pdfInfoRow('Emergency Contact', 'Not set'),
-
-                pw.Spacer(),
-
-                // Footer
-                pw.Center(
                   child: pw.Text(
-                    'Generated by Cecelia Care on ${DateFormat('MMMM d, yyyy').format(DateTime.now())}',
+                    'RESCUE MEDICATION INSTRUCTIONS',
                     style: pw.TextStyle(
-                      fontSize: 9,
-                      color: PdfColors.grey500,
-                      fontStyle: pw.FontStyle.italic,
+                      fontSize: 11,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.white,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ),
+                pw.SizedBox(height: 8),
+                ...activeRescue.map(_pdfRescueMed),
               ],
-            );
+
+              pw.SizedBox(height: 14),
+              pw.Center(
+                child: pw.Text(
+                  'Generated by Cecelia Care on ${DateFormat('MMMM d, yyyy').format(DateTime.now())}',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    color: PdfColors.grey500,
+                    fontStyle: pw.FontStyle.italic,
+                  ),
+                ),
+              ),
+            ];
           },
         ),
       );
 
       final Uint8List pdfBytes = await pdf.save();
-
-      // Save to temp directory and share
       final Directory tempDir = await getTemporaryDirectory();
       final safeName = displayName.replaceAll(RegExp(r'[^\w\s]'), '');
-      final file = File(
-          '${tempDir.path}/Emergency_Card_$safeName.pdf');
+      final file =
+          File('${tempDir.path}/Emergency_Card_$safeName.pdf');
       await file.writeAsBytes(pdfBytes);
 
       await Share.shareXFiles(
@@ -429,7 +603,6 @@ class EmergencyCardScreen extends StatelessWidget {
     }
   }
 
-  // PDF info row helper
   static pw.Widget _pdfInfoRow(String label, String value,
       {bool isHighlight = false}) {
     return pw.Padding(
@@ -456,7 +629,8 @@ class EmergencyCardScreen extends StatelessWidget {
                   : PdfColor.fromHex('#F5F5F5'),
               borderRadius: pw.BorderRadius.circular(6),
               border: isHighlight
-                  ? pw.Border.all(color: PdfColor.fromHex('#F57C00'), width: 0.5)
+                  ? pw.Border.all(
+                      color: PdfColor.fromHex('#F57C00'), width: 0.5)
                   : null,
             ),
             child: pw.Text(
@@ -473,6 +647,307 @@ class EmergencyCardScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  static pw.Widget _pdfRescueMed(RescueMed med) {
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(bottom: 10),
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: PdfColor.fromHex('#FFFBFB'),
+        borderRadius: pw.BorderRadius.circular(6),
+        border: pw.Border.all(color: PdfColor.fromHex('#E53935'), width: 0.6),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            med.name,
+            style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColor.fromHex('#B71C1C')),
+          ),
+          pw.SizedBox(height: 2),
+          pw.Text(
+            'Indication: ${med.indication}',
+            style: const pw.TextStyle(fontSize: 10),
+          ),
+          pw.Text(
+            'Route: ${med.route}',
+            style: const pw.TextStyle(fontSize: 10),
+          ),
+          pw.SizedBox(height: 6),
+          ...List.generate(
+            med.steps.length,
+            (i) => pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 2),
+              child: pw.Text(
+                '${i + 1}. ${med.steps[i]}',
+                style: const pw.TextStyle(fontSize: 10),
+              ),
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.all(6),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('#FFEBEE'),
+              borderRadius: pw.BorderRadius.circular(4),
+            ),
+            child: pw.Text(
+              'WARNING: ${med.warning}',
+              style: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColor.fromHex('#B71C1C'),
+              ),
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            'CALL 911 IMMEDIATELY',
+            style: pw.TextStyle(
+                fontSize: 10,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColor.fromHex('#B71C1C')),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rescue meds section (on-screen)
+// ---------------------------------------------------------------------------
+
+class _RescueMedsSection extends StatelessWidget {
+  const _RescueMedsSection({
+    required this.activeMeds,
+    required this.onEdit,
+  });
+
+  final List<RescueMed> activeMeds;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: AppTheme.dangerColor.withValues(alpha: 0.3), width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.dangerColor.withValues(alpha: 0.08),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(18)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.medication_liquid_outlined,
+                    color: AppTheme.dangerColor, size: 22),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'RESCUE MEDICATIONS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: Text(activeMeds.isEmpty ? 'Add' : 'Edit'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.dangerColor,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (activeMeds.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'No rescue medications selected. Tap "Add" to choose which apply to this care recipient — instructions will appear here and on the shared PDF.',
+                style: TextStyle(
+                    fontSize: 12, color: AppTheme.textSecondary, height: 1.4),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              child: Column(
+                children: activeMeds
+                    .map((m) => _RescueMedCard(med: m))
+                    .toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RescueMedCard extends StatelessWidget {
+  const _RescueMedCard({required this.med});
+  final RescueMed med;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: med.color.withValues(alpha: 0.04),
+        border:
+            Border(left: BorderSide(color: med.color, width: 4)),
+      ),
+      child: Theme(
+        data: Theme.of(context)
+            .copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+          childrenPadding:
+              const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: med.color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(med.icon, color: med.color, size: 22),
+          ),
+          title: Text(
+            med.name,
+            style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 2),
+              Text(
+                med.indication,
+                style: const TextStyle(
+                    fontSize: 12, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: med.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  med.route,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: med.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          children: [
+            ...List.generate(med.steps.length, (i) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 22,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: med.color,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${i + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        med.steps[i],
+                        style: const TextStyle(
+                            fontSize: 13, height: 1.35),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.dangerColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: AppTheme.dangerColor.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.warning_amber_rounded,
+                      color: AppTheme.dangerColor, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      med.warning,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.dangerColor,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                'CALL 911 IMMEDIATELY',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.0,
+                  color: AppTheme.dangerColor,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -507,7 +982,7 @@ class _InfoRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 20, color: color),
@@ -523,7 +998,7 @@ class _InfoRow extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.8,
-                    color: color.withOpacity(0.7),
+                    color: color.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -537,7 +1012,8 @@ class _InfoRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     border: isWarning
                         ? Border.all(
-                            color: const Color(0xFFF57C00).withOpacity(0.3))
+                            color: const Color(0xFFF57C00)
+                                .withValues(alpha: 0.3))
                         : null,
                   ),
                   child: Text(

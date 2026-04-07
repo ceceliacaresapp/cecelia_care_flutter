@@ -1065,7 +1065,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get careScreenErrorFailedToLoad => 'この日の記録の読み込みに失敗しました。もう一度お試しください。';
 
   @override
-  String get careScreenButtonAddFoodWater => '食事/水分を追加';
+  String get careScreenButtonAddFoodWater => '食事を追加';
 
   @override
   String get careScreenSectionTitleMoodBehavior => '気分と行動';

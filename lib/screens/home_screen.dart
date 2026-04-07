@@ -443,20 +443,74 @@ class _TabScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: showToggle
-            ? const ElderViewToggle()
-            : Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
+        leadingWidth: showToggle ? 140 : 56,
+        leading: showToggle
+            ? Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Center(
+                  child: GestureDetector(
+                    onLongPress: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) =>
+                            const ManageCareRecipientProfilesScreen(),
+                      ));
+                    },
+                    child: const ElderViewToggle(),
+                  ),
                 ),
-                child: Text(
-                  appBarTitle,
-                  style: const TextStyle(fontSize: 17),
-                ),
+              )
+            : (activeElder != null
+                ? Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) =>
+                                const ManageCareRecipientProfilesScreen(),
+                          ));
+                        },
+                        child: Tooltip(
+                          message: 'Manage care recipients',
+                          child: CircleAvatar(
+                            radius: 16,
+                            backgroundColor: Colors.white.withOpacity(0.25),
+                            backgroundImage:
+                                (activeElder.photoUrl?.isNotEmpty == true)
+                                    ? NetworkImage(activeElder.photoUrl!)
+                                    : null,
+                            child: (activeElder.photoUrl == null ||
+                                    activeElder.photoUrl!.isEmpty)
+                                ? Text(
+                                    activeElder.profileName[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : null),
+        title: Text(
+          appBarTitle,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: Offset(0, 1),
+                blurRadius: 2,
+                color: Color(0x40000000),
               ),
+            ],
+          ),
+        ),
         centerTitle: true,
         // No back arrow on the tab's root page.
         automaticallyImplyLeading: false,
@@ -474,41 +528,6 @@ class _TabScaffold extends StatelessWidget {
           ),
         ),
         actions: [
-          // Care recipient quick-switch avatar — tap to manage profiles.
-          if (activeElder != null)
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) =>
-                      const ManageCareRecipientProfilesScreen(),
-                ));
-              },
-              child: Tooltip(
-                message: 'Switch care recipient',
-                child: Container(
-                  margin: const EdgeInsets.only(right: 4),
-                  child: CircleAvatar(
-                    radius: 15,
-                    backgroundColor: Colors.white.withOpacity(0.25),
-                    backgroundImage:
-                        (activeElder.photoUrl?.isNotEmpty == true)
-                            ? NetworkImage(activeElder.photoUrl!)
-                            : null,
-                    child: (activeElder.photoUrl == null ||
-                            activeElder.photoUrl!.isEmpty)
-                        ? Text(
-                            activeElder.profileName[0].toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          )
-                        : null,
-                  ),
-                ),
-              ),
-            ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: l10n.homeScreenBaseTitleSettings,

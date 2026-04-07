@@ -573,7 +573,7 @@
     "careScreenTooltipEditFoodWater": "음식/물 항목 편집",
     "careScreenTooltipDeleteFoodWater": "음식/물 항목 삭제",
     "careScreenErrorMissingIdDelete": "오류: ID가 없어 항목을 삭제할 수 없습니다.",
-    "careScreenButtonAddFoodWater": "음식/물 추가",
+    "careScreenButtonAddFoodWater": "식사 추가",
     "careScreenSectionTitleMoodBehavior": "기분 및 행동",
     "careScreenNoMoodBehaviorLogged": "이날 기록된 기분이나 행동이 없습니다.",
     "careScreenMood": "기분: {mood}",

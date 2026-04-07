@@ -1055,7 +1055,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get careScreenErrorFailedToLoad => '加载当天记录失败。请重试。';
 
   @override
-  String get careScreenButtonAddFoodWater => '添加食物/饮水';
+  String get careScreenButtonAddFoodWater => '添加餐食';
 
   @override
   String get careScreenSectionTitleMoodBehavior => '心情与行为';

@@ -266,6 +266,28 @@ const List<EntrySchema> entrySchemas = <EntrySchema>[
         isRequired: false,
         descriptionForAI: 'Any additional observations.'),
   ]),
+  EntrySchema('Visitor', [
+    EntryField('visitor-name', 'Visitor Name',
+        isRequired: true,
+        descriptionForAI: 'Name of the person who visited.'),
+    EntryField('visitor-relationship', 'Relationship',
+        isRequired: true,
+        descriptionForAI:
+            'Family, friend, neighbor, aide, therapist, clergy, other.'),
+    EntryField('visitor-duration', 'Duration',
+        isRequired: true,
+        descriptionForAI: 'How long the visit lasted.'),
+    EntryField('visitor-response', 'Response',
+        isRequired: true,
+        descriptionForAI:
+            'Care recipient reaction: positive, neutral, agitated, withdrawn, confused.'),
+    EntryField('visitor-activities', 'Activities',
+        isRequired: false,
+        descriptionForAI: 'What they did during the visit.'),
+    EntryField('visitor-note', 'Notes',
+        isRequired: false,
+        descriptionForAI: 'Additional observations.'),
+  ]),
   EntrySchema('Hydration', [
     EntryField('hydration-volume', 'Volume',
         isRequired: true,
@@ -302,6 +324,7 @@ enum EntryType {
   incontinence,
   nightWaking,
   hydration,
+  visitor,
   custom,
   unknown; // A fallback for safety
 

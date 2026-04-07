@@ -41,11 +41,16 @@ import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.
 import 'package:cecelia_care_flutter/widgets/symptom_insights_card.dart';
 import 'package:cecelia_care_flutter/widgets/med_schedule_timeline.dart';
 import 'package:cecelia_care_flutter/widgets/orientation_board_card.dart';
+import 'package:cecelia_care_flutter/widgets/task_summary_card.dart';
 import 'package:cecelia_care_flutter/widgets/duty_timer_card.dart';
 import 'package:cecelia_care_flutter/widgets/weekly_team_summary_card.dart';
 import 'package:cecelia_care_flutter/widgets/weight_trend_card.dart';
 import 'package:cecelia_care_flutter/widgets/adherence_summary_card.dart';
 import 'package:cecelia_care_flutter/widgets/hydration_progress_card.dart';
+import 'package:cecelia_care_flutter/screens/weight_trend_screen.dart';
+import 'package:cecelia_care_flutter/screens/medication_adherence_screen.dart';
+import 'package:cecelia_care_flutter/screens/forms/hydration_form.dart';
+import 'package:cecelia_care_flutter/screens/badges_screen.dart';
 
 // ---------------------------------------------------------------------------
 // Helper — opens a form as a modal bottom sheet.
@@ -365,6 +370,69 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   List<Map<String, dynamic>>? _sectionConfig;
 
+  // Cached alert streams. Constructed once per elder so the conditional
+  // alert StreamBuilders don't tear down and recreate Firestore listeners
+  // on every parent rebuild (which happens on any provider notification).
+  String? _cachedAlertElderId;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _wanderingAlertStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _fallRiskAlertStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _turningLogsAlertStream;
+
+  // Cached "today's care log" stream — same reasoning as the alerts.
+  String? _cachedCareLogKey; // elderId|userId|yyyy-MM-dd
+  Stream<List<JournalEntry>>? _careLogStream;
+
+  Stream<List<JournalEntry>> _ensureCareLogStream({
+    required String elderId,
+    required String currentUserId,
+    required DateTime startOfDay,
+    required DateTime endOfDay,
+  }) {
+    final key =
+        '$elderId|$currentUserId|${startOfDay.year}-${startOfDay.month}-${startOfDay.day}';
+    if (_careLogStream != null && _cachedCareLogKey == key) {
+      return _careLogStream!;
+    }
+    _cachedCareLogKey = key;
+    _careLogStream = context
+        .read<JournalServiceProvider>()
+        .getJournalEntriesStream(
+          elderId: elderId,
+          currentUserId: currentUserId,
+          startDate: startOfDay,
+          endDate: endOfDay,
+        );
+    return _careLogStream!;
+  }
+
+  void _ensureAlertStreams(String elderId) {
+    if (_cachedAlertElderId == elderId &&
+        _wanderingAlertStream != null &&
+        _fallRiskAlertStream != null &&
+        _turningLogsAlertStream != null) {
+      return;
+    }
+    _cachedAlertElderId = elderId;
+    final elderRef = FirebaseFirestore.instance
+        .collection('elderProfiles')
+        .doc(elderId);
+    _wanderingAlertStream = elderRef
+        .collection('wanderingAssessments')
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .snapshots();
+    _fallRiskAlertStream = elderRef
+        .collection('fallRiskAssessments')
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .snapshots();
+    _turningLogsAlertStream = elderRef
+        .collection('turningLogs')
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -499,12 +567,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const _SectionLabel(label: "Today's care log"),
           const SizedBox(height: 10),
           StreamBuilder<List<JournalEntry>>(
-            stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
-                  elderId: activeElder.id,
-                  currentUserId: currentUserId,
-                  startDate: startOfDay,
-                  endDate: endOfDay,
-                ),
+            stream: _ensureCareLogStream(
+              elderId: activeElder.id,
+              currentUserId: currentUserId,
+              startOfDay: startOfDay,
+              endOfDay: endOfDay,
+            ),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting &&
                   !snapshot.hasData) {
@@ -517,7 +585,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
       'achievements': () => [
         const SizedBox(height: 20),
-        const _SectionLabel(label: 'Achievements'),
+        _SectionLabel(
+          label: 'Achievements',
+          onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const BadgesScreen())),
+        ),
         const SizedBox(height: 10),
         const _BadgesRow(),
       ],
@@ -527,6 +599,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 10),
         _JournalPreviewCard(currentUserId: currentUserId),
       ],
+      'taskSummary': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Tasks'),
+          const SizedBox(height: 10),
+          const TaskSummaryCard(),
+        ];
+      },
       'quickLog': () {
         if (isMultiView) return <Widget>[];
         if (!context.watch<ActiveElderProvider>().canLog) return <Widget>[];
@@ -577,7 +658,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (isMultiView) return <Widget>[];
         return <Widget>[
           const SizedBox(height: 20),
-          const _SectionLabel(label: 'Weight trend'),
+          _SectionLabel(
+            label: 'Weight trend',
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const WeightTrendScreen())),
+          ),
           const SizedBox(height: 10),
           const WeightTrendCard(),
         ];
@@ -586,7 +672,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (isMultiView) return <Widget>[];
         return <Widget>[
           const SizedBox(height: 20),
-          const _SectionLabel(label: 'Med adherence'),
+          _SectionLabel(
+            label: 'Med adherence',
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (_) => const MedicationAdherenceScreen())),
+          ),
           const SizedBox(height: 10),
           const AdherenceSummaryCard(),
         ];
@@ -595,7 +686,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (isMultiView) return <Widget>[];
         return <Widget>[
           const SizedBox(height: 20),
-          const _SectionLabel(label: 'Hydration'),
+          _SectionLabel(
+            label: 'Hydration',
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                useRootNavigator: true,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (sheetCtx) => Padding(
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(sheetCtx).scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(20)),
+                    ),
+                    child: HydrationForm(
+                      onClose: () {},
+                      currentDate: currentDateStr,
+                      activeElder: activeElder,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           const SizedBox(height: 10),
           const HydrationProgressCard(),
         ];
@@ -681,20 +799,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
 
           // Wandering risk alert (conditional — only shows for High/Critical)
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('elderProfiles')
-                .doc(effectiveElder.id)
-                .collection('wanderingAssessments')
-                .orderBy('createdAt', descending: true)
-                .limit(1)
-                .snapshots(),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: (() {
+              _ensureAlertStreams(effectiveElder.id);
+              return _wanderingAlertStream;
+            })(),
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SizedBox.shrink();
               }
-              final data =
-                  snapshot.data!.docs.first.data() as Map<String, dynamic>;
+              final data = snapshot.data!.docs.first.data();
               final assessment = WanderingAssessment.fromFirestore(
                   snapshot.data!.docs.first.id, data);
               if (assessment.rawRiskScore < 6) return const SizedBox.shrink();
@@ -733,20 +847,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
 
           // Fall risk alert (conditional — only shows for High/Very High)
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('elderProfiles')
-                .doc(effectiveElder.id)
-                .collection('fallRiskAssessments')
-                .orderBy('createdAt', descending: true)
-                .limit(1)
-                .snapshots(),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: _fallRiskAlertStream,
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SizedBox.shrink();
               }
-              final data =
-                  snapshot.data!.docs.first.data() as Map<String, dynamic>;
+              final data = snapshot.data!.docs.first.data();
               final assessment = FallRiskAssessment.fromFirestore(
                   snapshot.data!.docs.first.id, data);
               if (assessment.rawRiskScore < 8) return const SizedBox.shrink();
@@ -785,20 +892,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
 
           // Time since last turn alert (3h+ = overdue)
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('elderProfiles')
-                .doc(effectiveElder.id)
-                .collection('turningLogs')
-                .orderBy('timestamp', descending: true)
-                .limit(1)
-                .snapshots(),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: _turningLogsAlertStream,
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SizedBox.shrink();
               }
-              final data =
-                  snapshot.data!.docs.first.data() as Map<String, dynamic>;
+              final data = snapshot.data!.docs.first.data();
               final ts = data['timestamp'] as Timestamp?;
               if (ts == null) return const SizedBox.shrink();
               final elapsed = DateTime.now().difference(ts.toDate());
@@ -1422,6 +1522,7 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.incontinence: return const Color(0xFF795548);
       case EntryType.nightWaking: return const Color(0xFF283593);
       case EntryType.hydration: return const Color(0xFF0288D1);
+      case EntryType.visitor: return const Color(0xFF6A1B9A);
       case EntryType.custom: return const Color(0xFF546E7A);
       default: return AppTheme.textSecondary;
     }
@@ -1442,6 +1543,7 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.incontinence: return Icons.water_drop_outlined;
       case EntryType.nightWaking: return Icons.nightlight_outlined;
       case EntryType.hydration: return Icons.local_drink_outlined;
+      case EntryType.visitor: return Icons.people_outline;
       case EntryType.custom: return Icons.extension_outlined;
       default: return Icons.note_outlined;
     }
@@ -1462,6 +1564,7 @@ class _EntryTypeChip extends StatelessWidget {
       case EntryType.incontinence: return 'Continence';
       case EntryType.nightWaking: return 'Night Waking';
       case EntryType.hydration: return 'Fluids';
+      case EntryType.visitor: return 'Visitors';
       case EntryType.custom: return 'Custom';
       default: return t.name;
     }
@@ -1818,48 +1921,51 @@ class _BadgesRow extends StatelessWidget {
     if (all.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 88,
+      height: 68,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: all.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final badge = all[i];
           final isUnlocked = badge.unlocked == true;
+          final accent = isUnlocked
+              ? AppTheme.tileOrange
+              : AppTheme.textLight;
           return GestureDetector(
             onTap: () => _showBadgeInfoDialog(context, badge),
             child: Container(
-              width: 72,
+              width: 56,
+              padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
                 color: isUnlocked
-                    ? const Color(0xFFFFF8E1)
+                    ? AppTheme.tileOrange.withValues(alpha: 0.08)
                     : AppTheme.backgroundGray,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                    color: isUnlocked
-                        ? const Color(0xFFFFC107)
-                        : Colors.transparent),
+                  color: isUnlocked
+                      ? AppTheme.tileOrange.withValues(alpha: 0.3)
+                      : Colors.transparent,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isUnlocked ? Icons.emoji_events : Icons.lock_outline,
-                    size: 28,
-                    color: isUnlocked
-                        ? const Color(0xFFFFC107)
-                        : AppTheme.textLight,
+                    isUnlocked
+                        ? Icons.emoji_events
+                        : Icons.lock_outline,
+                    size: 20,
+                    color: accent,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: Text(
                       badge.label,
                       style: TextStyle(
-                        fontSize: 9,
-                        color: isUnlocked
-                            ? const Color(0xFF8D6E00)
-                            : AppTheme.textLight,
+                        fontSize: 8,
+                        color: accent,
                         fontWeight: isUnlocked
                             ? FontWeight.w600
                             : FontWeight.normal,
@@ -2097,18 +2203,41 @@ class _ElderSubheader extends StatelessWidget {
 }
 
 class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.label});
+  const _SectionLabel({required this.label, this.onTap});
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
+    final text = Text(
       label.toUpperCase(),
       style: const TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.8,
         color: AppTheme.textSecondary,
+      ),
+    );
+    if (onTap == null) return text;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          text,
+          const SizedBox(width: 4),
+          Icon(Icons.chevron_right,
+              size: 14, color: AppTheme.textSecondary),
+          const Spacer(),
+          Text(
+            'View',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryColor,
+            ),
+          ),
+        ],
       ),
     );
   }

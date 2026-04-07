@@ -149,6 +149,28 @@ service cloud.firestore {
         allow read: if isCaregiver(elderId);
         allow write: if canWrite(elderId);
       }
+
+      // Discharge checklists — any caregiver can read/write.
+      match /dischargeChecklists/{checklistId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Cognitive assessments — any caregiver can read/write.
+      match /cognitiveAssessments/{assessmentId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Care tasks — delegation hub. Any caregiver can read/create/update.
+      // Delete restricted to admin or task creator.
+      match /careTasks/{taskId} {
+        allow read: if isCaregiver(elderId);
+        allow create: if canWrite(elderId);
+        allow update: if canWrite(elderId);
+        allow delete: if isAdminRole(elderId) ||
+          (canWrite(elderId) && resource.data.createdBy == request.auth.uid);
+      }
     }
 
     // --- Elders Data (Timeline, Days, Meals) ---

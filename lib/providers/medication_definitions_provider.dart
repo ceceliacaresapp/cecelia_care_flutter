@@ -36,6 +36,12 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
   }
 
   void updateForElder(ElderProfile? elder) {
+    // Early-return guard: skip the cancel/resubscribe cycle when the
+    // active elder hasn't actually changed. ProxyProviders fire on every
+    // notification of their dependency, even when the relevant field is
+    // unchanged — without this guard we'd churn Firestore listeners on
+    // unrelated ActiveElderProvider notifications.
+    if (_currentElder?.id == elder?.id) return;
     _medDefsSubscription?.cancel();
     _currentElder = elder;
     if (elder == null) {

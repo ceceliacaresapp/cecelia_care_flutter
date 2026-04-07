@@ -59,6 +59,9 @@ class _SkinIntegrityScreenState extends State<SkinIntegrityScreen>
         title: const Text('Skin Integrity'),
         bottom: TabBar(
           controller: _tabCtrl,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
           tabs: const [
             Tab(text: 'Assessment'),
             Tab(text: 'Turning Log'),

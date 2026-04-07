@@ -573,7 +573,7 @@
     "careScreenTooltipEditFoodWater": "Editar Entrada de Comida/Agua",
     "careScreenTooltipDeleteFoodWater": "Eliminar Entrada de Comida/Agua",
     "careScreenErrorMissingIdDelete": "Error: No se puede eliminar la entrada, falta el ID.",
-    "careScreenButtonAddFoodWater": "Añadir Comida / Agua",
+    "careScreenButtonAddFoodWater": "Añadir Comida",
     "careScreenSectionTitleMoodBehavior": "Estado de Ánimo y Comportamiento",
     "careScreenNoMoodBehaviorLogged": "No se ha registrado ningún estado de ánimo o comportamiento para este día.",
     "careScreenMood": "Ánimo: {mood}",

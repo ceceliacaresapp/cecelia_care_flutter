@@ -7,7 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:cecelia_care_flutter/models/disease_roadmap.dart';
+import 'package:cecelia_care_flutter/models/glossary_term.dart';
 import 'package:cecelia_care_flutter/models/training_resource.dart';
+import 'package:cecelia_care_flutter/screens/disease_roadmap_screen.dart';
+import 'package:cecelia_care_flutter/screens/medical_glossary_screen.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 class TrainingLibraryScreen extends StatefulWidget {
@@ -157,6 +161,164 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // ── Disease Progression Guides ────────────────────
+          if (_selectedCategory == null && _searchQuery.isEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text('Disease Progression Guides',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textSecondary,
+                  )),
+            ),
+            SizedBox(
+              height: 130,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: DiseaseRoadmap.all.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, i) {
+                  final r = DiseaseRoadmap.all[i];
+                  return GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              DiseaseRoadmapScreen(roadmap: r)),
+                    ),
+                    child: Container(
+                      width: 150,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            r.color.withValues(alpha: 0.18),
+                            r.color.withValues(alpha: 0.06),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: r.color.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color:
+                                  r.color.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(r.icon,
+                                color: r.color, size: 22),
+                          ),
+                          Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                r.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: r.color,
+                                  height: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${r.stages.length} stages',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: r.color
+                                      .withValues(alpha: 0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          // ── Medical Glossary entry ────────────────────────
+          if (_selectedCategory == null && _searchQuery.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => const MedicalGlossaryScreen()),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor.withValues(alpha: 0.12),
+                        AppTheme.primaryColor.withValues(alpha: 0.04),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.menu_book_outlined,
+                            color: AppTheme.primaryColor, size: 24),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Medical Glossary',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primaryColor,
+                                )),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Plain-language definitions for ${kGlossaryTerms.length} medical terms',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.primaryColor
+                                      .withValues(alpha: 0.75)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right,
+                          color: AppTheme.primaryColor),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
           // ── Category cards ─────────────────────────────────
           if (_selectedCategory == null && _searchQuery.isEmpty) ...[

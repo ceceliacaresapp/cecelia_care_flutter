@@ -34,6 +34,8 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
   String? _selectedType; // 'urinary', 'bowel', 'both'
   String? _selectedSeverity; // 'light', 'moderate', 'heavy'
   String? _selectedSkin; // 'healthy', 'irritated', 'broken', 'notChecked'
+  int? _bristolType; // 1-7
+  String? _urineColor; // see _urineSwatches keys
   bool _changed = true;
   final _noteCtrl = TextEditingController();
   bool _isSaving = false;
@@ -65,6 +67,8 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
         'incontinenceType': _selectedType,
         'severity': _selectedSeverity,
         'skinCondition': _selectedSkin,
+        if (_bristolType != null) 'bristolType': _bristolType,
+        if (_urineColor != null) 'urineColor': _urineColor,
         'changed': _changed,
         'note': _noteCtrl.text.trim(),
         'stamp': Timestamp.now(),
@@ -127,6 +131,56 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
             ],
           ),
           const SizedBox(height: 20),
+
+          // ── Bristol Stool Scale (bowel/both) ───────────────
+          if (_selectedType == 'bowel' || _selectedType == 'both') ...[
+            _SectionLabel('Bristol Stool Scale'),
+            const SizedBox(height: 8),
+            ..._bristolEntries.map(_bristolRow),
+            const SizedBox(height: 20),
+          ],
+
+          // ── Urine Color (urinary/both) ─────────────────────
+          if (_selectedType == 'urinary' || _selectedType == 'both') ...[
+            _SectionLabel('Urine Color'),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _urineSwatches.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (_, i) => _urineSwatch(_urineSwatches[i]),
+              ),
+            ),
+            if (_urineColor != null) ...[
+              const SizedBox(height: 6),
+              Builder(builder: (_) {
+                final s = _urineSwatches
+                    .firstWhere((e) => e.id == _urineColor);
+                final isAlert = s.isWarning;
+                return Row(
+                  children: [
+                    if (isAlert)
+                      Icon(Icons.warning_amber,
+                          size: 14, color: AppTheme.dangerColor),
+                    if (isAlert) const SizedBox(width: 4),
+                    Text(
+                      s.meaning,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isAlert
+                            ? AppTheme.dangerColor
+                            : AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
+            const SizedBox(height: 20),
+          ],
 
           // ── Severity ───────────────────────────────────────
           _SectionLabel('Severity'),
@@ -310,6 +364,169 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
       ),
     );
   }
+
+  // ── Bristol scale ──────────────────────────────────────────────
+
+  static const List<_BristolEntry> _bristolEntries = [
+    _BristolEntry(1, 'Hard lumps', 'Separate hard lumps (severe constipation)', Color(0xFFE65100)),
+    _BristolEntry(2, 'Lumpy sausage', 'Lumpy and sausage-shaped (mild constipation)', Color(0xFFF57C00)),
+    _BristolEntry(3, 'Cracked sausage', 'Sausage with cracks on surface (normal)', Color(0xFF66BB6A)),
+    _BristolEntry(4, 'Smooth snake', 'Smooth and soft (normal, ideal)', Color(0xFF43A047)),
+    _BristolEntry(5, 'Soft blobs', 'Soft blobs with clear edges (lacking fiber)', Color(0xFFFFB300)),
+    _BristolEntry(6, 'Mushy', 'Fluffy, mushy with ragged edges (mild diarrhea)', Color(0xFFEF6C00)),
+    _BristolEntry(7, 'Liquid', 'Entirely liquid, no solid pieces (severe diarrhea)', Color(0xFFE53935)),
+  ];
+
+  Widget _bristolRow(_BristolEntry e) {
+    final isSelected = _bristolType == e.type;
+    return GestureDetector(
+      onTap: () => setState(() => _bristolType = e.type),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? e.color.withValues(alpha: 0.12)
+              : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? e.color : Colors.grey.shade300,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: e.color,
+                shape: BoxShape.circle,
+              ),
+              child: Text('${e.type}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  )),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(e.label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w600,
+                        color: isSelected ? e.color : Colors.grey.shade800,
+                      )),
+                  Text(e.description,
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: isSelected
+                              ? e.color.withValues(alpha: 0.8)
+                              : Colors.grey.shade600)),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: e.color, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Urine color chart ──────────────────────────────────────────
+
+  static const List<_UrineSwatch> _urineSwatches = [
+    _UrineSwatch('clear', 'Clear', Color(0xFFF5F5F0), 'Well hydrated'),
+    _UrineSwatch('paleYellow', 'Pale yellow', Color(0xFFFFFDE7), 'Normal'),
+    _UrineSwatch('yellow', 'Yellow', Color(0xFFFFF9C4), 'Normal'),
+    _UrineSwatch('darkYellow', 'Dark yellow', Color(0xFFFFEB3B), 'Mild dehydration'),
+    _UrineSwatch('amber', 'Amber', Color(0xFFFFC107), 'Dehydrated'),
+    _UrineSwatch('orange', 'Orange', Color(0xFFFF9800), 'Very dehydrated'),
+    _UrineSwatch('pink', 'Pink / red', Color(0xFFEF9A9A), 'Blood — contact doctor', isWarning: true),
+    _UrineSwatch('brown', 'Brown', Color(0xFF795548), 'Liver/kidney concern — contact doctor', isWarning: true),
+  ];
+
+  Widget _urineSwatch(_UrineSwatch s) {
+    final isSelected = _urineColor == s.id;
+    return GestureDetector(
+      onTap: () => setState(() => _urineColor = s.id),
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: s.color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : Colors.grey.shade400,
+                      width: isSelected ? 3 : 1,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  const Icon(Icons.check, color: Colors.white, size: 22),
+                if (s.isWarning && !isSelected)
+                  Positioned(
+                    top: 0,
+                    right: 4,
+                    child: Icon(Icons.warning_amber,
+                        size: 14, color: AppTheme.dangerColor),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              s.label,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : Colors.grey.shade700,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BristolEntry {
+  final int type;
+  final String label;
+  final String description;
+  final Color color;
+  const _BristolEntry(this.type, this.label, this.description, this.color);
+}
+
+class _UrineSwatch {
+  final String id;
+  final String label;
+  final Color color;
+  final String meaning;
+  final bool isWarning;
+  const _UrineSwatch(this.id, this.label, this.color, this.meaning,
+      {this.isWarning = false});
 }
 
 class _SectionLabel extends StatelessWidget {

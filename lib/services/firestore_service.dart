@@ -1670,6 +1670,260 @@ class FirestoreService {
   }
 
   // ---------------------------------------------------------------------------
+  // Cognitive Assessments (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _cognitiveAssessmentsSubcollection =
+      'cognitiveAssessments';
+
+  Stream<List<Map<String, dynamic>>> getCognitiveAssessmentsStream(
+      String elderId) {
+    if (elderId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_cognitiveAssessmentsSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(12)
+        .snapshots()
+        .listen(
+      (snap) {
+        controller.add(snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList());
+      },
+      onError: (e) {
+        debugPrint(
+            'FirestoreService.getCognitiveAssessmentsStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
+  Future<String> addCognitiveAssessment(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_cognitiveAssessmentsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateCognitiveAssessment(
+      String elderId, String id, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || id.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_cognitiveAssessmentsSubcollection)
+        .doc(id)
+        .update(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Discharge Checklists (subcollection under elderProfiles)
+  // ---------------------------------------------------------------------------
+
+  static const String _dischargeChecklistsSubcollection =
+      'dischargeChecklists';
+
+  Stream<List<Map<String, dynamic>>> getDischargeChecklistsStream(
+      String elderId) {
+    if (elderId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_dischargeChecklistsSubcollection)
+        .orderBy('createdAt', descending: true)
+        .limit(5)
+        .snapshots()
+        .listen(
+      (snap) {
+        controller.add(snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList());
+      },
+      onError: (e) {
+        debugPrint(
+            'FirestoreService.getDischargeChecklistsStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
+  Future<String> addDischargeChecklist(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_dischargeChecklistsSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateDischargeChecklist(
+      String elderId, String checklistId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || checklistId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_dischargeChecklistsSubcollection)
+        .doc(checklistId)
+        .update(data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Care Tasks (subcollection under elderProfiles) — task delegation hub
+  // ---------------------------------------------------------------------------
+
+  static const String _careTasksSubcollection = 'careTasks';
+
+  Stream<List<Map<String, dynamic>>> getActiveTasksStream(String elderId) {
+    if (elderId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_careTasksSubcollection)
+        .where('status', whereIn: ['open', 'accepted'])
+        .snapshots()
+        .listen(
+      (snap) {
+        final list = snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList();
+        // Client-side sort by dueDate ascending (nulls last).
+        list.sort((a, b) {
+          final ad = a['dueDate'] as Timestamp?;
+          final bd = b['dueDate'] as Timestamp?;
+          if (ad == null && bd == null) return 0;
+          if (ad == null) return 1;
+          if (bd == null) return -1;
+          return ad.compareTo(bd);
+        });
+        controller.add(list);
+      },
+      onError: (e) {
+        debugPrint('FirestoreService.getActiveTasksStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
+  Stream<List<Map<String, dynamic>>> getCompletedTasksStream(String elderId) {
+    if (elderId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_careTasksSubcollection)
+        .where('status', isEqualTo: 'completed')
+        .orderBy('completedAt', descending: true)
+        .limit(20)
+        .snapshots()
+        .listen(
+      (snap) {
+        controller.add(snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList());
+      },
+      onError: (e) {
+        debugPrint('FirestoreService.getCompletedTasksStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
+  Stream<List<Map<String, dynamic>>> getMyTasksStream(
+      String elderId, String userId) {
+    if (elderId.isEmpty || userId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_careTasksSubcollection)
+        .where('assignedTo', isEqualTo: userId)
+        .where('status', whereIn: ['open', 'accepted'])
+        .snapshots()
+        .listen(
+      (snap) {
+        final list = snap.docs
+            .map((d) => {'id': d.id, ...d.data()})
+            .toList();
+        list.sort((a, b) {
+          final ad = a['dueDate'] as Timestamp?;
+          final bd = b['dueDate'] as Timestamp?;
+          if (ad == null && bd == null) return 0;
+          if (ad == null) return 1;
+          if (bd == null) return -1;
+          return ad.compareTo(bd);
+        });
+        controller.add(list);
+      },
+      onError: (e) {
+        debugPrint('FirestoreService.getMyTasksStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
+  Future<String> addCareTask(
+      String elderId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    final ref = await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_careTasksSubcollection)
+        .add(data);
+    return ref.id;
+  }
+
+  Future<void> updateCareTask(
+      String elderId, String taskId, Map<String, dynamic> data) async {
+    if (elderId.isEmpty || taskId.isEmpty) return;
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_careTasksSubcollection)
+        .doc(taskId)
+        .update(data);
+  }
+
+  Future<void> deleteCareTask(String elderId, String taskId) async {
+    if (elderId.isEmpty || taskId.isEmpty) return;
+    await _db
+        .collection(_elderProfilesCollection)
+        .doc(elderId)
+        .collection(_careTasksSubcollection)
+        .doc(taskId)
+        .delete();
+  }
+
+  // ---------------------------------------------------------------------------
   // Fall Risk Assessments (subcollection under elderProfiles)
   // ---------------------------------------------------------------------------
 
@@ -1678,22 +1932,29 @@ class FirestoreService {
 
   Stream<List<Map<String, dynamic>>> getFallRiskAssessmentsStream(
       String elderId) {
-    if (elderId.isEmpty) return const Stream.empty();
-    return _db
+    if (elderId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
         .collection(_elderProfilesCollection)
         .doc(elderId)
         .collection(_fallRiskAssessmentsSubcollection)
         .orderBy('createdAt', descending: true)
         .limit(6)
         .snapshots()
-        .map((snap) => snap.docs
+        .listen(
+      (snap) {
+        controller.add(snap.docs
             .map((d) => {'id': d.id, ...d.data()})
-            .toList())
-        .handleError((e) {
-      debugPrint(
-          'FirestoreService.getFallRiskAssessmentsStream error: $e');
-      return <Map<String, dynamic>>[];
-    });
+            .toList());
+      },
+      onError: (e) {
+        debugPrint(
+            'FirestoreService.getFallRiskAssessmentsStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
   }
 
   Future<String> addFallRiskAssessment(
@@ -1730,21 +1991,28 @@ class FirestoreService {
 
   Stream<List<Map<String, dynamic>>> getSkinAssessmentsStream(
       String elderId) {
-    if (elderId.isEmpty) return const Stream.empty();
-    return _db
+    if (elderId.isEmpty) return Stream.value(const []);
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = _db
         .collection(_elderProfilesCollection)
         .doc(elderId)
         .collection(_skinAssessmentsSubcollection)
         .orderBy('createdAt', descending: true)
         .limit(6)
         .snapshots()
-        .map((snap) => snap.docs
+        .listen(
+      (snap) {
+        controller.add(snap.docs
             .map((d) => {'id': d.id, ...d.data()})
-            .toList())
-        .handleError((e) {
-      debugPrint('FirestoreService.getSkinAssessmentsStream error: $e');
-      return <Map<String, dynamic>>[];
-    });
+            .toList());
+      },
+      onError: (e) {
+        debugPrint('FirestoreService.getSkinAssessmentsStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
   }
 
   Future<String> addSkinAssessment(
@@ -1781,7 +2049,7 @@ class FirestoreService {
 
   Stream<List<Map<String, dynamic>>> getTurningLogsStream(
       String elderId, {DateTime? startDate}) {
-    if (elderId.isEmpty) return const Stream.empty();
+    if (elderId.isEmpty) return Stream.value(const []);
     Query query = _db
         .collection(_elderProfilesCollection)
         .doc(elderId)
@@ -1792,17 +2060,24 @@ class FirestoreService {
           isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
     }
 
-    return query
+    final controller = StreamController<List<Map<String, dynamic>>>();
+    final sub = query
         .orderBy('timestamp', descending: true)
         .limit(50)
         .snapshots()
-        .map((snap) => snap.docs
+        .listen(
+      (snap) {
+        controller.add(snap.docs
             .map((d) => {'id': d.id, ...d.data() as Map<String, dynamic>})
-            .toList())
-        .handleError((e) {
-      debugPrint('FirestoreService.getTurningLogsStream error: $e');
-      return <Map<String, dynamic>>[];
-    });
+            .toList());
+      },
+      onError: (e) {
+        debugPrint('FirestoreService.getTurningLogsStream error: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
   }
 
   Future<String> addTurningLog(
@@ -1971,6 +2246,32 @@ class FirestoreService {
         .handleError((error) {
       debugPrint(
           'FirestoreService.getBudgetStreamForMonth error: $error');
+      return <BudgetEntry>[];
+    });
+  }
+
+  /// Streams every BudgetEntry for the given user/year. Used by the
+  /// insurance OOP tracker and tax-deduction summary which span months.
+  Stream<List<BudgetEntry>> getBudgetStreamForYear({
+    required String userId,
+    String? careRecipientId,
+    required int year,
+  }) {
+    final start = DateTime(year, 1, 1);
+    final end = DateTime(year, 12, 31, 23, 59, 59);
+    Query<BudgetEntry> query = _budgetEntriesRef
+        .where('date',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .where('userId', isEqualTo: userId);
+    if (careRecipientId != null && careRecipientId.isNotEmpty) {
+      query = query.where('careRecipientId', isEqualTo: careRecipientId);
+    }
+    return query
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => d.data()).toList())
+        .handleError((error) {
+      debugPrint('FirestoreService.getBudgetStreamForYear error: $error');
       return <BudgetEntry>[];
     });
   }

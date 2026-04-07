@@ -1126,7 +1126,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Error al cargar los registros de este día. Por favor, inténtelo de nuevo.';
 
   @override
-  String get careScreenButtonAddFoodWater => 'Añadir Comida / Agua';
+  String get careScreenButtonAddFoodWater => 'Añadir Comida';
 
   @override
   String get careScreenSectionTitleMoodBehavior =>

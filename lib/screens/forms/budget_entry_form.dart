@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/budget_entry.dart';
+import 'package:cecelia_care_flutter/models/insurance_plan.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
@@ -37,8 +38,11 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
   // Form State
   BudgetPerspective _perspective = BudgetPerspective.caregiver;
   String? _selectedCategory;
+  String? _selectedSubCategory;
   DateTime _selectedDate = DateTime.now();
   bool _isTaxDeductible = false;
+  bool _isRecurring = false;
+  final _mileageController = TextEditingController();
 
   // Expense Taxonomy
   final Map<String, List<String>> _expenseTaxonomy = {
@@ -65,8 +69,10 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
       _notesController.text = item.notes ?? '';
       _perspective = item.perspective;
       _selectedCategory = item.category;
+      _selectedSubCategory = item.subCategory;
       _selectedDate = item.date;
       _isTaxDeductible = item.isTaxDeductible;
+      _isRecurring = item.isRecurring;
     }
   }
 
@@ -75,7 +81,22 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
     _descriptionController.dispose();
     _amountController.dispose();
     _notesController.dispose();
+    _mileageController.dispose();
     super.dispose();
+  }
+
+  void _calculateMileage() {
+    final miles = double.tryParse(_mileageController.text.trim());
+    if (miles == null || miles <= 0) return;
+    final amount = miles * kMedicalMileageRate;
+    setState(() {
+      _amountController.text = amount.toStringAsFixed(2);
+      if (_descriptionController.text.trim().isEmpty) {
+        _descriptionController.text =
+            '${miles.toStringAsFixed(0)} mi medical travel';
+      }
+      _isTaxDeductible = true;
+    });
   }
 
   Future<void> _handleSave() async {
@@ -102,9 +123,11 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
         description: _descriptionController.text.trim(),
         amount: double.tryParse(_amountController.text.trim()) ?? 0.0,
         category: _selectedCategory!,
+        subCategory: _selectedSubCategory,
         date: _selectedDate,
         notes: _notesController.text.trim(),
         isTaxDeductible: _isTaxDeductible,
+        isRecurring: _isRecurring,
       );
       
       // NEW: Logic to handle both update and add
@@ -213,13 +236,91 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 hint: const Text('Select a Category'),
-                onChanged: (newValue) => setState(() => _selectedCategory = newValue),
+                onChanged: (newValue) => setState(() {
+                  _selectedCategory = newValue;
+                  _selectedSubCategory = null;
+                }),
                 items: _expenseTaxonomy.keys.map((category) {
                   return DropdownMenuItem(value: category, child: Text(category));
                 }).toList(),
                 validator: (value) => value == null ? 'Please select a category' : null,
               ),
               const SizedBox(height: 16),
+
+              // Subcategory (depends on category)
+              if (_selectedCategory != null &&
+                  (_expenseTaxonomy[_selectedCategory] ?? const [])
+                      .isNotEmpty) ...[
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedSubCategory,
+                  hint: const Text('Subcategory (optional)'),
+                  onChanged: (v) =>
+                      setState(() => _selectedSubCategory = v),
+                  items: _expenseTaxonomy[_selectedCategory]!
+                      .map((s) =>
+                          DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Medical mileage helper — only shown for the relevant subcategory.
+              if (_selectedSubCategory == 'Medical Travel (Mileage)') ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00897B).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color:
+                            const Color(0xFF00897B).withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Medical Mileage Calculator',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 13),
+                      ),
+                      Text(
+                        'IRS rate: \$${kMedicalMileageRate.toStringAsFixed(2)}/mile (current year)',
+                        style: const TextStyle(
+                            fontSize: 11, color: Colors.black54),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _mileageController,
+                              decoration: const InputDecoration(
+                                labelText: 'Miles driven',
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: _calculateMileage,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF00897B),
+                              foregroundColor: Colors.white,
+                            ),
+                            icon: const Icon(Icons.calculate, size: 16),
+                            label: const Text('Calculate'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               
               // NEW: Date Field
               ListTile(
@@ -240,6 +341,15 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
                 title: const Text('Potentially Tax-Deductible?'),
                 value: _isTaxDeductible,
                 onChanged: (newValue) => setState(() => _isTaxDeductible = newValue),
+                contentPadding: EdgeInsets.zero,
+              ),
+              SwitchListTile(
+                title: const Text('Recurring monthly'),
+                subtitle: const Text(
+                    'Marks expenses that repeat each month (insurance, facility, pharmacy)',
+                    style: TextStyle(fontSize: 11)),
+                value: _isRecurring,
+                onChanged: (v) => setState(() => _isRecurring = v),
                 contentPadding: EdgeInsets.zero,
               ),
               const SizedBox(height: 24),

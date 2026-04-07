@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
@@ -286,10 +287,64 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
                 ],
               ),
             ),
+
+            const SizedBox(height: 12),
+
+            // Share with family
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final elderName = context
+                          .read<ActiveElderProvider>()
+                          .activeElder
+                          ?.profileName ??
+                      'Care Recipient';
+                  Share.share(
+                    _buildShareText(s, elderName),
+                    subject:
+                        '$elderName — Care Team Update (${s.weekLabel})',
+                  );
+                },
+                icon: const Icon(Icons.share_outlined, size: 16),
+                label: const Text('Share with Family'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF5D4037),
+                  side: const BorderSide(color: Color(0xFFBCAAA4)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  String _buildShareText(_WeeklySummary s, String elderName) {
+    final buf = StringBuffer();
+    buf.writeln('🎉 $elderName — Care Team Update');
+    buf.writeln(s.weekLabel);
+    buf.writeln('');
+    buf.writeln(_buildTeamMessage(s));
+    buf.writeln('');
+    for (final h in s.highlights.take(5)) {
+      buf.writeln(
+          '⭐ ${h.name} logged ${h.totalEntries} entries — including ${h.topTypeCount} ${h.topTypeLabel}.');
+    }
+    if (s.totalReactions > 0) {
+      buf.writeln('');
+      buf.writeln(
+          '❤️ The team shared ${s.totalReactions} reaction${s.totalReactions == 1 ? '' : 's'} this week — supporting each other!');
+    }
+    buf.writeln('');
+    buf.writeln(
+        'Every log matters. Every handoff counts. Thank you for showing up. 💪');
+    buf.writeln('');
+    buf.writeln('— Sent from Cecelia Care');
+    return buf.toString();
   }
 
   String _buildTeamMessage(_WeeklySummary s) {

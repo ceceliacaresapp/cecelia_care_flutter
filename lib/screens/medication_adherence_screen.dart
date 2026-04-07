@@ -395,5 +395,6 @@ class _GaugePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _GaugePainter oldDelegate) =>
+      oldDelegate.pct != pct || oldDelegate.color != color;
 }

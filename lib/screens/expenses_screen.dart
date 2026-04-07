@@ -542,6 +542,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           // bypasses the entry-type picker dialog entirely.
           showModalBottomSheet(
             context: context,
+            useRootNavigator: true,
             isScrollControlled: true,
             useSafeArea: true,
             backgroundColor: Colors.transparent,

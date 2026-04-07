@@ -27,17 +27,20 @@ class ElderViewToggle extends StatelessWidget {
     final photoUrl = elder?.photoUrl;
     // Truncate long names for the pill.
     final displayName =
-        elderName.length > 12 ? '${elderName.substring(0, 10)}...' : elderName;
+        elderName.length > 8 ? '${elderName.substring(0, 7)}\u2026' : elderName;
 
-    return Container(
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Container(
+        height: 32,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           // Single elder segment
           _Segment(
             label: displayName,
@@ -60,14 +63,15 @@ class ElderViewToggle extends StatelessWidget {
             isSelected: isSingle,
             onTap: () => provider.setViewMode(ElderViewMode.single),
           ),
-          // All elders segment
-          _Segment(
-            label: 'All (${allElders.length})',
-            icon: null,
-            isSelected: !isSingle,
-            onTap: () => provider.setViewMode(ElderViewMode.all),
-          ),
-        ],
+            // All elders segment
+            _Segment(
+              label: 'All (${allElders.length})',
+              icon: null,
+              isSelected: !isSingle,
+              onTap: () => provider.setViewMode(ElderViewMode.all),
+            ),
+          ],
+        ),
       ),
     );
   }

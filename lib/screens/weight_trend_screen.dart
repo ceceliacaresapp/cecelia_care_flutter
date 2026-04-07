@@ -431,7 +431,10 @@ class _ChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _ChartPainter oldDelegate) =>
+      oldDelegate.points != points ||
+      oldDelegate.minV != minV ||
+      oldDelegate.range != range;
 }
 
 // ── Data class ──��─────────────────────────────────────────────────

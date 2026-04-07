@@ -28,6 +28,12 @@ class DutyTimerCard extends StatefulWidget {
 class _DutyTimerCardState extends State<DutyTimerCard> {
   Timer? _ticker;
 
+  // Cached handoff stream so the per-minute setState() ticker doesn't
+  // recreate a Firestore listener every time the card rebuilds.
+  Stream<List<JournalEntry>>? _stream;
+  String? _streamElderId;
+  String? _streamUserId;
+
   @override
   void initState() {
     super.initState();
@@ -115,12 +121,21 @@ class _DutyTimerCardState extends State<DutyTimerCard> {
       return const SizedBox.shrink();
     }
 
+    if (_stream == null ||
+        _streamElderId != activeElder.id ||
+        _streamUserId != currentUserId) {
+      _stream =
+          context.read<JournalServiceProvider>().getJournalEntriesStream(
+                elderId: activeElder.id,
+                currentUserId: currentUserId,
+                entryTypeFilter: 'handoff',
+              );
+      _streamElderId = activeElder.id;
+      _streamUserId = currentUserId;
+    }
+
     return StreamBuilder<List<JournalEntry>>(
-      stream: context.read<JournalServiceProvider>().getJournalEntriesStream(
-            elderId: activeElder.id,
-            currentUserId: currentUserId,
-            entryTypeFilter: 'handoff',
-          ),
+      stream: _stream,
       builder: (context, snapshot) {
         final entries = snapshot.data ?? [];
         final latest = entries.isNotEmpty ? entries.first : null;

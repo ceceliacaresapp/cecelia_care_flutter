@@ -23,6 +23,12 @@ class HydrationProgressCard extends StatefulWidget {
 }
 
 class _HydrationProgressCardState extends State<HydrationProgressCard> {
+  // Cached today's-hydration stream so dashboard rebuilds don't recreate
+  // the Firestore listener every frame.
+  Stream<List<JournalEntry>>? _stream;
+  String? _streamElderId;
+  String? _streamUserId;
+  String? _streamDayKey;
   static const String _goalKey = 'hydration_daily_goal';
   static const double _defaultGoal = 64; // 64 oz
   double _goal = _defaultGoal;
@@ -88,16 +94,27 @@ class _HydrationProgressCardState extends State<HydrationProgressCard> {
 
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
+    final dayKey = '${now.year}-${now.month}-${now.day}';
 
-    return StreamBuilder<List<JournalEntry>>(
-      stream: context
+    if (_stream == null ||
+        _streamElderId != elderId ||
+        _streamUserId != currentUserId ||
+        _streamDayKey != dayKey) {
+      _stream = context
           .read<JournalServiceProvider>()
           .getJournalEntriesStream(
             elderId: elderId,
             currentUserId: currentUserId,
             entryTypeFilter: 'hydration',
             startDate: startOfDay,
-          ),
+          );
+      _streamElderId = elderId;
+      _streamUserId = currentUserId;
+      _streamDayKey = dayKey;
+    }
+
+    return StreamBuilder<List<JournalEntry>>(
+      stream: _stream,
       builder: (context, snapshot) {
         final entries = snapshot.data ?? [];
 
@@ -250,5 +267,6 @@ class _RingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _RingPainter oldDelegate) =>
+      oldDelegate.pct != pct || oldDelegate.color != color;
 }
