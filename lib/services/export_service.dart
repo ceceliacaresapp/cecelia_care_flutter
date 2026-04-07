@@ -585,6 +585,61 @@ class ExportService {
         notes = d['concerns'] as String? ?? '';
         break;
 
+      case EntryType.incontinence:
+        final iType = d['incontinenceType'] as String? ?? 'N/A';
+        primaryInfo = iType.isNotEmpty
+            ? '${iType[0].toUpperCase()}${iType.substring(1)}'
+            : 'N/A';
+        valueIntensity = d['severity'] as String? ?? '';
+        final bristol = d['bristolType']?.toString();
+        final urine = d['urineColor'] as String?;
+        final skin = d['skinCondition'] as String? ?? '';
+        unitSecondaryInfo = [
+          if (bristol != null && bristol.isNotEmpty) 'Bristol $bristol',
+          if (urine != null && urine.isNotEmpty) 'Urine: $urine',
+          if (skin == 'irritated' || skin == 'broken') 'Skin: $skin',
+        ].join(' · ');
+        notes = d['note'] as String? ?? '';
+        break;
+
+      case EntryType.nightWaking:
+        final cause = d['cause'] as String? ?? 'Unknown';
+        primaryInfo = cause.isNotEmpty
+            ? '${cause[0].toUpperCase()}${cause.substring(1)}'
+            : 'Unknown';
+        valueIntensity = d['duration'] as String? ?? '';
+        final returned = d['returnedToSleep'] as bool?;
+        unitSecondaryInfo = returned == true
+            ? 'Returned to sleep'
+            : returned == false
+                ? 'Did not return'
+                : '';
+        notes = d['note'] as String? ?? '';
+        break;
+
+      case EntryType.hydration:
+        final fluidType = d['fluidType'] as String? ?? 'Fluid';
+        primaryInfo = fluidType.isNotEmpty
+            ? '${fluidType[0].toUpperCase()}${fluidType.substring(1)}'
+            : 'Fluid';
+        valueIntensity = d['volume']?.toString() ?? '';
+        unitSecondaryInfo = d['unit'] as String? ?? 'oz';
+        notes = d['note'] as String? ?? '';
+        break;
+
+      case EntryType.visitor:
+        primaryInfo = d['visitorName'] as String? ?? 'Unknown';
+        final relationship = d['relationship'] as String? ?? '';
+        valueIntensity = d['duration'] as String? ?? '';
+        final response = d['response'] as String? ?? '';
+        unitSecondaryInfo = [
+          if (relationship.isNotEmpty) relationship,
+          if (response.isNotEmpty)
+            '${response[0].toUpperCase()}${response.substring(1)}',
+        ].join(' · ');
+        notes = d['note'] as String? ?? '';
+        break;
+
       case EntryType.message:
       case EntryType.caregiverJournal:
         primaryInfo =
@@ -636,6 +691,10 @@ class ExportService {
       case EntryType.caregiverJournal: return 'Caregiver Journal';
       case EntryType.image: return 'Images';
       case EntryType.handoff: return 'Shift Handoffs';
+      case EntryType.incontinence: return 'Continence';
+      case EntryType.nightWaking: return 'Night Waking';
+      case EntryType.hydration: return 'Hydration';
+      case EntryType.visitor: return 'Visitors';
       default: return t.name[0].toUpperCase() + t.name.substring(1);
     }
   }

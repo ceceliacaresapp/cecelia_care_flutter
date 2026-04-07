@@ -17,6 +17,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/screens/wound_tracking_screen.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 
 class SkinIntegrityScreen extends StatefulWidget {
@@ -177,7 +178,9 @@ class _AssessmentTabState extends State<_AssessmentTab> {
         }
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return TimedLoadingIndicator(
+            onRetry: () => setState(() {}),
+          );
         }
 
         final assessments = (snapshot.data ?? [])
@@ -473,7 +476,10 @@ class _TurningLogTab extends StatelessWidget {
           }
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            // _TurningLogTab is a StatelessWidget so we can't trigger a
+            // local rebuild. The timeout still shows a friendly error
+            // after 10s; users can refresh by switching tabs.
+            return const TimedLoadingIndicator();
           }
 
           final logs = (snapshot.data ?? [])

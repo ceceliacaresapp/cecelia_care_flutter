@@ -90,7 +90,11 @@ class AppTheme {
   static const Color tilePurple = Color(0xFF8E24AA);
   static const Color tileBrown = Color(0xFF795548);
   static const Color tilePink = Color(0xFFAD1457);
+  static const Color tilePinkBright = Color(0xFFE91E63); // bright pink (self-care, hearts)
   static const Color tileRedDeep = Color(0xFFD84315);
+  static const Color tileGold = Color(0xFFFFC107);       // amber/gold for badges
+  static const Color tileIndigoDeep = Color(0xFF283593); // deep indigo (night-themed)
+  static const Color tileBlueGrey = Color(0xFF546E7A);   // blue-grey 600 — secondary chrome
 
   // ---------------------------------------------------------------------------
   // BORDER RADIUS SCALE — use these instead of raw doubles
@@ -276,7 +280,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,
         elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.35),
+        shadowColor: Colors.black.withValues(alpha: 0.35),
         scrolledUnderElevation: 6,
         surfaceTintColor: Colors.transparent,
         iconTheme: const IconThemeData(color: textOnPrimary),
@@ -406,7 +410,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: _darkSurface,
         elevation: 4,
-        shadowColor: Colors.black.withOpacity(0.5),
+        shadowColor: Colors.black.withValues(alpha: 0.5),
         scrolledUnderElevation: 6,
         surfaceTintColor: Colors.transparent,
         iconTheme: const IconThemeData(color: _darkTextPrimary),
@@ -541,9 +545,9 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return _darkPrimary.withOpacity(0.4);
+            return _darkPrimary.withValues(alpha: 0.4);
           }
-          return _darkTextLight.withOpacity(0.3);
+          return _darkTextLight.withValues(alpha: 0.3);
         }),
       ),
 

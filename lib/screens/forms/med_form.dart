@@ -388,7 +388,7 @@ class _MedFormState extends State<MedForm> {
                       decoration: BoxDecoration(
                         border: Border.all(
                             color:
-                                AppTheme.textLight.withOpacity(0.5)),
+                                AppTheme.textLight.withValues(alpha: 0.5)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -428,7 +428,7 @@ class _MedFormState extends State<MedForm> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color:
-                            AppTheme.warningColor.withOpacity(0.1),
+                            AppTheme.warningColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                             color: AppTheme.warningColor),
@@ -448,7 +448,7 @@ class _MedFormState extends State<MedForm> {
                             (txt) => Text('• $txt',
                                 style: TextStyle(
                                     color: _theme.colorScheme.onSurface
-                                        .withOpacity(0.8))),
+                                        .withValues(alpha: 0.8))),
                           ),
                         ],
                       ),

@@ -167,7 +167,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -243,10 +243,10 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: template.color.withOpacity(0.06),
+                  color: template.color.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: template.color.withOpacity(0.2)),
+                      color: template.color.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -270,7 +270,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: template.color.withOpacity(0.1),
+                              color: template.color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -302,7 +302,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                           color: AppTheme.backgroundGray,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: Colors.grey.withOpacity(0.2)),
+                              color: Colors.grey.withValues(alpha: 0.2)),
                         ),
                         child: Column(
                           crossAxisAlignment:
@@ -348,7 +348,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                         color: AppTheme.backgroundGray,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: Colors.grey.withOpacity(0.2)),
+                            color: Colors.grey.withValues(alpha: 0.2)),
                       ),
                       child: Column(
                         crossAxisAlignment:
@@ -424,7 +424,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
             color: Theme.of(context).scaffoldBackgroundColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 8,
                 offset: const Offset(0, -2),
               ),
@@ -485,12 +485,12 @@ class _TemplateCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: template.color.withOpacity(0.06),
+          color: template.color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: template.color.withOpacity(0.2)),
+          border: Border.all(color: template.color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: template.color.withOpacity(0.06),
+              color: template.color.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -501,7 +501,7 @@ class _TemplateCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: template.color.withOpacity(0.12),
+                color: template.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(template.icon,
@@ -538,7 +538,7 @@ class _TemplateCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: template.color.withOpacity(0.1),
+                          color: template.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -565,7 +565,7 @@ class _TemplateCard extends StatelessWidget {
             ),
             Icon(Icons.arrow_forward_ios,
                 size: 14,
-                color: template.color.withOpacity(0.4)),
+                color: template.color.withValues(alpha: 0.4)),
           ],
         ),
       ),
@@ -623,7 +623,7 @@ class _EventItemTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -654,7 +654,7 @@ class _EventItemTile extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 5, vertical: 1),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.08),
+                          color: color.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

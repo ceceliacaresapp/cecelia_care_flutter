@@ -180,7 +180,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  color: AppTheme.primaryColor.withOpacity(0.04),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.04),
                   child: const Text(
                     'Choose which sections appear on your dashboard and their order. '
                     'The greeting card always appears at the top.',
@@ -242,7 +242,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
                               height: 36,
                               decoration: BoxDecoration(
                                 color: visible
-                                    ? AppTheme.primaryColor.withOpacity(0.1)
+                                    ? AppTheme.primaryColor.withValues(alpha: 0.1)
                                     : AppTheme.backgroundGray,
                                 borderRadius: BorderRadius.circular(8),
                               ),

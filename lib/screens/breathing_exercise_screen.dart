@@ -277,7 +277,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -307,7 +307,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                             vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
                           color: selected
-                              ? p.color.withOpacity(0.12)
+                              ? p.color.withValues(alpha: 0.12)
                               : AppTheme.backgroundGray,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
@@ -383,7 +383,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                             style: TextStyle(
                               fontSize: 40,
                               fontWeight: FontWeight.w300,
-                              color: _pattern.color.withOpacity(0.7),
+                              color: _pattern.color.withValues(alpha: 0.7),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -401,10 +401,10 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color:
-                                    _pattern.color.withOpacity(0.12),
+                                    _pattern.color.withValues(alpha: 0.12),
                                 border: Border.all(
                                   color:
-                                      _pattern.color.withOpacity(0.3),
+                                      _pattern.color.withValues(alpha: 0.3),
                                   width: 3,
                                 ),
                               ),
@@ -415,7 +415,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: _pattern.color
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                   ),
                                 ),
                               ),
@@ -512,7 +512,7 @@ class _CompletionView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF43A047).withOpacity(0.1),
+            color: const Color(0xFF43A047).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(

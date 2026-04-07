@@ -43,7 +43,7 @@ import 'package:cecelia_care_flutter/widgets/streak_widget.dart';
 import 'package:cecelia_care_flutter/widgets/weekly_challenge_card.dart';
 
 // Self-care accent — purple, matching the nav tab.
-const _kSelfCareColor = Color(0xFF8E24AA);
+const _kSelfCareColor = AppTheme.tilePurple;
 
 class SelfCareScreen extends StatefulWidget {
   const SelfCareScreen({super.key});
@@ -107,10 +107,10 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFC107).withOpacity(0.15),
+                color: AppTheme.tileGold.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.star, size: 48, color: Color(0xFFFFC107)),
+              child: const Icon(Icons.star, size: 48, color: AppTheme.tileGold),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -118,7 +118,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFFFFC107),
+                color: AppTheme.tileGold,
               ),
             ),
             const SizedBox(height: 4),
@@ -338,7 +338,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
           _SectionLabel(label: l10n.dailyMood),
           const SizedBox(height: 8),
           _SelfCareCard(
-            color: const Color(0xFFE91E63),
+            color: AppTheme.tilePinkBright,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -353,7 +353,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFFE91E63).withOpacity(0.15)
+                              ? AppTheme.tilePinkBright.withValues(alpha: 0.15)
                               : Colors.transparent,
                           shape: BoxShape.circle,
                         ),
@@ -370,16 +370,16 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.optionalNote,
                     filled: true,
-                    fillColor: const Color(0xFFE91E63).withOpacity(0.05),
+                    fillColor: AppTheme.tilePinkBright.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                          color: const Color(0xFFE91E63).withOpacity(0.3)),
+                          color: AppTheme.tilePinkBright.withValues(alpha: 0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(
-                          color: const Color(0xFFE91E63).withOpacity(0.3)),
+                          color: AppTheme.tilePinkBright.withValues(alpha: 0.3)),
                     ),
                   ),
                   onSubmitted: (text) =>
@@ -416,7 +416,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                       CircleAvatar(
                         radius: 22,
                         backgroundColor: isStreakDay
-                            ? _kSelfCareColor.withOpacity(0.15)
+                            ? _kSelfCareColor.withValues(alpha: 0.15)
                             : AppTheme.backgroundGray,
                         child: Text(entry.emoji,
                             style: const TextStyle(fontSize: 20)),
@@ -439,7 +439,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
           _SectionLabel(label: l10n.breakReminders),
           const SizedBox(height: 8),
           _SelfCareCard(
-            color: const Color(0xFF00897B),
+            color: AppTheme.tileTeal,
             child: Column(
               children: [
                 _ReminderRow(
@@ -497,14 +497,14 @@ class _CheckinCta extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [_kSelfCareColor, _kSelfCareColor.withOpacity(0.8)],
+            colors: [_kSelfCareColor, _kSelfCareColor.withValues(alpha: 0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: _kSelfCareColor.withOpacity(0.25),
+              color: _kSelfCareColor.withValues(alpha: 0.25),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -515,7 +515,7 @@ class _CheckinCta extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child:
@@ -539,14 +539,14 @@ class _CheckinCta extends StatelessWidget {
                     'Quick 30-second check-in  •  +10 pts',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ],
               ),
             ),
             Icon(Icons.arrow_forward_ios,
-                size: 16, color: Colors.white.withOpacity(0.7)),
+                size: 16, color: Colors.white.withValues(alpha: 0.7)),
           ],
         ),
       ),
@@ -566,15 +566,15 @@ class _CheckinDoneBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF43A047).withOpacity(0.08),
+        color: AppTheme.statusGreen.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border:
-            Border.all(color: const Color(0xFF43A047).withOpacity(0.2)),
+            Border.all(color: AppTheme.statusGreen.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           const Icon(Icons.check_circle,
-              color: Color(0xFF43A047), size: 20),
+              color: AppTheme.statusGreen, size: 20),
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
@@ -582,7 +582,7 @@ class _CheckinDoneBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF43A047),
+                color: AppTheme.statusGreen,
               ),
             ),
           ),
@@ -596,7 +596,7 @@ class _CheckinDoneBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF43A047).withOpacity(0.8),
+                color: AppTheme.statusGreen.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -634,14 +634,14 @@ class _ReliefToolsGrid extends StatelessWidget {
           icon: Icons.air_outlined,
           label: 'Breathing',
           subtitle: '+10 pts',
-          color: const Color(0xFF5C6BC0),
+          color: AppTheme.tileIndigo,
           onTap: onBreathing,
         ),
         _ReliefTile(
           icon: Icons.spa_outlined,
           label: 'SOS mode',
           subtitle: 'Crisis toolkit',
-          color: const Color(0xFFE53935),
+          color: AppTheme.statusRed,
           onTap: onSos,
         ),
         _ReliefTile(
@@ -655,7 +655,7 @@ class _ReliefToolsGrid extends StatelessWidget {
           icon: Icons.format_quote_outlined,
           label: 'Affirmations',
           subtitle: 'Daily encouragement',
-          color: const Color(0xFF00897B),
+          color: AppTheme.tileTeal,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(
                 builder: (_) => const AffirmationsScreen()),
@@ -687,9 +687,9 @@ class _ReliefTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.07),
+          color: color.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -710,7 +710,7 @@ class _ReliefTile extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 fontSize: 11,
-                color: color.withOpacity(0.7),
+                color: color.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -759,7 +759,7 @@ class _TieredBadgeChip extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
-                  color: style.color.withOpacity(0.15),
+                  color: style.color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -790,7 +790,7 @@ class _TieredBadgeChip extends StatelessWidget {
                 height: 3,
                 decoration: BoxDecoration(
                   color: (isEarned ? style.color : AppTheme.textLight)
-                      .withOpacity(0.15),
+                      .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(2),
                 ),
                 child: FractionallySizedBox(
@@ -825,12 +825,12 @@ class _SelfCareCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -877,7 +877,7 @@ class _ReminderRow extends StatelessWidget {
   final Map<String, int> stableIds;
   final AppLocalizations l10n;
 
-  static const _color = Color(0xFF00897B);
+  static const _color = AppTheme.tileTeal;
 
   @override
   Widget build(BuildContext ctx) {
@@ -892,7 +892,7 @@ class _ReminderRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _color.withOpacity(0.1),
+              color: _color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 18, color: _color),

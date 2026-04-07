@@ -2,7 +2,7 @@
 //
 // The home dashboard — first tab the user lands on.
 
-import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,10 +12,7 @@ import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/models/wandering_assessment.dart';
 import 'package:cecelia_care_flutter/models/fall_risk_assessment.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
-import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
-import 'package:cecelia_care_flutter/providers/badge_provider.dart';
-import 'package:cecelia_care_flutter/models/badge.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/models/medication_definition.dart';
@@ -27,12 +24,14 @@ import 'package:cecelia_care_flutter/screens/forms/vital_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/pain_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/med_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal_screen.dart';
+import 'package:cecelia_care_flutter/widgets/dashboard/badges_row.dart';
+import 'package:cecelia_care_flutter/widgets/dashboard/journal_preview_card.dart';
+import 'package:cecelia_care_flutter/widgets/dashboard/message_composer_sheet.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/entry_type_helpers.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
-import 'package:cecelia_care_flutter/widgets/confetti_overlay.dart';
-import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
+import 'package:cecelia_care_flutter/widgets/stream_error_card.dart';
 import 'package:cecelia_care_flutter/widgets/wellness_summary_card.dart';
 import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
 import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
@@ -72,7 +71,7 @@ void _openFormSheet(BuildContext context, Widget form) {
                 const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 20,
                   offset: const Offset(0, -4)),
             ],
@@ -114,7 +113,7 @@ void _openMessageSheet(
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    builder: (sheetContext) => _MessageComposerSheet(
+    builder: (sheetContext) => MessageComposerSheet(
       activeElder: activeElder,
       firestoreService: firestoreService,
     ),
@@ -157,7 +156,7 @@ void _showEntriesSheet(
               const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),
@@ -186,7 +185,7 @@ void _showEntriesSheet(
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(icon, color: color, size: 20),
@@ -551,6 +550,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   endDate: endOfDay,
                 ),
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return StreamErrorCard(
+                      message: "Couldn't load today's care log",
+                      error: snapshot.error,
+                    );
+                  }
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData) {
                     return const _TodayLoadingCard();
@@ -574,6 +579,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               endOfDay: endOfDay,
             ),
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return StreamErrorCard(
+                  message: "Couldn't load today's care log",
+                  error: snapshot.error,
+                );
+              }
               if (snapshot.connectionState == ConnectionState.waiting &&
                   !snapshot.hasData) {
                 return const _TodayLoadingCard();
@@ -591,13 +602,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               MaterialPageRoute(builder: (_) => const BadgesScreen())),
         ),
         const SizedBox(height: 10),
-        const _BadgesRow(),
+        const BadgesRow(),
       ],
       'journal': () => [
         const SizedBox(height: 20),
         const _SectionLabel(label: 'My Journal'),
         const SizedBox(height: 10),
-        _JournalPreviewCard(currentUserId: currentUserId),
+        JournalPreviewCard(currentUserId: currentUserId),
       ],
       'taskSummary': () {
         if (isMultiView) return <Widget>[];
@@ -609,8 +620,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ];
       },
       'quickLog': () {
-        if (isMultiView) return <Widget>[];
         if (!context.watch<ActiveElderProvider>().canLog) return <Widget>[];
+        if (isMultiView) {
+          // Multi-view: render one quick-log row per elder, mirroring the
+          // careLog section so caregivers managing multiple recipients can
+          // log to any of them without leaving the dashboard.
+          return <Widget>[
+            const SizedBox(height: 20),
+            const _SectionLabel(label: 'Quick log'),
+            const SizedBox(height: 10),
+            for (final elder in allElders) ...[
+              _ElderSubheader(
+                elder: elder,
+                index: allElders.indexOf(elder),
+              ),
+              _QuickActionsGrid(
+                activeElder: elder,
+                currentDateStr: currentDateStr,
+              ),
+              const SizedBox(height: 8),
+            ],
+          ];
+        }
         return <Widget>[
           const SizedBox(height: 20),
           const _SectionLabel(label: 'Quick log'),
@@ -724,16 +755,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final order = _sectionConfig ?? kDefaultSections;
     final widgets = <Widget>[];
 
+    // Track which sections were hidden because they aren't compatible
+    // with multi-elder view (e.g. WeightTrendCard, AdherenceSummaryCard,
+    // SymptomInsightsCard — all coupled to a single ActiveElderProvider).
+    // We use this list to render a "switch to single elder view" hint at
+    // the bottom so users understand the dashboard isn't broken.
+    final hiddenInMultiView = <String>[];
+
     for (final section in order) {
       final key = section['key'] as String;
       final visible = section['visible'] as bool? ?? true;
       if (!visible) continue;
 
       final builder = sectionBuilders[key];
-      if (builder != null) widgets.addAll(builder());
+      if (builder == null) continue;
+      final result = builder();
+      if (result.isEmpty && isMultiView && _isMultiViewIncompatible(key)) {
+        hiddenInMultiView.add(_friendlySectionLabel(key));
+      } else {
+        widgets.addAll(result);
+      }
+    }
+
+    if (isMultiView && hiddenInMultiView.isNotEmpty) {
+      widgets.add(_MultiViewHiddenHint(hiddenLabels: hiddenInMultiView));
     }
 
     return widgets;
+  }
+
+  /// Sections that are hidden in multi-view because their underlying
+  /// widget is hard-wired to the active elder via a provider. Listing
+  /// them in a friendly hint helps users understand why the dashboard
+  /// looks shorter when multiple elders are selected.
+  static const Set<String> _multiViewIncompatibleSections = {
+    'pinnedMeds',
+    'taskSummary',
+    'insights',
+    'medSchedule',
+    'weightTrend',
+    'adherenceSummary',
+    'hydrationProgress',
+  };
+
+  bool _isMultiViewIncompatible(String key) =>
+      _multiViewIncompatibleSections.contains(key);
+
+  String _friendlySectionLabel(String key) {
+    // Look up the saved config for the human label, fall back to the
+    // hard-coded one used during dashboard reset.
+    final fromConfig = _sectionConfig?.firstWhere(
+      (s) => s['key'] == key,
+      orElse: () => const <String, dynamic>{},
+    );
+    final label = fromConfig?['label'] as String?;
+    if (label != null && label.isNotEmpty) return label;
+    return key;
   }
 
   @override
@@ -805,6 +882,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return _wanderingAlertStream;
             })(),
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                debugPrint(
+                    'Dashboard wanderingAlert stream error: ${snapshot.error}');
+                return const SizedBox.shrink();
+              }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SizedBox.shrink();
               }
@@ -850,6 +932,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: _fallRiskAlertStream,
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                debugPrint(
+                    'Dashboard fallRiskAlert stream error: ${snapshot.error}');
+                return const SizedBox.shrink();
+              }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SizedBox.shrink();
               }
@@ -895,6 +982,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: _turningLogsAlertStream,
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                debugPrint(
+                    'Dashboard turningLogs stream error: ${snapshot.error}');
+                return const SizedBox.shrink();
+              }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const SizedBox.shrink();
               }
@@ -977,7 +1069,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Mood',
         icon: Icons.sentiment_satisfied_outlined,
-        color: const Color(0xFFE91E63),
+        color: AppTheme.tilePinkBright,
         onTap: () => _openFormSheet(
           context,
           ChangeNotifierProvider.value(
@@ -992,7 +1084,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Medication',
         icon: Icons.medication_outlined,
-        color: const Color(0xFF1E88E5),
+        color: AppTheme.tileBlue,
         onTap: () => _openFormSheet(
           context,
           MultiProvider(
@@ -1013,7 +1105,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Vitals',
         icon: Icons.monitor_heart_outlined,
-        color: const Color(0xFFF57C00),
+        color: AppTheme.tileOrange,
         onTap: () => _openFormSheet(
           context,
           ChangeNotifierProvider.value(
@@ -1028,7 +1120,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Sleep',
         icon: Icons.bedtime_outlined,
-        color: const Color(0xFF5C6BC0),
+        color: AppTheme.tileIndigo,
         onTap: () => _openFormSheet(
           context,
           ChangeNotifierProvider.value(
@@ -1043,7 +1135,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Meal',
         icon: Icons.restaurant_outlined,
-        color: const Color(0xFF43A047),
+        color: AppTheme.statusGreen,
         onTap: () => _openFormSheet(
           context,
           ChangeNotifierProvider.value(
@@ -1058,7 +1150,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Activity',
         icon: Icons.directions_walk_outlined,
-        color: const Color(0xFF00897B),
+        color: AppTheme.tileTeal,
         onTap: () => _openFormSheet(
           context,
           ChangeNotifierProvider.value(
@@ -1073,7 +1165,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Pain',
         icon: Icons.healing_outlined,
-        color: const Color(0xFFE53935),
+        color: AppTheme.statusRed,
         onTap: () => _openFormSheet(
           context,
           ChangeNotifierProvider.value(
@@ -1089,7 +1181,7 @@ class _QuickActionsGrid extends StatelessWidget {
       _QuickAction(
         label: 'Message',
         icon: Icons.chat_bubble_outline,
-        color: const Color(0xFF546E7A),
+        color: AppTheme.tileBlueGrey,
         onTap: () => _openMessageSheet(context, activeElder: activeElder),
       ),
     ];
@@ -1110,9 +1202,9 @@ class _QuickActionsGrid extends StatelessWidget {
           onTap: action.onTap,
           child: Container(
             decoration: BoxDecoration(
-              color: action.color.withOpacity(0.08),
+              color: action.color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: action.color.withOpacity(0.2)),
+              border: Border.all(color: action.color.withValues(alpha: 0.2)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1158,247 +1250,8 @@ class _QuickAction {
 // if it were posted from there.
 // ---------------------------------------------------------------------------
 
-class _MessageComposerSheet extends StatefulWidget {
-  const _MessageComposerSheet({
-    required this.activeElder,
-    required this.firestoreService,
-  });
-
-  final ElderProfile activeElder;
-  final FirestoreService firestoreService;
-
-  @override
-  State<_MessageComposerSheet> createState() =>
-      _MessageComposerSheetState();
-}
-
-class _MessageComposerSheetState extends State<_MessageComposerSheet> {
-  static const _kColor = Color(0xFF546E7A);
-
-  final TextEditingController _ctrl = TextEditingController();
-  bool _isPublic = true;
-  List<String> _selectedUserIds = [];
-  List<UserProfile> _associatedUsers = [];
-  bool _isLoadingUsers = false;
-  bool _isPosting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchAssociatedUsers();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchAssociatedUsers() async {
-    if (widget.activeElder.id.isEmpty) return;
-    setState(() => _isLoadingUsers = true);
-    try {
-      final users = await widget.firestoreService
-          .getAssociatedUsersForElder(widget.activeElder.id);
-      if (mounted) setState(() => _associatedUsers = users);
-    } catch (e) {
-      debugPrint('_MessageComposerSheet: error fetching users: $e');
-    } finally {
-      if (mounted) setState(() => _isLoadingUsers = false);
-    }
-  }
-
-  Future<void> _post() async {
-    final text = _ctrl.text.trim();
-    if (text.isEmpty) return;
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    setState(() => _isPosting = true);
-    try {
-      List<String> visibleToUserIds = [];
-      if (_isPublic) {
-        visibleToUserIds.add('all');
-      } else {
-        visibleToUserIds.addAll(_selectedUserIds);
-        if (!visibleToUserIds.contains(user.uid)) {
-          visibleToUserIds.add(user.uid);
-        }
-      }
-
-      await widget.firestoreService.addJournalEntry(
-        elderId: widget.activeElder.id,
-        type: EntryType.message,
-        creatorId: user.uid,
-        text: text,
-        visibleToUserIds: visibleToUserIds,
-        isPublic: _isPublic,
-      );
-
-      if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Message posted to timeline.'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('_MessageComposerSheet._post error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not post message: ${e.toString()}'),
-            backgroundColor: AppTheme.dangerColor,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isPosting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final elderName = (widget.activeElder.preferredName?.isNotEmpty == true)
-        ? widget.activeElder.preferredName!
-        : widget.activeElder.profileName;
-
-    return Container(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: _kColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.chat_bubble_outline,
-                    color: _kColor, size: 18),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'New message for $elderName\'s timeline',
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Audience selector
-          UserSelectorWidget(
-            allUsers: _associatedUsers,
-            isLoadingUsers: _isLoadingUsers,
-            initialSelectedUserIds: _selectedUserIds,
-            initialIsPublic: _isPublic,
-            onSelectionChanged: (ids, isPublic) {
-              setState(() {
-                _selectedUserIds = ids;
-                _isPublic = isPublic;
-              });
-            },
-          ),
-
-          const SizedBox(height: 12),
-
-          // Audience hint
-          Text(
-            _isPublic
-                ? 'Posting to all caregivers'
-                : 'Private — visible only to selected people',
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontStyle: FontStyle.italic,
-              color: _isPublic ? AppTheme.textSecondary : _kColor,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Text field
-          TextField(
-            controller: _ctrl,
-            maxLines: 4,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText:
-                  'Write a message for $elderName\'s timeline...',
-              filled: true,
-              fillColor: _kColor.withOpacity(0.05),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide:
-                    BorderSide(color: _kColor.withOpacity(0.3)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide:
-                    BorderSide(color: _kColor.withOpacity(0.3)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _kColor),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Action row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed:
-                    _isPosting ? null : () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                onPressed: _isPosting ? null : _post,
-                icon: _isPosting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white))
-                    : const Icon(Icons.send_outlined, size: 16),
-                label: const Text('Post'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _kColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
+// MessageComposerSheet extracted to
+// lib/widgets/dashboard/message_composer_sheet.dart
 
 // ---------------------------------------------------------------------------
 // Today's log summary grid
@@ -1468,9 +1321,9 @@ class _EntryTypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorForType(type);
-    final icon = _iconForType(type);
-    final label = _labelForType(type);
+    final color = entryTypeColor(type);
+    final icon = entryTypeIcon(type);
+    final label = entryTypeShortLabel(type);
 
     return GestureDetector(
       onTap: () => _showEntriesSheet(
@@ -1483,9 +1336,9 @@ class _EntryTypeChip extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.25)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1507,68 +1360,6 @@ class _EntryTypeChip extends StatelessWidget {
     );
   }
 
-  Color _colorForType(EntryType t) {
-    switch (t) {
-      case EntryType.mood: return const Color(0xFFE91E63);
-      case EntryType.medication: return const Color(0xFF1E88E5);
-      case EntryType.sleep: return const Color(0xFF5C6BC0);
-      case EntryType.meal: return const Color(0xFF43A047);
-      case EntryType.pain: return const Color(0xFFE53935);
-      case EntryType.activity: return const Color(0xFF00897B);
-      case EntryType.vital: return const Color(0xFFF57C00);
-      case EntryType.expense: return const Color(0xFF8E24AA);
-      case EntryType.message: return const Color(0xFF546E7A);
-      case EntryType.handoff: return const Color(0xFF00897B);
-      case EntryType.incontinence: return const Color(0xFF795548);
-      case EntryType.nightWaking: return const Color(0xFF283593);
-      case EntryType.hydration: return const Color(0xFF0288D1);
-      case EntryType.visitor: return const Color(0xFF6A1B9A);
-      case EntryType.custom: return const Color(0xFF546E7A);
-      default: return AppTheme.textSecondary;
-    }
-  }
-
-  IconData _iconForType(EntryType t) {
-    switch (t) {
-      case EntryType.mood: return Icons.sentiment_satisfied_outlined;
-      case EntryType.medication: return Icons.medication_outlined;
-      case EntryType.sleep: return Icons.bedtime_outlined;
-      case EntryType.meal: return Icons.restaurant_outlined;
-      case EntryType.pain: return Icons.healing_outlined;
-      case EntryType.activity: return Icons.directions_walk_outlined;
-      case EntryType.vital: return Icons.monitor_heart_outlined;
-      case EntryType.expense: return Icons.receipt_long_outlined;
-      case EntryType.message: return Icons.chat_bubble_outline;
-      case EntryType.handoff: return Icons.swap_horiz_outlined;
-      case EntryType.incontinence: return Icons.water_drop_outlined;
-      case EntryType.nightWaking: return Icons.nightlight_outlined;
-      case EntryType.hydration: return Icons.local_drink_outlined;
-      case EntryType.visitor: return Icons.people_outline;
-      case EntryType.custom: return Icons.extension_outlined;
-      default: return Icons.note_outlined;
-    }
-  }
-
-  String _labelForType(EntryType t) {
-    switch (t) {
-      case EntryType.mood: return 'Mood';
-      case EntryType.medication: return 'Meds';
-      case EntryType.sleep: return 'Sleep';
-      case EntryType.meal: return 'Meals';
-      case EntryType.pain: return 'Pain';
-      case EntryType.activity: return 'Activity';
-      case EntryType.vital: return 'Vitals';
-      case EntryType.expense: return 'Expenses';
-      case EntryType.message: return 'Messages';
-      case EntryType.handoff: return 'Handoff';
-      case EntryType.incontinence: return 'Continence';
-      case EntryType.nightWaking: return 'Night Waking';
-      case EntryType.hydration: return 'Fluids';
-      case EntryType.visitor: return 'Visitors';
-      case EntryType.custom: return 'Custom';
-      default: return t.name;
-    }
-  }
 }
 
 
@@ -1576,139 +1367,6 @@ class _EntryTypeChip extends StatelessWidget {
 // Journal preview card — shows the most recent caregiverJournalEntry for
 // the current user, with a button to open the full journal screen.
 // ---------------------------------------------------------------------------
-
-class _JournalPreviewCard extends StatelessWidget {
-  const _JournalPreviewCard({required this.currentUserId});
-  final String currentUserId;
-
-  static const _kColor = Color(0xFF8E24AA);
-
-  @override
-  Widget build(BuildContext context) {
-    if (currentUserId.isEmpty) return const SizedBox.shrink();
-
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('caregiverJournalEntries')
-          .where('userId', isEqualTo: currentUserId)
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .snapshots(),
-      builder: (context, snapshot) {
-        final hasEntry =
-            snapshot.hasData && snapshot.data!.docs.isNotEmpty;
-        final doc =
-            hasEntry ? snapshot.data!.docs.first : null;
-        final note = hasEntry
-            ? (doc!.data() as Map<String, dynamic>)['note'] as String? ?? ''
-            : '';
-        final ts = hasEntry
-            ? (doc!.data() as Map<String, dynamic>)['createdAt']
-                as Timestamp?
-            : null;
-        final dateStr = ts != null
-            ? DateFormat('MMM d').format(ts.toDate())
-            : '';
-
-        return GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => const CareGiverJournalScreen()),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: _kColor.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _kColor.withOpacity(0.2)),
-              boxShadow: [
-                BoxShadow(
-                  color: _kColor.withOpacity(0.06),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left icon
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _kColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.menu_book_outlined,
-                      color: _kColor, size: 18),
-                ),
-                const SizedBox(width: 12),
-                // Content
-                Expanded(
-                  child: hasEntry
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  dateStr,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: _kColor.withOpacity(0.8),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  'View all →',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: _kColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              note,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textPrimary,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'No entries yet — tap to write your first journal entry.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(Icons.add_circle_outline,
-                                color: _kColor, size: 20),
-                          ],
-                        ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
 
 class _TodayLoadingCard extends StatelessWidget {
   const _TodayLoadingCard();
@@ -1726,264 +1384,8 @@ class _TodayLoadingCard extends StatelessWidget {
 // Badge info dialog — shown when tapping any badge (locked or unlocked)
 // ---------------------------------------------------------------------------
 
-void _showBadgeInfoDialog(BuildContext context, Badge badge) {
-  final isEarned = badge.tier != BadgeTier.none || badge.unlocked == true;
-  final tierColor = badge.tierStyle.color;
-  final thresholds = badge.thresholds;
-
-  if (isEarned) {
-    HapticUtils.celebration();
-    ConfettiOverlay.trigger(context);
-  }
-
-  showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Row(
-        children: [
-          Icon(
-            isEarned ? Icons.emoji_events : Icons.lock_outline,
-            color: isEarned ? tierColor : AppTheme.textLight,
-            size: 28,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              badge.label,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: isEarned ? tierColor : AppTheme.textPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Description
-          Text(
-            badge.description,
-            style: const TextStyle(fontSize: 14, height: 1.4),
-          ),
-          const SizedBox(height: 16),
-
-          // Current tier
-          if (isEarned) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: tierColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: tierColor.withOpacity(0.3)),
-              ),
-              child: Text(
-                'Current tier: ${badge.tierStyle.label}',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: tierColor,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-
-          // Progress
-          if (badge.progressLabel.isNotEmpty)
-            Text(
-              badge.progressLabel,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          if (badge.progressLabel.isNotEmpty)
-            const SizedBox(height: 12),
-
-          // Tier thresholds
-          if (thresholds != null) ...[
-            const Text(
-              'TIER REQUIREMENTS',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.8,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            _TierRow(label: 'Bronze', count: thresholds.bronze,
-                reached: badge.progressCount >= thresholds.bronze),
-            _TierRow(label: 'Silver', count: thresholds.silver,
-                reached: badge.progressCount >= thresholds.silver),
-            _TierRow(label: 'Gold', count: thresholds.gold,
-                reached: badge.progressCount >= thresholds.gold),
-            _TierRow(label: 'Diamond', count: thresholds.diamond,
-                reached: badge.progressCount >= thresholds.diamond),
-          ],
-
-          const SizedBox(height: 16),
-
-          // Why gamification matters
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF8E24AA).withOpacity(0.05),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline, size: 14,
-                    color: Color(0xFF8E24AA)),
-                SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'Achievements reward you for taking care of yourself '
-                    'while caring for others. Small consistent actions '
-                    'reduce burnout and build resilience.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF8E24AA),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Close'),
-        ),
-      ],
-    ),
-  );
-}
-
-class _TierRow extends StatelessWidget {
-  const _TierRow({
-    required this.label,
-    required this.count,
-    required this.reached,
-  });
-  final String label;
-  final int count;
-  final bool reached;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          Icon(
-            reached ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 14,
-            color: reached ? const Color(0xFF43A047) : AppTheme.textLight,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '$label: $count',
-            style: TextStyle(
-              fontSize: 12,
-              color: reached ? AppTheme.textPrimary : AppTheme.textSecondary,
-              fontWeight: reached ? FontWeight.w600 : FontWeight.normal,
-              decoration: reached ? TextDecoration.lineThrough : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Badges row
-// ---------------------------------------------------------------------------
-
-class _BadgesRow extends StatelessWidget {
-  const _BadgesRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final badges = context.watch<BadgeProvider>().badges;
-    final unlocked = badges.values.where((b) => b.unlocked == true).toList();
-    final locked = badges.values.where((b) => b.unlocked != true).toList();
-    final all = [...unlocked, ...locked];
-    if (all.isEmpty) return const SizedBox.shrink();
-
-    return SizedBox(
-      height: 68,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: all.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, i) {
-          final badge = all[i];
-          final isUnlocked = badge.unlocked == true;
-          final accent = isUnlocked
-              ? AppTheme.tileOrange
-              : AppTheme.textLight;
-          return GestureDetector(
-            onTap: () => _showBadgeInfoDialog(context, badge),
-            child: Container(
-              width: 56,
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              decoration: BoxDecoration(
-                color: isUnlocked
-                    ? AppTheme.tileOrange.withValues(alpha: 0.08)
-                    : AppTheme.backgroundGray,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isUnlocked
-                      ? AppTheme.tileOrange.withValues(alpha: 0.3)
-                      : Colors.transparent,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isUnlocked
-                        ? Icons.emoji_events
-                        : Icons.lock_outline,
-                    size: 20,
-                    color: accent,
-                  ),
-                  const SizedBox(height: 2),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Text(
-                      badge.label,
-                      style: TextStyle(
-                        fontSize: 8,
-                        color: accent,
-                        fontWeight: isUnlocked
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+// _BadgesRow, showBadgeInfoDialog, and _TierRow extracted to
+// lib/widgets/dashboard/badges_row.dart
 
 // ---------------------------------------------------------------------------
 // Pinned medication card — compact one-tap "Taken" quick logger
@@ -2008,7 +1410,7 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
   bool _logging = false;
   bool _justLogged = false;
 
-  static const _kColor = Color(0xFF1E88E5);
+  static const _kColor = AppTheme.tileBlue;
 
   Future<void> _logTaken() async {
     if (_logging || _justLogged) return;
@@ -2084,13 +1486,13 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: _justLogged
-              ? const Color(0xFF43A047).withOpacity(0.08)
-              : _kColor.withOpacity(0.08),
+              ? AppTheme.statusGreen.withValues(alpha: 0.08)
+              : _kColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _justLogged
-                ? const Color(0xFF43A047).withOpacity(0.3)
-                : _kColor.withOpacity(0.25),
+                ? AppTheme.statusGreen.withValues(alpha: 0.3)
+                : _kColor.withValues(alpha: 0.25),
           ),
         ),
         child: Column(
@@ -2102,7 +1504,7 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
                 Icon(
                   _justLogged ? Icons.check_circle : Icons.medication_outlined,
                   size: 16,
-                  color: _justLogged ? const Color(0xFF43A047) : _kColor,
+                  color: _justLogged ? AppTheme.statusGreen : _kColor,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -2112,7 +1514,7 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: _justLogged
-                          ? const Color(0xFF43A047)
+                          ? AppTheme.statusGreen
                           : _kColor,
                     ),
                     maxLines: 1,
@@ -2138,7 +1540,7 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
                 style: TextStyle(
                   fontSize: 11,
                   color: _justLogged
-                      ? const Color(0xFF43A047)
+                      ? AppTheme.statusGreen
                       : AppTheme.textSecondary,
                   fontStyle: FontStyle.italic,
                 ),
@@ -2163,6 +1565,73 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
 // Section label
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Multi-view "hidden sections" hint
+// ---------------------------------------------------------------------------
+
+/// Compact info card shown at the bottom of the dashboard in multi-view
+/// mode that lists which sections are hidden because they only work for
+/// a single active elder. Without this, multi-view looks like the
+/// dashboard is broken — sections silently vanish with no explanation.
+class _MultiViewHiddenHint extends StatelessWidget {
+  const _MultiViewHiddenHint({required this.hiddenLabels});
+
+  final List<String> hiddenLabels;
+
+  @override
+  Widget build(BuildContext context) {
+    if (hiddenLabels.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline,
+                color: AppTheme.primaryColor, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'More on the single-elder dashboard',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${hiddenLabels.join(', ')} '
+                    '${hiddenLabels.length == 1 ? 'is' : 'are'} hidden in '
+                    'multi-elder view because the data is specific to one '
+                    'care recipient. Switch to single-elder view to see '
+                    'them.',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Small colored header showing an elder's name — used in multi-view to
 /// separate per-elder data within a shared section.
 class _ElderSubheader extends StatelessWidget {
@@ -2171,8 +1640,8 @@ class _ElderSubheader extends StatelessWidget {
   final int index;
 
   static const List<Color> _palette = [
-    Color(0xFF1E88E5), Color(0xFFE53935), Color(0xFF43A047),
-    Color(0xFFF57C00), Color(0xFF8E24AA), Color(0xFF00897B),
+    AppTheme.tileBlue, AppTheme.statusRed, AppTheme.statusGreen,
+    AppTheme.tileOrange, AppTheme.tilePurple, AppTheme.tileTeal,
   ];
 
   @override

@@ -429,7 +429,7 @@ class _ImageAttachPicker extends StatelessWidget {
       return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _kColor.withOpacity(0.3)),
+          border: Border.all(color: _kColor.withValues(alpha: 0.3)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -492,10 +492,10 @@ class _ImageAttachPicker extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
         decoration: BoxDecoration(
-          color: _kColor.withOpacity(0.06),
+          color: _kColor.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-              color: _kColor.withOpacity(0.25), style: BorderStyle.solid),
+              color: _kColor.withValues(alpha: 0.25), style: BorderStyle.solid),
         ),
         child: Row(
           children: [

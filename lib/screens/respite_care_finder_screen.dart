@@ -105,7 +105,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -310,13 +310,13 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
                               horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: selected
-                                ? color.withOpacity(0.12)
+                                ? color.withValues(alpha: 0.12)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: selected
                                   ? color
-                                  : AppTheme.textLight.withOpacity(0.3),
+                                  : AppTheme.textLight.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
@@ -591,18 +591,18 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _RespiteCareFinderScreenState._kAccent.withOpacity(0.05),
+        color: _RespiteCareFinderScreenState._kAccent.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
             color:
-                _RespiteCareFinderScreenState._kAccent.withOpacity(0.15)),
+                _RespiteCareFinderScreenState._kAccent.withValues(alpha: 0.15)),
       ),
       child: Column(
         children: [
           Icon(Icons.search_outlined,
               size: 40,
               color:
-                  _RespiteCareFinderScreenState._kAccent.withOpacity(0.5)),
+                  _RespiteCareFinderScreenState._kAccent.withValues(alpha: 0.5)),
           const SizedBox(height: 12),
           const Text(
             'Find respite care near you',
@@ -662,7 +662,7 @@ class _SectionHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(icon, size: 14, color: color),
@@ -705,10 +705,10 @@ class _ProviderCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.textLight.withOpacity(0.15)),
+        border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -736,9 +736,9 @@ class _ProviderCard extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: provider.source == 'cms_api'
-                      ? const Color(0xFF1E88E5).withOpacity(0.1)
+                      ? const Color(0xFF1E88E5).withValues(alpha: 0.1)
                       : _RespiteCareFinderScreenState._kAccent
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -768,7 +768,7 @@ class _ProviderCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.08),
+                    color: color.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -892,9 +892,9 @@ class _ActionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

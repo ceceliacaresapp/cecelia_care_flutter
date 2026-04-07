@@ -239,7 +239,7 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -303,7 +303,7 @@ class _CareGiverJournalScreenState extends State<CareGiverJournalScreen> {
                     children: [
                       Icon(Icons.menu_book_outlined,
                           size: 52,
-                          color: _kJournalColor.withOpacity(0.4)),
+                          color: _kJournalColor.withValues(alpha: 0.4)),
                       const SizedBox(height: 12),
                       Text(
                         loc.noJournalEntriesYet,
@@ -381,10 +381,10 @@ class _GratitudePromptCard extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _kPromptColor.withOpacity(0.06),
+        color: _kPromptColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isActive ? _kPromptColor : _kPromptColor.withOpacity(0.2),
+          color: isActive ? _kPromptColor : _kPromptColor.withValues(alpha: 0.2),
           width: isActive ? 1.5 : 1,
         ),
       ),
@@ -397,7 +397,7 @@ class _GratitudePromptCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: _kPromptColor.withOpacity(0.12),
+                  color: _kPromptColor.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.lightbulb_outline,
@@ -421,7 +421,7 @@ class _GratitudePromptCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: _kPromptColor.withOpacity(0.7),
+                    color: _kPromptColor.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -434,7 +434,7 @@ class _GratitudePromptCard extends StatelessWidget {
             prompt,
             style: TextStyle(
               fontSize: 14,
-              color: _kPromptColor.withOpacity(0.9),
+              color: _kPromptColor.withValues(alpha: 0.9),
               fontStyle: FontStyle.italic,
               height: 1.4,
             ),
@@ -457,7 +457,7 @@ class _GratitudePromptCard extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                     side: BorderSide(
-                        color: _kPromptColor.withOpacity(0.3)),
+                        color: _kPromptColor.withValues(alpha: 0.3)),
                   ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -486,7 +486,7 @@ class _GratitudePromptCard extends StatelessWidget {
                     onTap: onClear,
                     child: Icon(Icons.close,
                         size: 14,
-                        color: _kPromptColor.withOpacity(0.5)),
+                        color: _kPromptColor.withValues(alpha: 0.5)),
                   ),
                 ],
               ),
@@ -575,7 +575,7 @@ class _AllPromptsSheet extends StatelessWidget {
                     height: 28,
                     decoration: BoxDecoration(
                       color: isToday
-                          ? _kPromptColor.withOpacity(0.12)
+                          ? _kPromptColor.withValues(alpha: 0.12)
                           : AppTheme.backgroundGray,
                       shape: BoxShape.circle,
                     ),
@@ -606,7 +606,7 @@ class _AllPromptsSheet extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: _kPromptColor.withOpacity(0.1),
+                            color: _kPromptColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
@@ -683,12 +683,12 @@ class _ComposerCardState extends State<_ComposerCard> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -702,7 +702,7 @@ class _ComposerCardState extends State<_ComposerCard> {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -732,7 +732,7 @@ class _ComposerCardState extends State<_ComposerCard> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -745,7 +745,7 @@ class _ComposerCardState extends State<_ComposerCard> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: _kPromptColor.withOpacity(0.08),
+                color: _kPromptColor.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -783,15 +783,15 @@ class _ComposerCardState extends State<_ComposerCard> {
                   ? 'Write your response...'
                   : widget.loc.writeYourEntryHere,
               filled: true,
-              fillColor: color.withOpacity(0.04),
+              fillColor: color.withValues(alpha: 0.04),
               counterText: '$charCount / $_kMaxChars',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: color.withOpacity(0.25)),
+                borderSide: BorderSide(color: color.withValues(alpha: 0.25)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: color.withOpacity(0.25)),
+                borderSide: BorderSide(color: color.withValues(alpha: 0.25)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -882,18 +882,18 @@ class _JournalCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isBeingEdited
-            ? color.withOpacity(0.06)
+            ? color.withValues(alpha: 0.06)
             : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isBeingEdited
               ? color
-              : color.withOpacity(0.2),
+              : color.withValues(alpha: 0.2),
           width: isBeingEdited ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.05),
+            color: color.withValues(alpha: 0.05),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -916,13 +916,13 @@ class _JournalCard extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.calendar_today_outlined,
-                              size: 11, color: color.withOpacity(0.7)),
+                              size: 11, color: color.withValues(alpha: 0.7)),
                           const SizedBox(width: 4),
                           Text(
                             date,
                             style: TextStyle(
                               fontSize: 11,
-                              color: color.withOpacity(0.8),
+                              color: color.withValues(alpha: 0.8),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -932,7 +932,7 @@ class _JournalCard extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
-                                color: color.withOpacity(0.12),
+                                color: color.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -954,7 +954,7 @@ class _JournalCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: _kPromptColor.withOpacity(0.08),
+                            color: _kPromptColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(

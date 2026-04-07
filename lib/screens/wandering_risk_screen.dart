@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/models/wandering_assessment.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 
 class WanderingRiskScreen extends StatefulWidget {
@@ -131,7 +132,9 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
                 }
                 if (snapshot.connectionState == ConnectionState.waiting &&
                     !snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return TimedLoadingIndicator(
+                    onRetry: () => setState(() {}),
+                  );
                 }
 
                 final assessments = (snapshot.data ?? [])

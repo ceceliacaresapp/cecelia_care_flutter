@@ -19,6 +19,7 @@ import 'package:cecelia_care_flutter/screens/forms/set_budgets_form.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/expense_breakdown_chart.dart';
 import 'package:cecelia_care_flutter/widgets/insurance_tracker_card.dart';
+import 'package:cecelia_care_flutter/widgets/stream_error_card.dart';
 
 import 'package:cecelia_care_flutter/screens/forms/income_entry_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/asset_entry_form.dart';
@@ -344,6 +345,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
         year: year,
       ),
       builder: (context, snap) {
+        if (snap.hasError) {
+          return StreamErrorCard(
+            message: "Couldn't load insurance progress",
+            error: snap.error,
+          );
+        }
         final entries = snap.data ?? const <BudgetEntry>[];
         final medical = entries
             .where((e) => e.category == 'Medical & Health')
@@ -515,6 +522,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
         year: year,
       ),
       builder: (context, snap) {
+        if (snap.hasError) {
+          return StreamErrorCard(
+            message: "Couldn't load tax deduction summary",
+            error: snap.error,
+          );
+        }
         final all = snap.data ?? const <BudgetEntry>[];
         final deductible = all.where((e) => e.isTaxDeductible).toList();
         final ytd = deductible.fold<double>(0, (s, e) => s + e.amount);
@@ -665,6 +678,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
         month: _selectedMonth,
       ),
       builder: (context, snap) {
+        if (snap.hasError) {
+          return StreamErrorCard(
+            message: "Couldn't load category breakdown",
+            error: snap.error,
+          );
+        }
         final entries = snap.data ?? const <BudgetEntry>[];
         if (entries.isEmpty) return const SizedBox.shrink();
         return ExpenseBreakdownChart(
@@ -690,6 +709,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return StreamBuilder<double>(
       stream: stream,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return StreamErrorCard(
+            message: "Couldn't load net worth",
+            error: snapshot.error,
+          );
+        }
         final netWorth = snapshot.data ?? 0.0;
         final formattedNetWorth = NumberFormat.simpleCurrency(decimalDigits: 2).format(netWorth);
         final color = netWorth >= 0 ? const Color(0xFF43A047) : AppTheme.dangerColor;
@@ -702,7 +727,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _kBudgetColor.withOpacity(0.12),
+                    color: _kBudgetColor.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.account_balance_outlined,
@@ -736,6 +761,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
      return StreamBuilder<double>(
       stream: stream,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return StreamErrorCard(
+            message: "Couldn't load cash flow",
+            error: snapshot.error,
+          );
+        }
         final cashFlow = snapshot.data ?? 0.0;
         final formattedCashFlow = NumberFormat.simpleCurrency(decimalDigits: 2).format(cashFlow);
         final isPositive = cashFlow >= 0;
@@ -749,7 +780,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _kBudgetColor.withOpacity(0.12),
+                    color: _kBudgetColor.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -784,6 +815,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return StreamBuilder<List<BudgetEntry>>(
       stream: firestoreService.getBudgetStreamForMonth(userId: currentUserId, careRecipientId: careRecipientId, month: _selectedMonth),
       builder: (context, expenseSnapshot) {
+        if (expenseSnapshot.hasError) {
+          return StreamErrorCard(
+            message: "Couldn't load budget status",
+            error: expenseSnapshot.error,
+          );
+        }
         final expenses = expenseSnapshot.data ?? [];
         final Map<String, double> spentAmounts = {};
         for (var expense in expenses) {
@@ -793,6 +830,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
         return FutureBuilder<Map<String, double>>(
           future: firestoreService.getCategoryBudgets(elderId: careRecipientId, month: _selectedMonth),
           builder: (context, budgetSnapshot) {
+            if (budgetSnapshot.hasError) {
+              return StreamErrorCard(
+                message: "Couldn't load category budgets",
+                error: budgetSnapshot.error,
+              );
+            }
             if (budgetSnapshot.connectionState == ConnectionState.waiting) {
               return const Card(child: Center(child: CircularProgressIndicator()));
             }
@@ -923,10 +966,10 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: entryColor.withOpacity(0.2)),
+                      color: entryColor.withValues(alpha: 0.2)),
                   boxShadow: [
                     BoxShadow(
-                        color: entryColor.withOpacity(0.06),
+                        color: entryColor.withValues(alpha: 0.06),
                         blurRadius: 6,
                         offset: const Offset(0, 2)),
                   ],
@@ -946,7 +989,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: entryColor.withOpacity(0.1),
+                                    color: entryColor.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(icon,
@@ -1025,12 +1068,12 @@ class _StyledCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 2),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

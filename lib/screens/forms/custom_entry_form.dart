@@ -158,7 +158,7 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(widget.typeDef.iconData,
@@ -288,14 +288,14 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: color.withOpacity(0.04),
+      fillColor: color.withValues(alpha: 0.04),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: color.withOpacity(0.2)),
+        borderSide: BorderSide(color: color.withValues(alpha: 0.2)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: color.withOpacity(0.2)),
+        borderSide: BorderSide(color: color.withValues(alpha: 0.2)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),

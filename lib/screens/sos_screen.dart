@@ -107,7 +107,7 @@ class _SosScreenState extends State<SosScreen> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [_kCalmPrimary, _kCalmPrimary.withOpacity(0.82)],
+              colors: [_kCalmPrimary, _kCalmPrimary.withValues(alpha: 0.82)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -127,7 +127,7 @@ class _SosScreenState extends State<SosScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: _kCalmPrimary.withOpacity(0.08),
+                    color: _kCalmPrimary.withValues(alpha: 0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 3),
                   ),
@@ -136,7 +136,7 @@ class _SosScreenState extends State<SosScreen> {
               child: Column(
                 children: [
                   Icon(Icons.favorite,
-                      size: 36, color: _kCalmPrimary.withOpacity(0.7)),
+                      size: 36, color: _kCalmPrimary.withValues(alpha: 0.7)),
                   const SizedBox(height: 12),
                   Text(
                     "You're doing something incredibly brave by caring for someone else.",
@@ -234,7 +234,7 @@ class _SosScreenState extends State<SosScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                    color: AppTheme.dangerColor.withOpacity(0.15)),
+                    color: AppTheme.dangerColor.withValues(alpha: 0.15)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,10 +324,10 @@ class _SosToolCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: isActive ? color : color.withOpacity(0.15)),
+            color: isActive ? color : color.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -340,7 +340,7 @@ class _SosToolCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 22),
@@ -381,7 +381,7 @@ class _SosToolCard extends StatelessWidget {
                     horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(color: color.withOpacity(0.3)),
+                  side: BorderSide(color: color.withValues(alpha: 0.3)),
                 ),
               ),
               child: Text(
@@ -456,10 +456,10 @@ class _GroundingCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: isActive ? color : color.withOpacity(0.15)),
+            color: isActive ? color : color.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -475,7 +475,7 @@ class _GroundingCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child:
@@ -522,7 +522,7 @@ class _GroundingCard extends StatelessWidget {
                         horizontal: 12, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: color.withOpacity(0.3)),
+                      side: BorderSide(color: color.withValues(alpha: 0.3)),
                     ),
                   ),
                   child: const Text('Begin',
@@ -552,7 +552,7 @@ class _GroundingCard extends StatelessWidget {
                           ? color
                           : isCurrent
                               ? color
-                              : color.withOpacity(0.2),
+                              : color.withValues(alpha: 0.2),
                     ),
                   );
                 }),
@@ -564,7 +564,7 @@ class _GroundingCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.06),
+                  color: color.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(

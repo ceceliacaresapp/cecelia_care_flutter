@@ -86,12 +86,12 @@ class BurnoutScoreCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -167,10 +167,10 @@ class BurnoutScoreCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: _kRedColor.withOpacity(0.08),
+                            color: _kRedColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                                color: _kRedColor.withOpacity(0.2)),
+                                color: _kRedColor.withValues(alpha: 0.2)),
                           ),
                           child: Row(
                             children: [
@@ -205,7 +205,7 @@ class BurnoutScoreCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: color.withOpacity(0.1),
+                              color: color.withValues(alpha: 0.1),
                               borderRadius:
                                   BorderRadius.circular(10),
                             ),
@@ -234,7 +234,7 @@ class BurnoutScoreCard extends StatelessWidget {
                                 Icon(
                                   Icons.arrow_forward_ios,
                                   size: 12,
-                                  color: color.withOpacity(0.6),
+                                  color: color.withValues(alpha: 0.6),
                                 ),
                               ],
                             ),
@@ -312,7 +312,7 @@ class _ScoreGauge extends StatelessWidget {
                 'wellness',
                 style: TextStyle(
                   fontSize: 9,
-                  color: color.withOpacity(0.7),
+                  color: color.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -338,7 +338,7 @@ class _GaugePainter extends CustomPainter {
 
     // Background track
     final bgPaint = Paint()
-      ..color = color.withOpacity(0.12)
+      ..color = color.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6
       ..strokeCap = StrokeCap.round;
@@ -405,7 +405,7 @@ class _DimensionBar extends StatelessWidget {
             child: Container(
               height: 6,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: FractionallySizedBox(
@@ -413,7 +413,7 @@ class _DimensionBar extends StatelessWidget {
                 widthFactor: normalized,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.6),
+                    color: color.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),

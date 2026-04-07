@@ -143,7 +143,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -239,16 +239,16 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                       labelText: 'Anything else on your mind? (optional)',
                       hintText: 'A quick note about your day...',
                       filled: true,
-                      fillColor: _kAccent.withOpacity(0.04),
+                      fillColor: _kAccent.withValues(alpha: 0.04),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide:
-                            BorderSide(color: _kAccent.withOpacity(0.2)),
+                            BorderSide(color: _kAccent.withValues(alpha: 0.2)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide:
-                            BorderSide(color: _kAccent.withOpacity(0.2)),
+                            BorderSide(color: _kAccent.withValues(alpha: 0.2)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -357,7 +357,7 @@ class _DimensionRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -382,15 +382,15 @@ class _DimensionRow extends StatelessWidget {
                   color: isSelected
                       ? color
                       : isBelow
-                          ? color.withOpacity(0.15)
-                          : color.withOpacity(0.05),
+                          ? color.withValues(alpha: 0.15)
+                          : color.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isSelected
                         ? color
                         : isBelow
-                            ? color.withOpacity(0.3)
-                            : color.withOpacity(0.15),
+                            ? color.withValues(alpha: 0.3)
+                            : color.withValues(alpha: 0.15),
                     width: isSelected ? 2 : 1,
                   ),
                 ),
@@ -420,14 +420,14 @@ class _DimensionRow extends StatelessWidget {
                 labels.first,
                 style: TextStyle(
                   fontSize: 10,
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                 ),
               ),
               Text(
                 labels.last,
                 style: TextStyle(
                   fontSize: 10,
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -451,7 +451,7 @@ class _SuccessView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF43A047).withOpacity(0.1),
+              color: const Color(0xFF43A047).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

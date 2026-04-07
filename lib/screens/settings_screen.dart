@@ -152,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: AppTheme.backgroundGray,
               borderRadius: BorderRadius.circular(10),
               border:
-                  Border.all(color: AppTheme.textLight.withOpacity(0.4)),
+                  Border.all(color: AppTheme.textLight.withValues(alpha: 0.4)),
             ),
             child: Row(
               children: [
@@ -355,16 +355,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             prefixIcon: const Icon(Icons.language_outlined,
                 color: AppTheme.textSecondary),
             filled: true,
-            fillColor: AppTheme.primaryColor.withOpacity(0.04),
+            fillColor: AppTheme.primaryColor.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
-                  color: AppTheme.primaryColor.withOpacity(0.2)),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.2)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(
-                  color: AppTheme.primaryColor.withOpacity(0.2)),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.2)),
             ),
           ),
           value: _selectedLocale,
@@ -415,10 +415,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppTheme.dangerColor.withOpacity(0.04),
+              color: AppTheme.dangerColor.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: AppTheme.dangerColor.withOpacity(0.2)),
+                  color: AppTheme.dangerColor.withValues(alpha: 0.2)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,7 +441,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: AppTheme.dangerColor.withOpacity(0.1),
+                          color: AppTheme.dangerColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(Icons.delete_forever_outlined,
@@ -502,19 +502,19 @@ class _ProfileHeaderCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.78)],
+          colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.78)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(
-          color: AppTheme.primaryColor.withOpacity(0.25),
+          color: AppTheme.primaryColor.withValues(alpha: 0.25),
           blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Column(children: [
         CircleAvatar(
           radius: 44,
-          backgroundColor: Colors.white.withOpacity(0.25),
+          backgroundColor: Colors.white.withValues(alpha: 0.25),
           backgroundImage: (userProfile!.avatarUrl?.isNotEmpty == true)
             ? NetworkImage(userProfile!.avatarUrl!) : null,
           child: (userProfile!.avatarUrl == null || userProfile!.avatarUrl!.isEmpty)
@@ -528,7 +528,7 @@ class _ProfileHeaderCard extends StatelessWidget {
         if (userProfile!.email.isNotEmpty) ...[
           const SizedBox(height: 4),
           Text(userProfile!.email,
-            style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8)),
+            style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.8)),
             textAlign: TextAlign.center),
         ],
       ]),
@@ -598,9 +598,9 @@ class _DarkModeSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: _kColor.withOpacity(0.04),
+          color: _kColor.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _kColor.withOpacity(0.15)),
+          border: Border.all(color: _kColor.withValues(alpha: 0.15)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,7 +611,7 @@ class _DarkModeSelector extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: _kColor.withOpacity(0.10),
+                    color: _kColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -686,7 +686,7 @@ class _ThemeChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: selected
-                ? _kColor.withOpacity(0.12)
+                ? _kColor.withValues(alpha: 0.12)
                 : AppTheme.backgroundGray,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(

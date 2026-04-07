@@ -45,12 +45,12 @@ class WeeklyChallengeCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.06),
+              color: color.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -75,7 +75,7 @@ class WeeklyChallengeCard extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: color.withOpacity(0.12),
+                                color: color.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -157,11 +157,11 @@ class WeeklyChallengeCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: _kCompletedColor.withOpacity(0.1),
+                              color: _kCompletedColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                   color: _kCompletedColor
-                                      .withOpacity(0.25)),
+                                      .withValues(alpha: 0.25)),
                             ),
                             child: Row(
                               mainAxisAlignment:
@@ -235,7 +235,7 @@ class _ProgressBar extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: color.withOpacity(0.7),
+                color: color.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -244,7 +244,7 @@ class _ProgressBar extends StatelessWidget {
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(
@@ -277,9 +277,9 @@ class _BonusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -315,14 +315,14 @@ class _NoChallengeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.backgroundGray,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textLight.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _kChallengeColor.withOpacity(0.08),
+              color: _kChallengeColor.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.flag_outlined,

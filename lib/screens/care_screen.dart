@@ -226,13 +226,18 @@ class _CareScreenState extends State<CareScreen> {
                       .read<FirestoreService>()
                       .getImageFoldersStream(activeElder.id),
                   builder: (ctx, snap) {
+                    if (snap.hasError) {
+                      debugPrint(
+                          'Care screen image folders stream error: ${snap.error}');
+                      return const SizedBox.shrink();
+                    }
                     final count = snap.data?.length ?? 0;
                     if (count == 0) return const SizedBox.shrink();
                     return Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppTheme.tileIndigo.withOpacity(0.1),
+                        color: AppTheme.tileIndigo.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -614,12 +619,12 @@ class _FeaturedTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.06),
+          color: color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.06),
+              color: color.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -633,7 +638,7 @@ class _FeaturedTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, size: 28, color: color),
@@ -657,7 +662,7 @@ class _FeaturedTile extends StatelessWidget {
                           subtitle!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: color.withOpacity(0.7),
+                            color: color.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -667,7 +672,7 @@ class _FeaturedTile extends StatelessWidget {
                 if (trailingWidget != null) trailingWidget!,
                 const SizedBox(width: 4),
                 Icon(Icons.arrow_forward_ios,
-                    size: 14, color: color.withOpacity(0.4)),
+                    size: 14, color: color.withValues(alpha: 0.4)),
               ],
             ),
             if (previewChips.isNotEmpty) ...[
@@ -680,16 +685,16 @@ class _FeaturedTile extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.08),
+                      color: color.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: color.withOpacity(0.15)),
+                      border: Border.all(color: color.withValues(alpha: 0.15)),
                     ),
                     child: Text(
                       label,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: color.withOpacity(0.8),
+                        color: color.withValues(alpha: 0.8),
                       ),
                     ),
                   );

@@ -10,6 +10,7 @@ import 'package:cecelia_care_flutter/models/adl_assessment.dart';
 import 'package:cecelia_care_flutter/providers/adl_provider.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
 
 class AdlAssessmentScreen extends StatefulWidget {
   const AdlAssessmentScreen({super.key});
@@ -92,7 +93,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
         title: const Text('ADL Assessment'),
       ),
       body: adl.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const TimedLoadingIndicator()
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [

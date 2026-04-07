@@ -23,9 +23,9 @@ class SymptomInsightsCard extends StatelessWidget {
       return Container(
         height: 100,
         decoration: BoxDecoration(
-          color: _kAccent.withOpacity(0.04),
+          color: _kAccent.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _kAccent.withOpacity(0.15)),
+          border: Border.all(color: _kAccent.withValues(alpha: 0.15)),
         ),
         child: const Center(
           child: SizedBox(
@@ -74,12 +74,12 @@ class SymptomInsightsCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _kAccent.withOpacity(0.05),
+          color: _kAccent.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _kAccent.withOpacity(0.2)),
+          border: Border.all(color: _kAccent.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: _kAccent.withOpacity(0.06),
+              color: _kAccent.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -94,7 +94,7 @@ class SymptomInsightsCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: _kAccent.withOpacity(0.1),
+                    color: _kAccent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.insights_outlined,
@@ -115,12 +115,12 @@ class SymptomInsightsCard extends StatelessWidget {
                   '${analytics.totalDaysWithData} days',
                   style: TextStyle(
                     fontSize: 11,
-                    color: _kAccent.withOpacity(0.6),
+                    color: _kAccent.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(Icons.arrow_forward_ios,
-                    size: 12, color: _kAccent.withOpacity(0.4)),
+                    size: 12, color: _kAccent.withValues(alpha: 0.4)),
               ],
             ),
             const SizedBox(height: 14),
@@ -167,7 +167,7 @@ class SymptomInsightsCard extends StatelessWidget {
                   color: const Color(0xFFFFF8E1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: const Color(0xFFFFC107).withOpacity(0.3)),
+                      color: const Color(0xFFFFC107).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -227,7 +227,7 @@ class _TrendChip extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: const Color(0xFF00838F).withOpacity(0.12)),
+              color: const Color(0xFF00838F).withValues(alpha: 0.12)),
         ),
         child: Column(
           children: [

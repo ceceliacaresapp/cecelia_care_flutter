@@ -79,7 +79,7 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -381,7 +381,7 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
                                     ? [
                                         BoxShadow(
                                             color:
-                                                c.withOpacity(0.5),
+                                                c.withValues(alpha: 0.5),
                                             blurRadius: 6)
                                       ]
                                     : null,
@@ -560,9 +560,9 @@ class _OnDutyBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: active.color.withOpacity(0.08),
+        color: active.color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: active.color.withOpacity(0.25)),
+        border: Border.all(color: active.color.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -633,9 +633,9 @@ class _ShiftRow extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: shift.color.withOpacity(0.04),
+        color: shift.color.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: shift.color.withOpacity(0.15)),
+        border: Border.all(color: shift.color.withValues(alpha: 0.15)),
       ),
       child: Column(
         children: [
@@ -646,7 +646,7 @@ class _ShiftRow extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: shift.color.withOpacity(0.08),
+                color: shift.color.withValues(alpha: 0.08),
                 borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(11)),
               ),
@@ -674,7 +674,7 @@ class _ShiftRow extends StatelessWidget {
                     '${shift.startTime}–${shift.endTime}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: shift.color.withOpacity(0.6),
+                      color: shift.color.withValues(alpha: 0.6),
                     ),
                   ),
                   const Spacer(),
@@ -683,7 +683,7 @@ class _ShiftRow extends StatelessWidget {
                       onTap: () => _showOptions(context),
                       child: Icon(Icons.more_horiz,
                           size: 18,
-                          color: shift.color.withOpacity(0.5)),
+                          color: shift.color.withValues(alpha: 0.5)),
                     ),
                 ],
               ),
@@ -712,19 +712,19 @@ class _ShiftRow extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: isToday
-                            ? shift.color.withOpacity(0.12)
+                            ? shift.color.withValues(alpha: 0.12)
                             : hasAssignee
-                                ? shift.color.withOpacity(0.06)
+                                ? shift.color.withValues(alpha: 0.06)
                                 : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                         border: isToday
                             ? Border.all(
-                                color: shift.color.withOpacity(0.4))
+                                color: shift.color.withValues(alpha: 0.4))
                             : hasAssignee
                                 ? null
                                 : Border.all(
                                     color: AppTheme.textLight
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     style: BorderStyle.solid,
                                   ),
                       ),
@@ -747,7 +747,7 @@ class _ShiftRow extends StatelessWidget {
                             CircleAvatar(
                               radius: 13,
                               backgroundColor:
-                                  shift.color.withOpacity(0.15),
+                                  shift.color.withValues(alpha: 0.15),
                               child: Text(
                                 assignedName[0].toUpperCase(),
                                 style: TextStyle(
@@ -762,7 +762,7 @@ class _ShiftRow extends StatelessWidget {
                               Icons.add,
                               size: 16,
                               color:
-                                  AppTheme.textLight.withOpacity(0.5),
+                                  AppTheme.textLight.withValues(alpha: 0.5),
                             ),
                           if (hasAssignee) ...[
                             const SizedBox(height: 2),
@@ -772,7 +772,7 @@ class _ShiftRow extends StatelessWidget {
                                   : assignedName,
                               style: TextStyle(
                                 fontSize: 8,
-                                color: shift.color.withOpacity(0.7),
+                                color: shift.color.withValues(alpha: 0.7),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -855,7 +855,7 @@ class _ShiftRow extends StatelessWidget {
                   leading: CircleAvatar(
                     radius: 18,
                     backgroundColor:
-                        shift.color.withOpacity(0.12),
+                        shift.color.withValues(alpha: 0.12),
                     backgroundImage:
                         u.avatarUrl?.isNotEmpty == true
                             ? NetworkImage(u.avatarUrl!)
@@ -1016,7 +1016,7 @@ class _TimePickerField extends StatelessWidget {
           color: AppTheme.backgroundGray,
           borderRadius: BorderRadius.circular(10),
           border:
-              Border.all(color: Colors.grey.withOpacity(0.2)),
+              Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1069,10 +1069,10 @@ class _PresetChip extends StatelessWidget {
         padding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withOpacity(0.08),
+          color: AppTheme.primaryColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: AppTheme.primaryColor.withOpacity(0.2)),
+              color: AppTheme.primaryColor.withValues(alpha: 0.2)),
         ),
         child: Text(
           label,

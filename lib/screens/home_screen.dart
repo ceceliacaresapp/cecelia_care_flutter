@@ -28,12 +28,12 @@ import 'package:cecelia_care_flutter/screens/burnout_intervention_screen.dart';
 // Tab accent colors — 6 tabs. Settings lives in the AppBar gear icon.
 // ---------------------------------------------------------------------------
 const _kNavColors = [
-  Color(0xFF1E88E5), // Home      — blue
-  Color(0xFF5C6BC0), // Timeline  — indigo
-  Color(0xFFE91E63), // Care      — pink/heart
-  Color(0xFF00897B), // Calendar  — teal
-  Color(0xFFF57C00), // Expenses  — amber-orange
-  Color(0xFF8E24AA), // Self Care — purple
+  AppTheme.tileBlue,        // Home      — blue
+  AppTheme.tileIndigo,      // Timeline  — indigo
+  AppTheme.tilePinkBright,  // Care      — pink/heart
+  AppTheme.tileTeal,        // Calendar  — teal
+  AppTheme.tileOrange,      // Expenses  — amber-orange
+  AppTheme.tilePurple,      // Self Care — purple
 ];
  
 const _kTimelineIndex = 1;
@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final Color color = _kNavColors[index];
     final Widget iconWidget = Icon(
       selected ? activeIcon : icon,
-      color: selected ? color : color.withOpacity(0.45),
+      color: selected ? color : color.withValues(alpha: 0.45),
     );
  
     if (unreadCount <= 0) return iconWidget;
@@ -474,7 +474,7 @@ class _TabScaffold extends StatelessWidget {
                           message: 'Manage care recipients',
                           child: CircleAvatar(
                             radius: 16,
-                            backgroundColor: Colors.white.withOpacity(0.25),
+                            backgroundColor: Colors.white.withValues(alpha: 0.25),
                             backgroundImage:
                                 (activeElder.photoUrl?.isNotEmpty == true)
                                     ? NetworkImage(activeElder.photoUrl!)
@@ -520,7 +520,7 @@ class _TabScaffold extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -544,7 +544,7 @@ class _TabScaffold extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: [
                             AppTheme.primaryColor,
-                            AppTheme.primaryColor.withOpacity(0.82),
+                            AppTheme.primaryColor.withValues(alpha: 0.82),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -630,21 +630,21 @@ class _ViewerLockedTab extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.lock_outline,
-                size: 48, color: Color(0xFF8E24AA)),
+                size: 48, color: AppTheme.tilePurple),
             const SizedBox(height: 16),
             Text(
               label,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF8E24AA),
+                color: AppTheme.tilePurple,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
               'You have view-only access.\nThis section is not available for your role.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF546E7A), fontSize: 13),
+              style: TextStyle(color: AppTheme.tileBlueGrey, fontSize: 13),
             ),
           ],
         ),

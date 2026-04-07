@@ -349,10 +349,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               padding: const EdgeInsets.symmetric(
                   horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
-                color: _kExpenseColor.withOpacity(0.06),
+                color: _kExpenseColor.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                    color: _kExpenseColor.withOpacity(0.2)),
+                    color: _kExpenseColor.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -415,10 +415,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: _kExpenseColor.withOpacity(0.06),
+                      color: _kExpenseColor.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                          color: _kExpenseColor.withOpacity(0.2)),
+                          color: _kExpenseColor.withValues(alpha: 0.2)),
                     ),
                     child: Column(
                       children: [
@@ -451,7 +451,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                             height: 8,
                                             decoration: BoxDecoration(
                                               color: _kExpenseColor
-                                                  .withOpacity(0.6),
+                                                  .withValues(alpha: 0.6),
                                               shape: BoxShape.circle,
                                             ),
                                           ),
@@ -475,7 +475,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             height: 24,
                             thickness: 1,
                             color:
-                                _kExpenseColor.withOpacity(0.2)),
+                                _kExpenseColor.withValues(alpha: 0.2)),
                         Row(
                           mainAxisAlignment:
                               MainAxisAlignment.spaceBetween,
@@ -557,7 +557,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         top: Radius.circular(20)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
+                        color: Colors.black.withValues(alpha: 0.12),
                         blurRadius: 20,
                         offset: const Offset(0, -4),
                       ),
@@ -630,10 +630,10 @@ class _UserCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kExpenseColor.withOpacity(0.2)),
+        border: Border.all(color: _kExpenseColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: _kExpenseColor.withOpacity(0.06),
+            color: _kExpenseColor.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -671,7 +671,7 @@ class _UserCard extends StatelessWidget {
                       Divider(
                           height: 14,
                           thickness: 1,
-                          color: _kExpenseColor.withOpacity(0.15)),
+                          color: _kExpenseColor.withValues(alpha: 0.15)),
                       ...userSummary.expenses.map((exp) => Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 6),
@@ -697,7 +697,7 @@ class _UserCard extends StatelessWidget {
                                         style: theme.textTheme.bodySmall
                                             ?.copyWith(
                                                 color: _kExpenseColor
-                                                    .withOpacity(0.8)),
+                                                    .withValues(alpha: 0.8)),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(

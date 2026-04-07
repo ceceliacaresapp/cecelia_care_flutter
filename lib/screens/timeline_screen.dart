@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/entry_type_helpers.dart';
+import 'package:cecelia_care_flutter/utils/entry_summary.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/multi_elder_timeline_badge.dart';
@@ -22,70 +24,11 @@ import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 
-class _EntryStyle {
-  final Color accent;
-  final Color surface;
-  const _EntryStyle({required this.accent, required this.surface});
-}
-
-_EntryStyle _entryTypeStyle(EntryType type) {
-  switch (type) {
-    case EntryType.message:
-      return _EntryStyle(
-          accent: AppTheme.accentColor, surface: const Color(0xFFFFF3E0));
-    case EntryType.caregiverJournal:
-      return _EntryStyle(
-          accent: const Color(0xFF546E7A), surface: const Color(0xFFECEFF1));
-    case EntryType.medication:
-      return _EntryStyle(
-          accent: AppTheme.primaryColor, surface: const Color(0xFFE8EAF6));
-    case EntryType.sleep:
-      return _EntryStyle(
-          accent: const Color(0xFF1565C0), surface: const Color(0xFFE3F2FD));
-    case EntryType.meal:
-      return _EntryStyle(
-          accent: const Color(0xFF2E7D32), surface: const Color(0xFFE8F5E9));
-    case EntryType.mood:
-      return _EntryStyle(
-          accent: const Color(0xFF6A1B9A), surface: const Color(0xFFF3E5F5));
-    case EntryType.pain:
-      return _EntryStyle(
-          accent: AppTheme.dangerColor, surface: const Color(0xFFFFEBEE));
-    case EntryType.activity:
-      return _EntryStyle(
-          accent: const Color(0xFF00695C), surface: const Color(0xFFE0F2F1));
-    case EntryType.vital:
-      return _EntryStyle(
-          accent: const Color(0xFF00838F), surface: const Color(0xFFE0F7FA));
-    case EntryType.expense:
-      return _EntryStyle(
-          accent: const Color(0xFF4E342E), surface: const Color(0xFFEFEBE9));
-    case EntryType.image:
-      return _EntryStyle(
-          accent: const Color(0xFF283593), surface: const Color(0xFFE8EAF6));
-    case EntryType.handoff:
-      return _EntryStyle(
-          accent: const Color(0xFF00897B), surface: const Color(0xFFE0F2F1));
-    case EntryType.incontinence:
-      return _EntryStyle(
-          accent: const Color(0xFF795548), surface: const Color(0xFFEFEBE9));
-    case EntryType.nightWaking:
-      return _EntryStyle(
-          accent: const Color(0xFF283593), surface: const Color(0xFFE8EAF6));
-    case EntryType.hydration:
-      return _EntryStyle(
-          accent: const Color(0xFF0288D1), surface: const Color(0xFFE1F5FE));
-    case EntryType.visitor:
-      return _EntryStyle(
-          accent: const Color(0xFF6A1B9A), surface: const Color(0xFFF3E5F5));
-    case EntryType.custom:
-      return _EntryStyle(
-          accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
-    default:
-      return _EntryStyle(
-          accent: const Color(0xFF546E7A), surface: AppTheme.backgroundGray);
-  }
-}
+// Color tables for entry types live in lib/utils/entry_type_helpers.dart
+// (shared with dashboard_screen.dart). Thin alias keeps the existing
+// timeline call sites unchanged.
+EntryTypeStyle _entryTypeStyle(EntryType type) =>
+    entryTypeTimelineStyle(type);
 
 Color _avatarColorForInitial(String initial) {
   const List<Color> palette = [
@@ -496,7 +439,7 @@ class TimelineScreenState extends State<TimelineScreen> {
               border: Border(
                 bottom: BorderSide(
                   color: _filtersExpanded
-                      ? AppTheme.primaryColor.withOpacity(0.3)
+                      ? AppTheme.primaryColor.withValues(alpha: 0.3)
                       : Colors.transparent,
                 ),
               ),
@@ -694,10 +637,10 @@ class TimelineScreenState extends State<TimelineScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.accentColor.withOpacity(0.08),
+                  color: AppTheme.accentColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.accentColor.withOpacity(0.2),
+                    color: AppTheme.accentColor.withValues(alpha: 0.2),
                   ),
                 ),
                 padding: const EdgeInsets.all(16),
@@ -1141,7 +1084,7 @@ class TimelineScreenState extends State<TimelineScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1237,12 +1180,12 @@ class TimelineScreenState extends State<TimelineScreen> {
                                         horizontal: 7, vertical: 3),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF546E7A)
-                                          .withOpacity(0.12),
+                                          .withValues(alpha: 0.12),
                                       borderRadius:
                                           BorderRadius.circular(20),
                                       border: Border.all(
                                         color: const Color(0xFF546E7A)
-                                            .withOpacity(0.35),
+                                            .withValues(alpha: 0.35),
                                       ),
                                     ),
                                     child: Row(
@@ -1496,10 +1439,10 @@ class TimelineScreenState extends State<TimelineScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.dangerColor.withOpacity(0.08),
+        color: AppTheme.dangerColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border:
-            Border.all(color: AppTheme.dangerColor.withOpacity(0.3)),
+            Border.all(color: AppTheme.dangerColor.withValues(alpha: 0.3)),
       ),
       child: Text(
         _l10n.timelineErrorRenderingItem(
@@ -1510,212 +1453,15 @@ class TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// Thin wrapper around [extractEntrySummary] so existing call sites
+  /// don't need to be touched. The shared implementation lives in
+  /// `lib/utils/entry_summary.dart`.
   String _extractSummaryFromData(
     Map<String, dynamic>? entryData,
     EntryType type,
     AppLocalizations l10n,
-  ) {
-    if (entryData == null || entryData.isEmpty) {
-      return l10n.timelineSummaryDetailsUnavailable;
-    }
-    try {
-      switch (type) {
-        case EntryType.medication:
-          final name = entryData['name'] as String? ??
-              l10n.timelineSummaryNotApplicable;
-          final dose = entryData['dose'] as String? ?? '';
-          final taken = entryData['taken'] as bool?;
-          final status = taken == true
-              ? l10n.timelineSummaryMedicationStatusTaken
-              : taken == false
-                  ? l10n.timelineSummaryMedicationStatusNotTaken
-                  : '';
-          return l10n
-              .timelineSummaryMedicationFormat(name, dose, status)
-              .trim();
-        case EntryType.sleep:
-          final duration = entryData['totalDuration'] as String? ??
-              l10n.timelineSummaryNotApplicable;
-          final qualityValue = entryData['quality']?.toString();
-          final quality =
-              (qualityValue != null && qualityValue.isNotEmpty)
-                  ? l10n.timelineSummarySleepQualityFormat(qualityValue)
-                  : '';
-          final notes = entryData['notes'] as String? ?? '';
-          return l10n
-              .timelineSummarySleepFormat(duration, quality, notes);
-        case EntryType.meal:
-          final description = entryData['description'] as String? ??
-              l10n.timelineSummaryNotApplicable;
-          final caloriesValue = entryData['calories']?.toString();
-          final calories =
-              (caloriesValue != null && caloriesValue.isNotEmpty)
-                  ? l10n.timelineSummaryMealCaloriesFormat(caloriesValue)
-                  : '';
-          return l10n.timelineSummaryMealFormat(description, calories);
-        case EntryType.mood:
-          final moodLevel = entryData['moodLevel']?.toString() ??
-              l10n.timelineSummaryNotApplicable;
-          final notesValue = entryData['note'] as String?;
-          final notes = (notesValue != null && notesValue.isNotEmpty)
-              ? l10n.timelineSummaryMoodNotesFormat(notesValue)
-              : '';
-          return l10n.timelineSummaryMoodFormat(moodLevel, notes);
-        case EntryType.pain:
-          // Prefer the new painPoints body-map data when present.
-          final points = entryData['painPoints'] as List?;
-          if (points != null && points.isNotEmpty) {
-            final regions = <String>{};
-            int peak = 0;
-            for (final raw in points) {
-              if (raw is Map) {
-                final region = raw['bodyRegion']?.toString() ?? '';
-                if (region.isNotEmpty) regions.add(region);
-                final i = (raw['intensity'] as num?)?.toInt() ?? 0;
-                if (i > peak) peak = i;
-              }
-            }
-            final regionLabel = regions.length == 1
-                ? regions.first
-                : '${regions.length} locations';
-            return '$regionLabel \u00B7 Peak $peak/10';
-          }
-          // Fallback for legacy text-only entries.
-          final intensity = entryData['intensity']?.toString() ??
-              l10n.timelineSummaryNotApplicable;
-          final locationValue =
-              entryData['location'] as String? ?? '';
-          final location = locationValue.isNotEmpty
-              ? l10n.timelineSummaryPainLocationFormat(locationValue)
-              : '';
-          return l10n
-              .timelineSummaryPainFormat(intensity, location)
-              .trim();
-        case EntryType.activity:
-          final activityType = entryData['activityType'] as String? ??
-              l10n.timelineItemTitleActivity;
-          final durationValue =
-              entryData['duration']?.toString() ?? '';
-          final duration = durationValue.isNotEmpty
-              ? l10n.timelineSummaryActivityDurationFormat(durationValue)
-              : '';
-          return l10n
-              .timelineSummaryActivityFormat(activityType, duration);
-        case EntryType.vital:
-          final vitalType =
-              entryData['vitalType'] as String? ?? '';
-          final value = entryData['value'] as String? ??
-              l10n.timelineSummaryNotApplicable;
-          final unit = entryData['unit'] as String? ?? '';
-          return l10n
-              .timelineSummaryVitalFormatGeneric(vitalType, value, unit);
-        case EntryType.expense:
-          final category = entryData['category'] as String? ??
-              l10n.timelineItemTitleExpense;
-          final amount = entryData['amount']?.toString() ??
-              l10n.timelineSummaryNotApplicable;
-          final descriptionValue =
-              entryData['description'] as String? ?? '';
-          final description = descriptionValue.isNotEmpty
-              ? l10n.timelineSummaryExpenseDescriptionFormat(
-                  descriptionValue)
-              : '';
-          return l10n
-              .timelineSummaryExpenseFormat(category, amount, description)
-              .trim();
-        case EntryType.image:
-          final title = entryData['title'] as String? ??
-              l10n.imageUploadDefaultTitle;
-          return l10n.timelineSummaryImageFormat(title);
-        case EntryType.caregiverJournal:
-          return entryData['note'] as String? ?? l10n.noContent;
-        case EntryType.handoff:
-          final shift = entryData['shift'] as String?;
-          final shiftPrefix =
-              (shift != null && shift.isNotEmpty) ? '$shift shift — ' : '';
-          final completed = entryData['completed'] as String? ?? '';
-          final pending = entryData['pending'] as String? ?? '';
-          final completedLines =
-              completed.isNotEmpty ? completed.trim().split('\n').length : 0;
-          final pendingLines =
-              pending.isNotEmpty ? pending.trim().split('\n').length : 0;
-          return '$shiftPrefix$completedLines task${completedLines == 1 ? '' : 's'} done, '
-              '$pendingLines pending';
-        case EntryType.incontinence:
-          final iType = entryData['incontinenceType'] as String? ?? '';
-          final severity = entryData['severity'] as String? ?? '';
-          final skin = entryData['skinCondition'] as String? ?? '';
-          final bristol = entryData['bristolType'] as int?;
-          final urine = entryData['urineColor'] as String?;
-          final typeLabel = iType.isNotEmpty
-              ? '${iType[0].toUpperCase()}${iType.substring(1)}'
-              : 'Logged';
-          final sevLabel = severity.isNotEmpty ? ' \u00B7 $severity' : '';
-          final bristolLabel =
-              bristol != null ? ' \u00B7 Bristol $bristol' : '';
-          final urineLabel = urine != null ? ' \u00B7 Urine: $urine' : '';
-          final skinLabel = (skin == 'irritated' || skin == 'broken')
-              ? ' \u00B7 Skin: $skin'
-              : '';
-          return '$typeLabel$sevLabel$bristolLabel$urineLabel$skinLabel';
-        case EntryType.visitor:
-          final name = entryData['visitorName'] as String? ?? 'Unknown';
-          final relationship =
-              entryData['relationship'] as String? ?? '';
-          final duration = entryData['duration'] as String? ?? '';
-          final response = entryData['response'] as String? ?? '';
-          final relLabel =
-              relationship.isNotEmpty ? ' ($relationship)' : '';
-          final respLabel = response.isNotEmpty
-              ? ' \u00B7 ${response[0].toUpperCase()}${response.substring(1)}'
-              : '';
-          final durLabel = duration.isNotEmpty ? ' \u00B7 $duration' : '';
-          return '$name$relLabel$durLabel$respLabel';
-        case EntryType.nightWaking:
-          final duration = entryData['duration'] as String? ?? '';
-          final cause = entryData['cause'] as String? ?? 'Unknown';
-          final returned = entryData['returnedToSleep'] as bool? ?? false;
-          final causeLabel = cause.isNotEmpty
-              ? '${cause[0].toUpperCase()}${cause.substring(1)}'
-              : 'Unknown';
-          return '$causeLabel \u00B7 $duration \u00B7 ${returned ? 'Returned to sleep' : 'Did not return'}';
-        case EntryType.hydration:
-          final volume = entryData['volume']?.toString() ?? '';
-          final unit = entryData['unit'] as String? ?? 'oz';
-          final fluidType = entryData['fluidType'] as String? ?? '';
-          final typeLabel = fluidType.isNotEmpty
-              ? '${fluidType[0].toUpperCase()}${fluidType.substring(1)}'
-              : 'Fluid';
-          return '$typeLabel \u00B7 $volume $unit';
-        case EntryType.custom:
-          // Build summary from custom field values, skipping metadata keys
-          const metaKeys = {
-            'customTypeId', 'customTypeName', 'customTypeColor',
-            'customTypeIcon', 'elderId', 'date', 'loggedByUserId',
-            'loggedBy', 'updatedAt', 'isPublic', 'visibleToUserIds', 'text',
-          };
-          final parts = <String>[];
-          for (final key in entryData.keys) {
-            if (metaKeys.contains(key)) continue;
-            final val = entryData[key];
-            if (val != null && val.toString().isNotEmpty && val != false) {
-              parts.add(val.toString());
-            }
-          }
-          return parts.isNotEmpty
-              ? parts.join(' · ')
-              : entryData['text'] as String? ?? l10n.timelineNoDetailsProvided;
-        default:
-          return entryData['text'] as String? ??
-              l10n.timelineNoDetailsProvided;
-      }
-    } catch (e, s) {
-      debugPrint(
-          "Error in _extractSummaryFromData for type '${type.name}': $e");
-      debugPrint('Stack trace: $s');
-      return l10n.timelineSummaryErrorProcessing;
-    }
-  }
+  ) =>
+      extractEntrySummary(entryData, type, l10n);
 }
 
 
@@ -1791,7 +1537,7 @@ class _FilterChip extends StatelessWidget {
       margin: const EdgeInsets.only(left: 4),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppTheme.accentColor.withOpacity(0.12),
+        color: AppTheme.accentColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -1846,7 +1592,7 @@ class _DatePickerButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
-              color: AppTheme.textLight.withOpacity(0.5)),
+              color: AppTheme.textLight.withValues(alpha: 0.5)),
         ),
         backgroundColor: AppTheme.backgroundColor,
       ),

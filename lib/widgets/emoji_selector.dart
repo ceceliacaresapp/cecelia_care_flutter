@@ -25,7 +25,7 @@ class EmojiSelector extends StatelessWidget {
             fontSize: 32,
             color: DefaultTextStyle.of(
               context,
-            ).style.color?.withOpacity(isSel ? 1.0 : 0.4),
+            ).style.color?.withValues(alpha: isSel ? 1.0 : 0.4),
           ),
         ),
       );

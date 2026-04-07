@@ -635,10 +635,10 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kEmergencyRed.withOpacity(0.2)),
+        border: Border.all(color: _kEmergencyRed.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: _kEmergencyRed.withOpacity(0.06),
+            color: _kEmergencyRed.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -649,7 +649,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
           // Avatar
           CircleAvatar(
             radius: 28,
-            backgroundColor: _kEmergencyRed.withOpacity(0.1),
+            backgroundColor: _kEmergencyRed.withValues(alpha: 0.1),
             child: Text(
               elder.profileName.isNotEmpty
                   ? elder.profileName[0].toUpperCase()
@@ -730,7 +730,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: total > 0 ? done / total : 0,
-            backgroundColor: _kEmergencyRed.withOpacity(0.1),
+            backgroundColor: _kEmergencyRed.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(
                 done == total ? _kStepDone : _kEmergencyRed),
             minHeight: 6,
@@ -756,12 +756,12 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDone
-              ? _kStepDone.withOpacity(0.4)
-              : _kEmergencyRed.withOpacity(0.12),
+              ? _kStepDone.withValues(alpha: 0.4)
+              : _kEmergencyRed.withValues(alpha: 0.12),
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDone ? _kStepDone : _kEmergencyRed).withOpacity(0.05),
+            color: (isDone ? _kStepDone : _kEmergencyRed).withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -787,7 +787,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
                       shape: BoxShape.circle,
                       color: isDone
                           ? _kStepDone
-                          : _kEmergencyRed.withOpacity(0.1),
+                          : _kEmergencyRed.withValues(alpha: 0.1),
                     ),
                     child: Center(
                       child: isDone
@@ -797,7 +797,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: _kEmergencyRed.withOpacity(0.7),
+                                color: _kEmergencyRed.withValues(alpha: 0.7),
                               ),
                             ),
                     ),
@@ -837,7 +837,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: _kEmergencyRed.withOpacity(0.06),
+                              color: _kEmergencyRed.withValues(alpha: 0.06),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -899,12 +899,12 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                        color: AppTheme.textLight.withOpacity(0.3)),
+                        color: AppTheme.textLight.withValues(alpha: 0.3)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(
-                        color: AppTheme.textLight.withOpacity(0.3)),
+                        color: AppTheme.textLight.withValues(alpha: 0.3)),
                   ),
                   contentPadding: const EdgeInsets.all(10),
                   isDense: true,
@@ -952,7 +952,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: BorderSide(color: color.withOpacity(0.3)),
+          side: BorderSide(color: color.withValues(alpha: 0.3)),
         ),
       ),
     );
@@ -972,7 +972,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _kStepDone.withOpacity(0.3)),
+            border: Border.all(color: _kStepDone.withValues(alpha: 0.3)),
           ),
           child: Column(
             children: [
@@ -1080,7 +1080,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: _kStepDone,
-              side: BorderSide(color: _kStepDone.withOpacity(0.4)),
+              side: BorderSide(color: _kStepDone.withValues(alpha: 0.4)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),

@@ -541,13 +541,13 @@ class _ManageCareRecipientProfilesScreenState
                             horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: isAdmin
-                              ? const Color(0xFF1E88E5).withOpacity(0.04)
+                              ? const Color(0xFF1E88E5).withValues(alpha: 0.04)
                               : AppTheme.backgroundGray,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isAdmin
-                                ? const Color(0xFF1E88E5).withOpacity(0.2)
-                                : AppTheme.textLight.withOpacity(0.3),
+                                ? const Color(0xFF1E88E5).withValues(alpha: 0.2)
+                                : AppTheme.textLight.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -684,13 +684,13 @@ class _ManageCareRecipientProfilesScreenState
                             horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.primaryColor.withOpacity(0.06)
+                              ? AppTheme.primaryColor.withValues(alpha: 0.06)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isSelected
                                 ? AppTheme.primaryColor
-                                : AppTheme.textLight.withOpacity(0.5),
+                                : AppTheme.textLight.withValues(alpha: 0.5),
                             width: isSelected ? 1.5 : 1,
                           ),
                         ),
@@ -915,9 +915,9 @@ class _RoleBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -985,7 +985,7 @@ class _ElderAvatar extends StatelessWidget {
         profileName.isNotEmpty ? profileName[0].toUpperCase() : '?';
     return CircleAvatar(
       radius: radius,
-      backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.12),
       backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
       child: photoUrl == null
           ? Text(
@@ -1027,10 +1027,10 @@ class _ActionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: filled ? color : color.withOpacity(0.08),
+          color: filled ? color : color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withOpacity(filled ? 1.0 : 0.4),
+            color: color.withValues(alpha: filled ? 1.0 : 0.4),
             width: filled ? 1.5 : 1,
           ),
         ),

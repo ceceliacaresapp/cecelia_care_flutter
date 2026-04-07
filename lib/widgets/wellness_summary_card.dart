@@ -86,12 +86,12 @@ class WellnessSummaryCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _kCardColor.withOpacity(0.05),
+          color: _kCardColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _kCardColor.withOpacity(0.2)),
+          border: Border.all(color: _kCardColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: _kCardColor.withOpacity(0.06),
+              color: _kCardColor.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -106,7 +106,7 @@ class WellnessSummaryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    color: _kCardColor.withOpacity(0.12),
+                    color: _kCardColor.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.favorite_outline,
@@ -128,9 +128,9 @@ class WellnessSummaryCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _riskColor.withOpacity(0.12),
+                    color: _riskColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _riskColor.withOpacity(0.3)),
+                    border: Border.all(color: _riskColor.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     '${wellbeingScore.toInt()}',
@@ -213,7 +213,7 @@ class WellnessSummaryCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: _kCardColor.withOpacity(0.8),
+                    color: _kCardColor.withValues(alpha: 0.8),
                   ),
                 ),
                 const Spacer(),
@@ -223,7 +223,7 @@ class WellnessSummaryCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: _kCardColor.withOpacity(0.1),
+                      color: _kCardColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Row(
@@ -275,7 +275,7 @@ class _DimChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -330,7 +330,7 @@ class _SparklinePainter extends CustomPainter {
     fillPath.close();
     canvas.drawPath(
       fillPath,
-      Paint()..color = color.withOpacity(0.08),
+      Paint()..color = color.withValues(alpha: 0.08),
     );
 
     // Draw line
@@ -341,7 +341,7 @@ class _SparklinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = color.withOpacity(0.6)
+        ..color = color.withValues(alpha: 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2
         ..strokeCap = StrokeCap.round
@@ -353,7 +353,7 @@ class _SparklinePainter extends CustomPainter {
       canvas.drawCircle(
         points[i],
         i == points.length - 1 ? 4 : 2.5,
-        Paint()..color = i == points.length - 1 ? color : color.withOpacity(0.5),
+        Paint()..color = i == points.length - 1 ? color : color.withValues(alpha: 0.5),
       );
     }
   }

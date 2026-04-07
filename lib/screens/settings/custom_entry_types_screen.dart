@@ -31,7 +31,7 @@ class CustomEntryTypesScreen extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -171,16 +171,16 @@ class _TypeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: type.color.withOpacity(0.06),
+          color: type.color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: type.color.withOpacity(0.2)),
+          border: Border.all(color: type.color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: type.color.withOpacity(0.12),
+                color: type.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(type.iconData, color: type.color, size: 24),
@@ -209,7 +209,7 @@ class _TypeCard extends StatelessWidget {
               ),
             ),
             Icon(Icons.edit_outlined,
-                size: 18, color: type.color.withOpacity(0.5)),
+                size: 18, color: type.color.withValues(alpha: 0.5)),
           ],
         ),
       ),
@@ -380,7 +380,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -396,9 +396,9 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.08),
+                color: color.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: color.withOpacity(0.25)),
+                border: Border.all(color: color.withValues(alpha: 0.25)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -406,7 +406,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.15),
+                      color: color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -438,7 +438,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
               labelText: 'Entry type name',
               hintText: 'e.g., Wound Check, Fluid Intake',
               filled: true,
-              fillColor: color.withOpacity(0.04),
+              fillColor: color.withValues(alpha: 0.04),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
@@ -467,7 +467,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                         height: 44,
                         decoration: BoxDecoration(
                           color: _selectedIcon == e.key
-                              ? color.withOpacity(0.15)
+                              ? color.withValues(alpha: 0.15)
                               : AppTheme.backgroundGray,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
@@ -527,7 +527,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                           boxShadow: selected
                               ? [
                                   BoxShadow(
-                                      color: c.withOpacity(0.5),
+                                      color: c.withValues(alpha: 0.5),
                                       blurRadius: 6)
                                 ]
                               : null,

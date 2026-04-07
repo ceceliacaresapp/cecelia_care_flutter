@@ -16,7 +16,9 @@ import 'package:cecelia_care_flutter/models/cognitive_assessment.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/cognitive_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/cognitive_test_games.dart';
+import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
 
 class CognitiveAssessmentScreen extends StatelessWidget {
   const CognitiveAssessmentScreen({super.key});
@@ -52,7 +54,7 @@ class CognitiveAssessmentScreen extends StatelessWidget {
             : 'New Assessment'),
       ),
       body: prov.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const TimedLoadingIndicator()
           : prov.history.isEmpty
               ? _emptyState(context)
               : _resultsView(context, prov),
@@ -566,6 +568,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
         notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       );
       await context.read<CognitiveProvider>().saveAssessment(assessment);
+      HapticUtils.success();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

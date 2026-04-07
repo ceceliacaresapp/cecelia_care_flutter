@@ -94,7 +94,7 @@ class _MedicationManagerScreenState extends State<MedicationManagerScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.textOnPrimary,
-          unselectedLabelColor: AppTheme.textOnPrimary.withOpacity(0.7),
+          unselectedLabelColor: AppTheme.textOnPrimary.withValues(alpha: 0.7),
           indicatorColor: AppTheme.textOnPrimary,
           tabs: const [
             Tab(text: 'Medications'),
@@ -890,7 +890,7 @@ class _ReminderCardState extends State<_ReminderCard> {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: def.reminderEnabled
-              ? AppTheme.primaryColor.withOpacity(0.4)
+              ? AppTheme.primaryColor.withValues(alpha: 0.4)
               : Colors.transparent,
         ),
       ),

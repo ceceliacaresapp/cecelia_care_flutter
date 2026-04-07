@@ -20,6 +20,11 @@ import 'package:cecelia_care_flutter/models/financial_liability.dart';
 // Service Imports
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 
+// Domain-specific extensions live in part files so the implementation can
+// be split across multiple files while still sharing this library's
+// private state. New domains follow the same pattern.
+part 'firestore_service_financial.dart';
+
 class FirestoreService {
   FirestoreService();
 
@@ -196,6 +201,7 @@ class FirestoreService {
     return _elderProfilesRef
         .where('caregiverUserIds', arrayContains: currentUserId)
         .orderBy('profileName')
+        .limit(50) // safety cap — caregivers rarely manage > 20 elders
         .snapshots()
         .map((snap) => snap.docs.map((doc) => doc.data()).toList());
   }
@@ -1179,8 +1185,12 @@ class FirestoreService {
 
   Stream<List<MedicationEntry>> medsForElder(String elderId) {
     if (elderId.isEmpty) return const Stream.empty();
+    // Caps the recent-meds adherence stream so long-running elders don't
+    // load thousands of historical entries on every dashboard open.
+    // 500 entries ≈ 30 days @ ~16 doses/day, plenty for adherence math.
     return _medicationsCollectionRef(elderId)
         .orderBy('name')
+        .limit(500)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => doc.data()).toList())
@@ -1357,6 +1367,7 @@ class FirestoreService {
         .doc(elderId)
         .collection(_shiftDefinitionsSubcollection)
         .orderBy('startTime')
+        .limit(50)
         .snapshots()
         .map((snap) => snap.docs
             .map((d) => {'id': d.id, ...d.data()})
@@ -1414,6 +1425,7 @@ class FirestoreService {
         .doc(elderId)
         .collection(_customEntryTypesSubcollection)
         .orderBy('name')
+        .limit(100)
         .snapshots()
         .map((snap) => snap.docs
             .map((d) => {'id': d.id, ...d.data()})
@@ -1801,6 +1813,7 @@ class FirestoreService {
         .doc(elderId)
         .collection(_careTasksSubcollection)
         .where('status', whereIn: ['open', 'accepted'])
+        .limit(100)
         .snapshots()
         .listen(
       (snap) {
@@ -1863,6 +1876,7 @@ class FirestoreService {
         .collection(_careTasksSubcollection)
         .where('assignedTo', isEqualTo: userId)
         .where('status', whereIn: ['open', 'accepted'])
+        .limit(50)
         .snapshots()
         .listen(
       (snap) {
@@ -2164,6 +2178,7 @@ class FirestoreService {
         .doc(elderId)
         .collection('imageFolders')
         .orderBy('name')
+        .limit(100)
         .snapshots()
         .map((snap) => snap.docs
             .map((d) => {'id': d.id, ...d.data()})
@@ -2202,279 +2217,7 @@ class FirestoreService {
         .delete();
   }
 
-  // ---------------------------------------------------------------------------
-  // Financial — Budget Entries
-  // ---------------------------------------------------------------------------
-
-  Future<void> addBudgetEntry(BudgetEntry entry) async {
-    await _budgetEntriesRef.add(entry);
-  }
-
-  Future<void> updateBudgetEntry(String entryId, BudgetEntry entry) async {
-    await _budgetEntriesRef.doc(entryId).update(entry.toFirestore());
-  }
-
-  Future<void> deleteBudgetEntry(String entryId) async {
-    await _budgetEntriesRef.doc(entryId).delete();
-  }
-
-  Stream<List<BudgetEntry>> getBudgetStreamForMonth({
-    required String userId,
-    String? careRecipientId,
-    required DateTime month,
-  }) {
-    final DateTime startDate = DateTime(month.year, month.month, 1);
-    final DateTime endDate =
-        DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-
-    Query<BudgetEntry> query = _budgetEntriesRef
-        .where('date',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
-        .where('userId', isEqualTo: userId);
-
-    if (careRecipientId != null && careRecipientId.isNotEmpty) {
-      query =
-          query.where('careRecipientId', isEqualTo: careRecipientId);
-    }
-
-    return query
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => doc.data()).toList())
-        .handleError((error) {
-      debugPrint(
-          'FirestoreService.getBudgetStreamForMonth error: $error');
-      return <BudgetEntry>[];
-    });
-  }
-
-  /// Streams every BudgetEntry for the given user/year. Used by the
-  /// insurance OOP tracker and tax-deduction summary which span months.
-  Stream<List<BudgetEntry>> getBudgetStreamForYear({
-    required String userId,
-    String? careRecipientId,
-    required int year,
-  }) {
-    final start = DateTime(year, 1, 1);
-    final end = DateTime(year, 12, 31, 23, 59, 59);
-    Query<BudgetEntry> query = _budgetEntriesRef
-        .where('date',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
-        .where('userId', isEqualTo: userId);
-    if (careRecipientId != null && careRecipientId.isNotEmpty) {
-      query = query.where('careRecipientId', isEqualTo: careRecipientId);
-    }
-    return query
-        .snapshots()
-        .map((snap) => snap.docs.map((d) => d.data()).toList())
-        .handleError((error) {
-      debugPrint('FirestoreService.getBudgetStreamForYear error: $error');
-      return <BudgetEntry>[];
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Financial — Income Entries
-  // ---------------------------------------------------------------------------
-
-  Future<void> addIncomeEntry(IncomeEntry entry) async {
-    await _incomeEntriesRef.add(entry);
-  }
-
-  Future<void> updateIncomeEntry(String entryId, IncomeEntry entry) async {
-    await _incomeEntriesRef.doc(entryId).update(entry.toFirestore());
-  }
-
-  Future<void> deleteIncomeEntry(String entryId) async {
-    await _incomeEntriesRef.doc(entryId).delete();
-  }
-
-  Stream<List<IncomeEntry>> getIncomeStreamForMonth({
-    required String userId,
-    String? careRecipientId,
-    required DateTime month,
-  }) {
-    final DateTime startDate = DateTime(month.year, month.month, 1);
-    final DateTime endDate =
-        DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-
-    Query<IncomeEntry> query = _incomeEntriesRef
-        .where('date',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
-        .where('userId', isEqualTo: userId);
-
-    if (careRecipientId != null && careRecipientId.isNotEmpty) {
-      query =
-          query.where('careRecipientId', isEqualTo: careRecipientId);
-    }
-
-    return query
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => doc.data()).toList())
-        .handleError((error) {
-      debugPrint(
-          'FirestoreService.getIncomeStreamForMonth error: $error');
-      return <IncomeEntry>[];
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Financial — Assets
-  // ---------------------------------------------------------------------------
-
-  Future<void> addAsset(FinancialAsset asset) async {
-    await _financialAssetsRef.add(asset);
-  }
-
-  Future<void> updateAsset(String assetId, FinancialAsset asset) async {
-    await _financialAssetsRef.doc(assetId).update(asset.toFirestore());
-  }
-
-  Future<void> deleteAsset(String assetId) async {
-    await _financialAssetsRef.doc(assetId).delete();
-  }
-
-  Stream<List<FinancialAsset>> getAssetsStream({
-    required String userId,
-    String? careRecipientId,
-  }) {
-    Query<FinancialAsset> query =
-        _financialAssetsRef.where('userId', isEqualTo: userId);
-    if (careRecipientId != null && careRecipientId.isNotEmpty) {
-      query =
-          query.where('careRecipientId', isEqualTo: careRecipientId);
-    }
-    return query
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => doc.data()).toList())
-        .handleError((e) {
-      debugPrint('FirestoreService.getAssetsStream error: $e');
-      return <FinancialAsset>[];
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Financial — Liabilities
-  // ---------------------------------------------------------------------------
-
-  Future<void> addLiability(FinancialLiability liability) async {
-    await _financialLiabilitiesRef.add(liability);
-  }
-
-  Future<void> updateLiability(
-      String liabilityId, FinancialLiability liability) async {
-    await _financialLiabilitiesRef
-        .doc(liabilityId)
-        .update(liability.toFirestore());
-  }
-
-  Future<void> deleteLiability(String liabilityId) async {
-    await _financialLiabilitiesRef.doc(liabilityId).delete();
-  }
-
-  Stream<List<FinancialLiability>> getLiabilitiesStream({
-    required String userId,
-    String? careRecipientId,
-  }) {
-    Query<FinancialLiability> query =
-        _financialLiabilitiesRef.where('userId', isEqualTo: userId);
-    if (careRecipientId != null && careRecipientId.isNotEmpty) {
-      query =
-          query.where('careRecipientId', isEqualTo: careRecipientId);
-    }
-    return query
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => doc.data()).toList())
-        .handleError((e) {
-      debugPrint('FirestoreService.getLiabilitiesStream error: $e');
-      return <FinancialLiability>[];
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // Financial — Category Budgets (Monthly)
-  // ---------------------------------------------------------------------------
-
-  Future<void> setCategoryBudgets({
-    required String elderId,
-    required Map<String, double> budgets,
-    required DateTime month,
-  }) async {
-    if (elderId.isEmpty) throw ArgumentError('elderId cannot be empty');
-    final String yearMonth = DateFormat('yyyy-MM').format(month);
-    await _db
-        .collection(_elderProfilesCollection)
-        .doc(elderId)
-        .collection(_categoryBudgetsSubcollection)
-        .doc(yearMonth)
-        .set({'budgets': budgets}, SetOptions(merge: true));
-  }
-
-  Future<Map<String, double>> getCategoryBudgets({
-    required String elderId,
-    required DateTime month,
-  }) async {
-    if (elderId.isEmpty) return {};
-    final String yearMonth = DateFormat('yyyy-MM').format(month);
-    try {
-      final docSnapshot = await _db
-          .collection(_elderProfilesCollection)
-          .doc(elderId)
-          .collection(_categoryBudgetsSubcollection)
-          .doc(yearMonth)
-          .get();
-
-      if (docSnapshot.exists && docSnapshot.data() != null) {
-        final data = docSnapshot.data()!;
-        if (data.containsKey('budgets') && data['budgets'] is Map) {
-          final rawMap = data['budgets'] as Map;
-          return rawMap.map((key, value) =>
-              MapEntry(key.toString(), (value as num).toDouble()));
-        }
-      }
-      return {};
-    } catch (error) {
-      debugPrint(
-          'FirestoreService.getCategoryBudgets error ($yearMonth): $error');
-      return {};
-    }
-  }
-
-  Stream<Map<String, double>> getCategoryBudgetsStream({
-    required String elderId,
-    required DateTime month,
-  }) {
-    if (elderId.isEmpty) return Stream.value(<String, double>{});
-    final String yearMonth = DateFormat('yyyy-MM').format(month);
-    return _db
-        .collection(_elderProfilesCollection)
-        .doc(elderId)
-        .collection(_categoryBudgetsSubcollection)
-        .doc(yearMonth)
-        .snapshots()
-        .map((docSnapshot) {
-      if (docSnapshot.exists && docSnapshot.data() != null) {
-        final data = docSnapshot.data()!;
-        if (data.containsKey('budgets') && data['budgets'] is Map) {
-          final rawMap = data['budgets'] as Map;
-          return rawMap.map((key, value) =>
-              MapEntry(key.toString(), (value as num).toDouble()));
-        }
-      }
-      return <String, double>{};
-    }).handleError((error) {
-      debugPrint(
-          'FirestoreService.getCategoryBudgetsStream error ($yearMonth): '
-          '$error');
-      return <String, double>{};
-    });
-  }
+  // Financial methods (budget entries, income, assets, liabilities,
+  // category budgets) live in firestore_service_financial.dart as a part
+  // file. See `part` directive at the top of this file.
 }

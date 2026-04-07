@@ -329,10 +329,10 @@ class _ExportScreenState extends State<ExportScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _kExportColor.withOpacity(0.06),
+              color: _kExportColor.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(14),
               border:
-                  Border.all(color: _kExportColor.withOpacity(0.2)),
+                  Border.all(color: _kExportColor.withValues(alpha: 0.2)),
             ),
             child: Column(
               children: [
@@ -506,13 +506,13 @@ class _ExportScreenState extends State<ExportScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: _includeWellness
-                    ? const Color(0xFF8E24AA).withOpacity(0.06)
+                    ? const Color(0xFF8E24AA).withValues(alpha: 0.06)
                     : AppTheme.backgroundGray,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _includeWellness
                       ? const Color(0xFF8E24AA)
-                      : AppTheme.textLight.withOpacity(0.4),
+                      : AppTheme.textLight.withValues(alpha: 0.4),
                   width: _includeWellness ? 1.5 : 1,
                 ),
               ),
@@ -853,12 +853,12 @@ class _TypeChip extends StatelessWidget {
         padding:
             const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.1) : Colors.white,
+          color: selected ? color.withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected
-                ? color.withOpacity(0.6)
-                : AppTheme.textLight.withOpacity(0.5),
+                ? color.withValues(alpha: 0.6)
+                : AppTheme.textLight.withValues(alpha: 0.5),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -914,7 +914,7 @@ class _DateButton extends StatelessWidget {
           color: AppTheme.backgroundGray,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-              color: AppTheme.textLight.withOpacity(0.4)),
+              color: AppTheme.textLight.withValues(alpha: 0.4)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -958,7 +958,7 @@ class _RangeChip extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           border: Border.all(
-              color: _kExportColor.withOpacity(0.4)),
+              color: _kExportColor.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(label,
@@ -995,13 +995,13 @@ class _FormatCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: selected
-              ? _kExportColor.withOpacity(0.06)
+              ? _kExportColor.withValues(alpha: 0.06)
               : AppTheme.backgroundGray,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
                 ? _kExportColor
-                : AppTheme.textLight.withOpacity(0.4),
+                : AppTheme.textLight.withValues(alpha: 0.4),
             width: selected ? 1.5 : 1,
           ),
         ),

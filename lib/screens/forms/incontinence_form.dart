@@ -238,25 +238,49 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
           ),
           const SizedBox(height: 24),
 
-          // ── Save button ────────────────────────────────────
-          ElevatedButton(
-            onPressed: _canSave && !_isSaving ? _handleSave : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _accentColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: _isSaving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : const Text('Save',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          // ── Cancel + Save buttons ──────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () => Navigator.of(context, rootNavigator: true).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.textSecondary,
+                    side: BorderSide(color: Colors.grey.shade400),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Cancel',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _canSave && !_isSaving ? _handleSave : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _accentColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Text('Save',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

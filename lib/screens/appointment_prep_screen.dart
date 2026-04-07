@@ -28,8 +28,11 @@ import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/utils/string_extensions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cecelia_care_flutter/models/adl_assessment.dart';
 import 'package:cecelia_care_flutter/models/cognitive_assessment.dart';
 import 'package:cecelia_care_flutter/models/fall_risk_assessment.dart';
+import 'package:cecelia_care_flutter/models/wandering_assessment.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 
 const _kColor = Color(0xFF3949AB); // deep indigo — distinct from DoctorSummary
@@ -106,6 +109,16 @@ class _PrepData {
   final double? sleepAvgQuality;
   final List<_NotableEvent> notableEvents;
 
+  // Hydration aggregation (computed from journal entries of type hydration).
+  final int hydrationCount;
+  final double hydrationAvgPerDay; // oz per day across the period
+  final String? hydrationTopFluid;
+
+  // Visitor pattern aggregation.
+  final int visitorCount;
+  final Map<String, int> visitorResponseCounts; // 'positive' → 5, etc.
+  final String? visitorTopName;
+
   const _PrepData({
     required this.vitals,
     required this.medications,
@@ -122,6 +135,12 @@ class _PrepData {
     this.sleepAvgDuration,
     this.sleepAvgQuality,
     required this.notableEvents,
+    this.hydrationCount = 0,
+    this.hydrationAvgPerDay = 0,
+    this.hydrationTopFluid,
+    this.visitorCount = 0,
+    this.visitorResponseCounts = const {},
+    this.visitorTopName,
   });
 
   factory _PrepData.from(
@@ -327,6 +346,54 @@ class _PrepData {
       return seenDates.add(key);
     }).take(10).toList();
 
+    // ── Hydration aggregation ──────────────────────────────────────────
+    final hydrationEntries =
+        entries.where((e) => e.type == EntryType.hydration).toList();
+    double hydrationOzTotal = 0;
+    final fluidTypeCounts = <String, int>{};
+    for (final e in hydrationEntries) {
+      final vol = (e.data?['volume'] as num?)?.toDouble() ?? 0;
+      final unit = e.data?['unit'] as String? ?? 'oz';
+      // Normalize ml → oz so the daily average makes sense.
+      hydrationOzTotal += unit == 'ml' ? vol / 29.5735 : vol;
+      final fluid = (e.data?['fluidType'] as String? ?? '').toLowerCase();
+      if (fluid.isNotEmpty) {
+        fluidTypeCounts[fluid] = (fluidTypeCounts[fluid] ?? 0) + 1;
+      }
+    }
+    final hydrationAvgPerDay = lookbackDays > 0
+        ? hydrationOzTotal / lookbackDays
+        : 0.0;
+    final hydrationTopFluid = fluidTypeCounts.isEmpty
+        ? null
+        : (fluidTypeCounts.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value)))
+            .first
+            .key;
+
+    // ── Visitor aggregation ────────────────────────────────────────────
+    final visitorEntries =
+        entries.where((e) => e.type == EntryType.visitor).toList();
+    final visitorResponseCounts = <String, int>{};
+    final visitorNameCounts = <String, int>{};
+    for (final e in visitorEntries) {
+      final response = e.data?['response'] as String? ?? '';
+      if (response.isNotEmpty) {
+        visitorResponseCounts[response] =
+            (visitorResponseCounts[response] ?? 0) + 1;
+      }
+      final name = e.data?['visitorName'] as String? ?? '';
+      if (name.isNotEmpty) {
+        visitorNameCounts[name] = (visitorNameCounts[name] ?? 0) + 1;
+      }
+    }
+    final visitorTopName = visitorNameCounts.isEmpty
+        ? null
+        : (visitorNameCounts.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value)))
+            .first
+            .key;
+
     return _PrepData(
       vitals: vitals,
       medications: medications,
@@ -343,6 +410,12 @@ class _PrepData {
       sleepAvgDuration: sleepAvgDuration,
       sleepAvgQuality: sleepAvgQuality,
       notableEvents: deduped,
+      hydrationCount: hydrationEntries.length,
+      hydrationAvgPerDay: hydrationAvgPerDay,
+      hydrationTopFluid: hydrationTopFluid,
+      visitorCount: visitorEntries.length,
+      visitorResponseCounts: visitorResponseCounts,
+      visitorTopName: visitorTopName,
     );
   }
 }
@@ -442,12 +515,18 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
     if (_isGenerating) return;
     setState(() => _isGenerating = true);
     try {
-      // Fetch latest fall risk + cognitive assessment for the PDF.
+      // Fetch latest assessments for the PDF. We pull the most recent
+      // record from each subcollection so doctors get a complete clinical
+      // snapshot in one document.
       final elderId =
           context.read<ActiveElderProvider>().activeElder?.id ?? '';
       FallRiskAssessment? fallRisk;
       CognitiveAssessment? cognitive;
       List<CognitiveAssessment> cognitiveHistory = const [];
+      WanderingAssessment? wandering;
+      AdlAssessment? adl;
+      Map<String, dynamic>? skinLatest;
+      int turningLogsLast24h = 0;
       if (elderId.isNotEmpty) {
         final fs = context.read<FirestoreService>();
         final fallSnap =
@@ -465,9 +544,64 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
         if (cognitiveHistory.isNotEmpty) {
           cognitive = cognitiveHistory.first;
         }
+        // Wandering risk (best-effort — this is one of the riskiest fetches
+        // because the rules can fail; we swallow per-section errors so a
+        // single failed query doesn't kill the whole PDF).
+        try {
+          final wanderSnap =
+              await fs.getWanderingAssessmentsStream(elderId).first;
+          if (wanderSnap.isNotEmpty) {
+            wandering = WanderingAssessment.fromFirestore(
+                wanderSnap.first['id'] as String? ?? '', wanderSnap.first);
+          }
+        } catch (e) {
+          debugPrint('AppointmentPrep: wandering fetch failed: $e');
+        }
+        // ADL (uses provider, but we want the freshest record from
+        // Firestore directly for the PDF).
+        try {
+          final adlSnap = await FirebaseFirestore.instance
+              .collection('elderProfiles')
+              .doc(elderId)
+              .collection('adlAssessments')
+              .orderBy('weekString', descending: true)
+              .limit(1)
+              .get();
+          if (adlSnap.docs.isNotEmpty) {
+            adl = AdlAssessment.fromFirestore(
+                adlSnap.docs.first.id, adlSnap.docs.first.data());
+          }
+        } catch (e) {
+          debugPrint('AppointmentPrep: ADL fetch failed: $e');
+        }
+        // Skin integrity — most recent assessment + count of turning logs
+        // in the last 24 hours.
+        try {
+          final skinSnap =
+              await fs.getSkinAssessmentsStream(elderId).first;
+          if (skinSnap.isNotEmpty) {
+            skinLatest = skinSnap.first;
+          }
+          final since = DateTime.now().subtract(const Duration(hours: 24));
+          final turningSnap = await fs
+              .getTurningLogsStream(elderId, startDate: since)
+              .first;
+          turningLogsLast24h = turningSnap.length;
+        } catch (e) {
+          debugPrint('AppointmentPrep: skin/turning fetch failed: $e');
+        }
       }
       final pdfBytes = await _buildPdf(
-          data, elderName, caregiverName, fallRisk, cognitive, cognitiveHistory);
+          data,
+          elderName,
+          caregiverName,
+          fallRisk,
+          cognitive,
+          cognitiveHistory,
+          wandering,
+          adl,
+          skinLatest,
+          turningLogsLast24h);
 
       final tempDir = await getTemporaryDirectory();
       final slug =
@@ -503,6 +637,10 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
     FallRiskAssessment? fallRisk,
     CognitiveAssessment? cognitive,
     List<CognitiveAssessment> cognitiveHistory,
+    WanderingAssessment? wandering,
+    AdlAssessment? adl,
+    Map<String, dynamic>? skinLatest,
+    int turningLogsLast24h,
   ) async {
     final pdf = pw.Document();
     final dateFmt = DateFormat('MMM d, yyyy');
@@ -773,6 +911,229 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
               style: const pw.TextStyle(
                   fontSize: 8, color: PdfColors.grey600),
             ));
+          }
+
+          // Wandering Risk Assessment
+          if (wandering != null) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader('Wandering Risk'));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(pw.Text(
+              '${wandering.riskLevel} Risk — Score: ${wandering.rawRiskScore}/13',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: wandering.rawRiskScore >= 9
+                    ? PdfColors.red800
+                    : wandering.rawRiskScore >= 6
+                        ? PdfColors.orange800
+                        : PdfColors.green800,
+              ),
+            ));
+            widgets.add(pw.Text(
+              wandering.riskSummary,
+              style: const pw.TextStyle(fontSize: 10),
+            ));
+            if (wandering.knownTriggers != null &&
+                wandering.knownTriggers!.isNotEmpty) {
+              widgets.add(pw.SizedBox(height: 4));
+              widgets.add(pw.Text(
+                'Known triggers: ${wandering.knownTriggers}',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            if (wandering.peakRiskTimes != null &&
+                wandering.peakRiskTimes!.isNotEmpty) {
+              widgets.add(pw.Text(
+                'Peak risk times: ${wandering.peakRiskTimes}',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            widgets.add(pw.SizedBox(height: 2));
+            widgets.add(pw.Text(
+              'Assessed ${wandering.dateString} by ${wandering.assessedByName}',
+              style: const pw.TextStyle(
+                  fontSize: 8, color: PdfColors.grey600),
+            ));
+          }
+
+          // ADL (Activities of Daily Living) Assessment
+          if (adl != null) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader('Activities of Daily Living'));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(pw.Text(
+              '${adl.scoreLabel} — Score: ${adl.totalScore}/12',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: adl.totalScore <= 2
+                    ? PdfColors.red800
+                    : adl.totalScore <= 6
+                        ? PdfColors.orange800
+                        : adl.totalScore <= 9
+                            ? PdfColors.blue800
+                            : PdfColors.green800,
+              ),
+            ));
+            widgets.add(pw.SizedBox(height: 4));
+            widgets.add(pw.Text('Per-domain scores (0=dependent, 2=independent):',
+                style: pw.TextStyle(
+                    fontSize: 9, fontWeight: pw.FontWeight.bold)));
+            adl.dimensionMap.forEach((name, score) {
+              widgets.add(pw.Text('  \u2022 $name: $score/2',
+                  style: const pw.TextStyle(fontSize: 9)));
+            });
+            widgets.add(pw.SizedBox(height: 2));
+            widgets.add(pw.Text(
+              'Assessed ${adl.weekString} by ${adl.assessedByName}',
+              style: const pw.TextStyle(
+                  fontSize: 8, color: PdfColors.grey600),
+            ));
+          }
+
+          // Skin Integrity + repositioning compliance
+          if (skinLatest != null || turningLogsLast24h > 0) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader('Skin Integrity'));
+            widgets.add(pw.SizedBox(height: 6));
+            if (skinLatest != null) {
+              final stages =
+                  (skinLatest['stages'] as Map?)?.cast<String, dynamic>();
+              final concerningSites = <String>[];
+              stages?.forEach((site, stage) {
+                if (stage is String &&
+                    stage != 'intact' &&
+                    stage.isNotEmpty) {
+                  concerningSites.add('$site: $stage');
+                }
+              });
+              if (concerningSites.isEmpty) {
+                widgets.add(pw.Text(
+                  'All assessed skin sites intact.',
+                  style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.green800),
+                ));
+              } else {
+                widgets.add(pw.Text(
+                  '${concerningSites.length} site(s) showing breakdown:',
+                  style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.red800),
+                ));
+                for (final site in concerningSites) {
+                  widgets.add(pw.Text('  \u2022 $site',
+                      style: const pw.TextStyle(fontSize: 9)));
+                }
+              }
+              final assessor = skinLatest['assessedByName'] as String?;
+              final dateStr = skinLatest['dateString'] as String?;
+              if (assessor != null || dateStr != null) {
+                widgets.add(pw.SizedBox(height: 2));
+                widgets.add(pw.Text(
+                  'Assessed ${dateStr ?? ''}${assessor != null ? ' by $assessor' : ''}',
+                  style: const pw.TextStyle(
+                      fontSize: 8, color: PdfColors.grey600),
+                ));
+              }
+            }
+            widgets.add(pw.SizedBox(height: 4));
+            widgets.add(pw.Text(
+              'Repositioning: $turningLogsLast24h log${turningLogsLast24h == 1 ? '' : 's'} in the last 24 hours '
+              '${turningLogsLast24h >= 12 ? '(meeting 2-hour standard)' : '(below 2-hour standard)'}',
+              style: pw.TextStyle(
+                fontSize: 9,
+                fontStyle: pw.FontStyle.italic,
+                color: turningLogsLast24h >= 12
+                    ? PdfColors.green800
+                    : PdfColors.orange800,
+              ),
+            ));
+          }
+
+          // Hydration aggregation
+          if (d.hydrationCount > 0) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader('Hydration'));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(pw.Text(
+              '${d.hydrationCount} fluid intake log${d.hydrationCount == 1 ? '' : 's'} '
+              '\u2014 avg ${d.hydrationAvgPerDay.toStringAsFixed(0)} oz/day',
+              style: pw.TextStyle(
+                  fontSize: 11, fontWeight: pw.FontWeight.bold),
+            ));
+            if (d.hydrationTopFluid != null) {
+              widgets.add(pw.Text(
+                'Most logged fluid: ${d.hydrationTopFluid}',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            // Flag low hydration (<48 oz/day is concerning for elders)
+            if (d.hydrationAvgPerDay > 0 && d.hydrationAvgPerDay < 48) {
+              widgets.add(pw.SizedBox(height: 4));
+              widgets.add(pw.Text(
+                '\u26A0 Below recommended 48 oz/day baseline',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.orange800,
+                ),
+              ));
+            }
+          }
+
+          // Visitor pattern summary
+          if (d.visitorCount > 0) {
+            widgets.add(pw.SizedBox(height: 16));
+            widgets.add(_pdfSectionHeader('Visitor & Stimulus Patterns'));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(pw.Text(
+              '${d.visitorCount} visit${d.visitorCount == 1 ? '' : 's'} logged in this period',
+              style: pw.TextStyle(
+                  fontSize: 11, fontWeight: pw.FontWeight.bold),
+            ));
+            if (d.visitorTopName != null) {
+              widgets.add(pw.Text(
+                'Most frequent visitor: ${d.visitorTopName}',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            if (d.visitorResponseCounts.isNotEmpty) {
+              widgets.add(pw.SizedBox(height: 4));
+              widgets.add(pw.Text(
+                'Recipient response distribution:',
+                style: pw.TextStyle(
+                    fontSize: 9, fontWeight: pw.FontWeight.bold),
+              ));
+              final sortedResponses = d.visitorResponseCounts.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value));
+              for (final r in sortedResponses) {
+                widgets.add(pw.Text(
+                  '  \u2022 ${r.key[0].toUpperCase()}${r.key.substring(1)}: ${r.value}',
+                  style: const pw.TextStyle(fontSize: 9),
+                ));
+              }
+              // Flag if agitation/withdrawal dominates
+              final negative = (d.visitorResponseCounts['agitated'] ?? 0) +
+                  (d.visitorResponseCounts['withdrawn'] ?? 0) +
+                  (d.visitorResponseCounts['confused'] ?? 0);
+              if (negative > d.visitorCount / 2) {
+                widgets.add(pw.SizedBox(height: 4));
+                widgets.add(pw.Text(
+                  '\u26A0 More than half of visits triggered agitation, '
+                  'withdrawal, or confusion. Consider visitor frequency or '
+                  'environmental adjustments.',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.orange800,
+                  ),
+                ));
+              }
+            }
           }
 
           // Weight loss warning (if >5% loss detected in vitals)
@@ -1212,9 +1573,9 @@ class _PrepHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _kColor.withOpacity(0.07),
+        color: _kColor.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kColor.withOpacity(0.2)),
+        border: Border.all(color: _kColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1224,7 +1585,7 @@ class _PrepHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _kColor.withOpacity(0.12),
+                  color: _kColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.checklist_outlined,
@@ -1247,7 +1608,7 @@ class _PrepHeader extends StatelessWidget {
                       'Last 30 Days: ${fmt.format(startDate)} – ${fmt.format(endDate)}',
                       style: TextStyle(
                           fontSize: 12,
-                          color: _kColor.withOpacity(0.7)),
+                          color: _kColor.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -1259,7 +1620,7 @@ class _PrepHeader extends StatelessWidget {
             'Prepared by $preparedBy',
             style: TextStyle(
                 fontSize: 12,
-                color: _kColor.withOpacity(0.6)),
+                color: _kColor.withValues(alpha: 0.6)),
           ),
         ],
       ),
@@ -1288,7 +1649,7 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 6,
               offset: const Offset(0, 2))
         ],
@@ -1301,7 +1662,7 @@ class _SectionCard extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.06),
+              color: color.withValues(alpha: 0.06),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(12)),
             ),
@@ -1468,10 +1829,10 @@ class _MedsSection extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: adherenceColor.withOpacity(0.1),
+                    color: adherenceColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: adherenceColor.withOpacity(0.3)),
+                        color: adherenceColor.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     '${med.adherencePct.toStringAsFixed(0)}%',
@@ -1697,7 +2058,7 @@ class _ShareBar extends StatelessWidget {
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, -2))
         ],

@@ -55,7 +55,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -349,7 +349,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                           height: 48,
                           decoration: BoxDecoration(
                             color: const Color(0xFFE53935)
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Icon(
@@ -961,10 +961,10 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.12) : Colors.transparent,
+          color: isSelected ? color.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : AppTheme.textLight.withOpacity(0.3),
+            color: isSelected ? color : AppTheme.textLight.withValues(alpha: 0.3),
           ),
         ),
         child: Row(
@@ -1025,9 +1025,9 @@ class _DocCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: cat.color.withOpacity(0.04),
+          color: cat.color.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: cat.color.withOpacity(0.15)),
+          border: Border.all(color: cat.color.withValues(alpha: 0.15)),
         ),
         child: Row(
           children: [
@@ -1038,7 +1038,7 @@ class _DocCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: doc.isImage
                     ? Colors.transparent
-                    : cat.color.withOpacity(0.1),
+                    : cat.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               clipBehavior: Clip.antiAlias,
@@ -1079,7 +1079,7 @@ class _DocCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: cat.color.withOpacity(0.1),
+                          color: cat.color.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -1120,7 +1120,7 @@ class _DocCard extends StatelessWidget {
 
             // Chevron
             Icon(Icons.chevron_right,
-                size: 18, color: cat.color.withOpacity(0.4)),
+                size: 18, color: cat.color.withValues(alpha: 0.4)),
           ],
         ),
       ),

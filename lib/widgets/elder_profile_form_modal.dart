@@ -370,7 +370,7 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
         Positioned.fill(
           child: GestureDetector(
             onTap: _handleClose,
-            child: Container(color: Colors.black.withOpacity(0.6)),
+            child: Container(color: Colors.black.withValues(alpha: 0.6)),
           ),
         ),
         Center(
@@ -413,7 +413,7 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
                             CircleAvatar(
                               radius: 48,
                               backgroundColor:
-                                  kPrimaryColor.withOpacity(0.12),
+                                  kPrimaryColor.withValues(alpha: 0.12),
                               backgroundImage:
                                   _photoUrl != null
                                       ? NetworkImage(_photoUrl!)

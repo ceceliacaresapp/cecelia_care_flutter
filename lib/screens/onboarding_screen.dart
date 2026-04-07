@@ -143,7 +143,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color: i == _currentPage
                               ? _kPrimary
-                              : _kPrimary.withOpacity(0.2),
+                              : _kPrimary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
@@ -197,7 +197,7 @@ class _WelcomePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: _kPrimary.withOpacity(0.08),
+              color: _kPrimary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.favorite, size: 64, color: _kPrimary),
@@ -228,7 +228,7 @@ class _WelcomePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: _kAccent.withOpacity(0.08),
+              color: _kAccent.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
@@ -263,7 +263,7 @@ class _SetUpProfilePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E88E5).withOpacity(0.08),
+              color: const Color(0xFF1E88E5).withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.person_outline,
@@ -335,7 +335,7 @@ class _AddCareRecipientPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFE91E63).withOpacity(0.08),
+              color: const Color(0xFFE91E63).withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.group_add_outlined,
@@ -493,7 +493,7 @@ class _ToolkitItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 20, color: color),
@@ -545,7 +545,7 @@ class _AllSetPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF43A047).withOpacity(0.1),
+              color: const Color(0xFF43A047).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.check_circle,

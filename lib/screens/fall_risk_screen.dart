@@ -14,6 +14,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
 
 class FallRiskScreen extends StatefulWidget {
   const FallRiskScreen({super.key});
@@ -147,7 +148,9 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
                 }
                 if (snapshot.connectionState == ConnectionState.waiting &&
                     !snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return TimedLoadingIndicator(
+                    onRetry: () => setState(() {}),
+                  );
                 }
 
                 final assessments = (snapshot.data ?? [])

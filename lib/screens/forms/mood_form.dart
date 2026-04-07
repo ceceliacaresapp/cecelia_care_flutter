@@ -222,7 +222,7 @@ class _MoodFormState extends State<MoodForm> {
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: sel
-                                ? AppTheme.primaryColor.withOpacity(0.2)
+                                ? AppTheme.primaryColor.withValues(alpha: 0.2)
                                 : Colors.transparent,
                             shape: BoxShape.circle,
                             border: Border.all(

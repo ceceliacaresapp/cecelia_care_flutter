@@ -127,10 +127,10 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
               _handleAudienceChange(newSelection.first),
           showSelectedIcon: false,
           style: SegmentedButton.styleFrom(
-            selectedBackgroundColor: _kMsgColor.withOpacity(0.12),
+            selectedBackgroundColor: _kMsgColor.withValues(alpha: 0.12),
             selectedForegroundColor: _kMsgColor,
             foregroundColor: AppTheme.textSecondary,
-            side: BorderSide(color: _kMsgColor.withOpacity(0.3)),
+            side: BorderSide(color: _kMsgColor.withValues(alpha: 0.3)),
             textStyle: const TextStyle(
                 fontSize: 12, fontWeight: FontWeight.w500),
           ),
@@ -142,9 +142,9 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
           Container(
             constraints: const BoxConstraints(maxHeight: 160),
             decoration: BoxDecoration(
-              color: _kMsgColor.withOpacity(0.04),
+              color: _kMsgColor.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _kMsgColor.withOpacity(0.2)),
+              border: Border.all(color: _kMsgColor.withValues(alpha: 0.2)),
             ),
             child: widget.isLoadingUsers
                 ? const Padding(

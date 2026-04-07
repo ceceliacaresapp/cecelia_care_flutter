@@ -8,6 +8,7 @@ import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/utils/prefs_keys.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -56,13 +57,13 @@ class _HydrationFormState extends State<HydrationForm> {
 
   Future<void> _loadUnit() async {
     final sp = await SharedPreferences.getInstance();
-    final saved = sp.getString('hydration_unit');
+    final saved = sp.getString(PrefsKeys.hydrationUnit);
     if (saved != null && mounted) setState(() => _unit = saved);
   }
 
   Future<void> _saveUnit(String unit) async {
     final sp = await SharedPreferences.getInstance();
-    await sp.setString('hydration_unit', unit);
+    await sp.setString(PrefsKeys.hydrationUnit, unit);
   }
 
   @override
@@ -266,23 +267,49 @@ class _HydrationFormState extends State<HydrationForm> {
           ),
           const SizedBox(height: 24),
 
-          // ── Save ───────────────────────────────────────────
-          ElevatedButton(
-            onPressed: _canSave && !_isSaving ? _handleSave : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _accent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: _isSaving
-                ? const SizedBox(width: 20, height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : const Text('Save',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
+          // ── Cancel + Save ──────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () => Navigator.of(context, rootNavigator: true).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.textSecondary,
+                    side: BorderSide(color: Colors.grey.shade400),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Cancel',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _canSave && !_isSaving ? _handleSave : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Text('Save',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -116,13 +116,13 @@ class MedScheduleTimeline extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E88E5).withOpacity(0.04),
+          color: const Color(0xFF1E88E5).withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: const Color(0xFF1E88E5).withOpacity(0.15)),
+              color: const Color(0xFF1E88E5).withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1E88E5).withOpacity(0.05),
+              color: const Color(0xFF1E88E5).withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -137,7 +137,7 @@ class MedScheduleTimeline extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E88E5).withOpacity(0.1),
+                    color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.schedule_outlined,
@@ -158,13 +158,13 @@ class MedScheduleTimeline extends StatelessWidget {
                   '${allMeds.length} med${allMeds.length == 1 ? '' : 's'}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: const Color(0xFF1E88E5).withOpacity(0.6),
+                    color: const Color(0xFF1E88E5).withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(Icons.arrow_forward_ios,
                     size: 12,
-                    color: const Color(0xFF1E88E5).withOpacity(0.4)),
+                    color: const Color(0xFF1E88E5).withValues(alpha: 0.4)),
               ],
             ),
             const SizedBox(height: 14),
@@ -263,7 +263,7 @@ class _NowIndicator extends StatelessWidget {
         Expanded(
           child: Container(
             height: 1,
-            color: const Color(0xFFE53935).withOpacity(0.3),
+            color: const Color(0xFFE53935).withValues(alpha: 0.3),
           ),
         ),
         const SizedBox(width: 6),
@@ -310,12 +310,12 @@ class _BandSection extends StatelessWidget {
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? band.color.withOpacity(0.15)
-                        : band.color.withOpacity(0.08),
+                        ? band.color.withValues(alpha: 0.15)
+                        : band.color.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                     border: isActive
                         ? Border.all(
-                            color: band.color.withOpacity(0.4),
+                            color: band.color.withValues(alpha: 0.4),
                             width: 1.5)
                         : null,
                   ),
@@ -346,7 +346,7 @@ class _BandSection extends StatelessWidget {
                 width: 2,
                 height: meds.length * 38.0 + 4,
                 decoration: BoxDecoration(
-                  color: band.color.withOpacity(isActive ? 0.25 : 0.12),
+                  color: band.color.withValues(alpha: isActive ? 0.25 : 0.12),
                   borderRadius: BorderRadius.circular(1),
                 ),
               ),
@@ -400,13 +400,13 @@ class _MedChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           color: isActive
-              ? color.withOpacity(0.08)
+              ? color.withValues(alpha: 0.08)
               : Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isActive
-                ? color.withOpacity(0.25)
-                : AppTheme.textLight.withOpacity(0.15),
+                ? color.withValues(alpha: 0.25)
+                : AppTheme.textLight.withValues(alpha: 0.15),
           ),
         ),
         child: Row(
@@ -425,7 +425,7 @@ class _MedChip extends StatelessWidget {
             ),
             // Pill icon
             Icon(Icons.medication_outlined,
-                size: 14, color: color.withOpacity(0.6)),
+                size: 14, color: color.withValues(alpha: 0.6)),
             const SizedBox(width: 6),
             // Name + dose
             Expanded(
@@ -460,7 +460,7 @@ class _MedChip extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 4),
                 child: Icon(Icons.notifications_active_outlined,
-                    size: 13, color: color.withOpacity(0.5)),
+                    size: 13, color: color.withValues(alpha: 0.5)),
               ),
             if (hasLowPills)
               Padding(
@@ -469,7 +469,7 @@ class _MedChip extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE53935).withOpacity(0.1),
+                    color: const Color(0xFFE53935).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -515,7 +515,7 @@ class _UnscheduledSection extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppTheme.textLight.withOpacity(0.2),
+          color: AppTheme.textLight.withValues(alpha: 0.2),
           style: BorderStyle.solid,
         ),
       ),

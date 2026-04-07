@@ -619,7 +619,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -647,7 +647,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           color: _kCalendarColor,
                           shape: BoxShape.circle),
                       todayDecoration: BoxDecoration(
-                          color: _kCalendarColor.withOpacity(0.2),
+                          color: _kCalendarColor.withValues(alpha: 0.2),
                           shape: BoxShape.circle),
                       selectedDecoration: const BoxDecoration(
                           color: _kCalendarColor,
@@ -768,12 +768,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: _kCalendarColor.withOpacity(0.05),
+        color: _kCalendarColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _kCalendarColor.withOpacity(0.2)),
+        border: Border.all(color: _kCalendarColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -930,12 +930,12 @@ class _ReminderRow extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: isSet
-            ? _kCalendarColor.withOpacity(0.06)
+            ? _kCalendarColor.withValues(alpha: 0.06)
             : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isSet
-              ? _kCalendarColor.withOpacity(0.25)
+              ? _kCalendarColor.withValues(alpha: 0.25)
               : Colors.grey.shade200,
         ),
       ),

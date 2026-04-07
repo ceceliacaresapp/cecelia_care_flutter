@@ -58,12 +58,12 @@ class StreakWidget extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: _kStreakColor.withOpacity(0.05),
+          color: _kStreakColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _kStreakColor.withOpacity(0.2)),
+          border: Border.all(color: _kStreakColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: _kStreakColor.withOpacity(0.06),
+              color: _kStreakColor.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -122,7 +122,7 @@ class StreakWidget extends StatelessWidget {
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
                                           color: flameColor
-                                              .withOpacity(0.8),
+                                              .withValues(alpha: 0.8),
                                         ),
                                       ),
                                     ],
@@ -152,10 +152,10 @@ class StreakWidget extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: flameColor.withOpacity(0.1),
+                              color: flameColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                  color: flameColor.withOpacity(0.3)),
+                                  color: flameColor.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -189,11 +189,11 @@ class StreakWidget extends StatelessWidget {
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryColor
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: AppTheme.primaryColor
-                                      .withOpacity(0.25),
+                                      .withValues(alpha: 0.25),
                                 ),
                               ),
                               child: Row(
@@ -243,7 +243,7 @@ class StreakWidget extends StatelessWidget {
                         Container(
                           height: 6,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(3),
                           ),
                           child: FractionallySizedBox(
@@ -290,9 +290,9 @@ class _FlameIcon extends StatelessWidget {
       height: size + 12,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(isMilestone ? 0.15 : 0.08),
+        color: color.withValues(alpha: isMilestone ? 0.15 : 0.08),
         border: isMilestone
-            ? Border.all(color: color.withOpacity(0.3), width: 1.5)
+            ? Border.all(color: color.withValues(alpha: 0.3), width: 1.5)
             : null,
       ),
       child: Icon(
@@ -323,7 +323,7 @@ class _FreezeIndicator extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: available
-              ? _kFreezeColor.withOpacity(0.1)
+              ? _kFreezeColor.withValues(alpha: 0.1)
               : AppTheme.backgroundGray,
         ),
         child: Icon(

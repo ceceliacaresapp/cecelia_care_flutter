@@ -250,9 +250,9 @@ class _HeaderCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _kColor.withOpacity(0.07),
+        color: _kColor.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kColor.withOpacity(0.2)),
+        border: Border.all(color: _kColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +262,7 @@ class _HeaderCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _kColor.withOpacity(0.12),
+                  color: _kColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.summarize_outlined,
@@ -285,7 +285,7 @@ class _HeaderCard extends StatelessWidget {
                       'Last 7 Days: $startLabel – $endLabel',
                       style: TextStyle(
                         fontSize: 12,
-                        color: _kColor.withOpacity(0.7),
+                        color: _kColor.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -322,7 +322,7 @@ class _MetaRow extends StatelessWidget {
             style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: _kColor.withOpacity(0.6)),
+                color: _kColor.withValues(alpha: 0.6)),
           ),
         ),
         Expanded(
@@ -392,9 +392,9 @@ class _EntryCountChips extends StatelessWidget {
           padding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withOpacity(0.25)),
+            border: Border.all(color: color.withValues(alpha: 0.25)),
           ),
           child: Text(
             '$count $label',
@@ -555,7 +555,7 @@ class _HighlightRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: highlight.color.withOpacity(0.10),
+              color: highlight.color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(highlight.icon,
@@ -632,7 +632,7 @@ class _ShareBar extends StatelessWidget {
             top: BorderSide(color: Colors.grey.shade200, width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

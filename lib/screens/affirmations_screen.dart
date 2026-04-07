@@ -150,7 +150,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -206,7 +206,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.favorite_border,
-                        size: 48, color: _kAccent.withOpacity(0.3)),
+                        size: 48, color: _kAccent.withValues(alpha: 0.3)),
                     const SizedBox(height: 12),
                     const Text(
                       'No favorites saved yet.\nTap the heart on any affirmation to save it.',
@@ -264,7 +264,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                   decoration: BoxDecoration(
                     color: i == _currentPage
                         ? _kAccent
-                        : _kAccent.withOpacity(0.2),
+                        : _kAccent.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -314,7 +314,7 @@ class _AffirmationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: gradientColors.last.withOpacity(0.35),
+            color: gradientColors.last.withValues(alpha: 0.35),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -329,7 +329,7 @@ class _AffirmationCard extends StatelessWidget {
             Icon(
               Icons.format_quote,
               size: 36,
-              color: textColor.withOpacity(0.25),
+              color: textColor.withValues(alpha: 0.25),
             ),
             const SizedBox(height: 20),
 
@@ -356,7 +356,7 @@ class _AffirmationCard extends StatelessWidget {
                   '$cardNumber / $totalCards',
                   style: TextStyle(
                     fontSize: 12,
-                    color: textColor.withOpacity(0.4),
+                    color: textColor.withValues(alpha: 0.4),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -370,7 +370,7 @@ class _AffirmationCard extends StatelessWidget {
                       size: 28,
                       color: isFavorite
                           ? const Color(0xFFE91E63)
-                          : textColor.withOpacity(0.3),
+                          : textColor.withValues(alpha: 0.3),
                     ),
                   ),
                 ),

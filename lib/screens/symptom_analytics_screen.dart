@@ -26,7 +26,7 @@ class SymptomAnalyticsScreen extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.82),
+                AppTheme.primaryColor.withValues(alpha: 0.82),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -182,10 +182,10 @@ class _PeriodHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF00838F).withOpacity(0.06),
+        color: const Color(0xFF00838F).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: const Color(0xFF00838F).withOpacity(0.15)),
+            color: const Color(0xFF00838F).withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -207,7 +207,7 @@ class _PeriodHeader extends StatelessWidget {
                 '${fmt.format(start)} – ${fmt.format(now)} · $daysWithData days with data',
                 style: TextStyle(
                   fontSize: 12,
-                  color: const Color(0xFF00838F).withOpacity(0.7),
+                  color: const Color(0xFF00838F).withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -313,9 +313,9 @@ class _TrendCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.06),
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -345,7 +345,7 @@ class _TrendCard extends StatelessWidget {
                   text: maxLabel,
                   style: TextStyle(
                     fontSize: 12,
-                    color: color.withOpacity(0.5),
+                    color: color.withValues(alpha: 0.5),
                   ),
                 ),
               ],
@@ -414,7 +414,7 @@ class _DailyBarChart extends StatelessWidget {
                     margin: const EdgeInsets.symmetric(horizontal: 0.5),
                     height: 2,
                     decoration: BoxDecoration(
-                      color: AppTheme.textLight.withOpacity(0.2),
+                      color: AppTheme.textLight.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),
@@ -434,7 +434,7 @@ class _DailyBarChart extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 0.5),
                   height: height,
                   decoration: BoxDecoration(
-                    color: barColor.withOpacity(0.7),
+                    color: barColor.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -489,7 +489,7 @@ class _InsightCard extends StatelessWidget {
         color: const Color(0xFFFFF8E1),
         borderRadius: BorderRadius.circular(10),
         border:
-            Border.all(color: const Color(0xFFFFC107).withOpacity(0.3)),
+            Border.all(color: const Color(0xFFFFC107).withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,9 +542,9 @@ class _NotableEventTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: eventColor.withOpacity(0.06),
+        color: eventColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: eventColor.withOpacity(0.2)),
+        border: Border.all(color: eventColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [

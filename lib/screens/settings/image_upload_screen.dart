@@ -480,7 +480,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.photo_library_outlined,
-                              size: 48, color: _kImageColor.withOpacity(0.4)),
+                              size: 48, color: _kImageColor.withValues(alpha: 0.4)),
                           const SizedBox(height: 12),
                           Text(
                             _filterFolderId != null
@@ -530,10 +530,10 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: _kImageColor.withOpacity(0.2)),
+                          border: Border.all(color: _kImageColor.withValues(alpha: 0.2)),
                           boxShadow: [
                             BoxShadow(
-                              color: _kImageColor.withOpacity(0.08),
+                              color: _kImageColor.withValues(alpha: 0.08),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -593,7 +593,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 5, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: _kImageColor.withOpacity(0.1),
+                                            color: _kImageColor.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
@@ -696,18 +696,18 @@ class _FolderPickerRow extends StatelessWidget {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: _kImageColor.withOpacity(0.4),
+                      color: _kImageColor.withValues(alpha: 0.4),
                       style: BorderStyle.solid),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add, size: 14, color: _kImageColor.withOpacity(0.8)),
+                    Icon(Icons.add, size: 14, color: _kImageColor.withValues(alpha: 0.8)),
                     const SizedBox(width: 4),
                     Text('New folder',
                         style: TextStyle(
                             fontSize: 12,
-                            color: _kImageColor.withOpacity(0.8),
+                            color: _kImageColor.withValues(alpha: 0.8),
                             fontWeight: FontWeight.w500)),
                   ],
                 ),
@@ -838,10 +838,10 @@ class _FolderChip extends StatelessWidget {
         duration: const Duration(milliseconds: 130),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? _kImageColor : _kImageColor.withOpacity(0.07),
+          color: isSelected ? _kImageColor : _kImageColor.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? _kImageColor : _kImageColor.withOpacity(0.25),
+            color: isSelected ? _kImageColor : _kImageColor.withValues(alpha: 0.25),
           ),
         ),
         child: Row(
@@ -889,9 +889,9 @@ class _PickerButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: _kImageColor.withOpacity(0.07),
+          color: _kImageColor.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _kImageColor.withOpacity(0.25)),
+          border: Border.all(color: _kImageColor.withValues(alpha: 0.25)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
