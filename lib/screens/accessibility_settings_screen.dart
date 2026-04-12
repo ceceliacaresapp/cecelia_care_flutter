@@ -26,7 +26,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1565C0).withValues(alpha: 0.06),
+              color: AppTheme.tileBlueDark.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
@@ -65,7 +65,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
           // ── Section 2: Communication Aids ───────────────────────
           _sectionHeader(context, 'Communication Aids'),
           ListTile(
-            leading: const Icon(Icons.sign_language, color: Color(0xFF8E24AA)),
+            leading: const Icon(Icons.sign_language, color: AppTheme.tilePurple),
             title: const Text('Communication Cards + ASL'),
             subtitle: const Text(
               'Picture cards and ASL signs for non-verbal communication',

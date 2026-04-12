@@ -59,9 +59,9 @@ class _DiseaseRoadmapScreenState extends State<DiseaseRoadmapScreen> {
   Color _stageColor(int index, int total) {
     // Green → amber → red gradient by stage index.
     final t = total <= 1 ? 0.0 : index / (total - 1);
-    if (t < 0.4) return const Color(0xFF43A047);
-    if (t < 0.75) return const Color(0xFFF57C00);
-    return const Color(0xFFE53935);
+    if (t < 0.4) return AppTheme.statusGreen;
+    if (t < 0.75) return AppTheme.tileOrange;
+    return AppTheme.statusRed;
   }
 
   @override

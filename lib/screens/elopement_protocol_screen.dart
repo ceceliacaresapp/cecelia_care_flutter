@@ -35,10 +35,10 @@ import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ─── Emergency color palette ──────────────────────────────────────────────
-const _kEmergencyRed = Color(0xFFD32F2F);
+const _kEmergencyRed = AppTheme.dangerColor;
 const _kEmergencyDark = Color(0xFFB71C1C);
 const _kEmergencyBg = Color(0xFFFFF5F5);
-const _kStepDone = Color(0xFF43A047);
+const _kStepDone = AppTheme.statusGreen;
 
 // ─── Protocol steps definition ────────────────────────────────────────────
 class _ProtocolStep {
@@ -508,7 +508,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.warning_amber_rounded, size: 20),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text('MISSING PERSON PROTOCOL'),
             ],
           ),
@@ -926,7 +926,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
     List<String> medNames,
   ) {
     final isCall = action.type == _StepActionType.call;
-    final color = isCall ? _kEmergencyRed : const Color(0xFF1565C0);
+    final color = isCall ? _kEmergencyRed : AppTheme.tileBlueDark;
 
     return TextButton.icon(
       onPressed: () {

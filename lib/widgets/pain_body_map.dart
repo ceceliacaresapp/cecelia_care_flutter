@@ -55,9 +55,9 @@ class PainPoint {
       );
 
   static Color colorForIntensity(int intensity) {
-    if (intensity <= 3) return const Color(0xFFFFC107); // mild yellow/amber
+    if (intensity <= 3) return AppTheme.tileGold; // mild yellow/amber
     if (intensity <= 6) return const Color(0xFFFF9800); // moderate orange
-    if (intensity <= 8) return const Color(0xFFE53935); // severe red
+    if (intensity <= 8) return AppTheme.statusRed; // severe red
     return const Color(0xFFB71C1C); // extreme deep red
   }
 

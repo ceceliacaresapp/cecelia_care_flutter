@@ -224,7 +224,7 @@ class _ElderStatusCard extends StatelessWidget {
 
                           // Last activity timestamp
                           String activityLabel = 'No activity today';
-                          Color activityColor = const Color(0xFFE53935);
+                          Color activityColor = AppTheme.statusRed;
                           if (entries.isNotEmpty) {
                             final latest =
                                 entries.first.entryTimestamp.toDate();
@@ -233,15 +233,15 @@ class _ElderStatusCard extends StatelessWidget {
                             if (diff.inMinutes < 60) {
                               activityLabel =
                                   'Active ${diff.inMinutes}m ago';
-                              activityColor = const Color(0xFF43A047);
+                              activityColor = AppTheme.statusGreen;
                             } else if (diff.inHours < 12) {
                               activityLabel =
                                   'Active ${diff.inHours}h ago';
-                              activityColor = const Color(0xFFF57C00);
+                              activityColor = AppTheme.tileOrange;
                             } else {
                               activityLabel = DateFormat('h:mm a')
                                   .format(latest);
-                              activityColor = const Color(0xFFE53935);
+                              activityColor = AppTheme.statusRed;
                             }
                           }
 

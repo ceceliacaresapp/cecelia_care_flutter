@@ -35,7 +35,7 @@ import 'package:cecelia_care_flutter/models/fall_risk_assessment.dart';
 import 'package:cecelia_care_flutter/models/wandering_assessment.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 
-const _kColor = Color(0xFF3949AB); // deep indigo — distinct from DoctorSummary
+const _kColor = AppTheme.tileIndigoDark; // deep indigo — distinct from DoctorSummary
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Aggregated data structures
@@ -1387,7 +1387,7 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                         _SectionCard(
                           title: 'Vitals Summary',
                           icon: Icons.monitor_heart_outlined,
-                          color: const Color(0xFFF57C00),
+                          color: AppTheme.tileOrange,
                           child: _VitalsSection(vitals: prepData.vitals),
                         ),
                         const SizedBox(height: 14),
@@ -1398,7 +1398,7 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                         _SectionCard(
                           title: 'Current Medications',
                           icon: Icons.medication_outlined,
-                          color: const Color(0xFF1E88E5),
+                          color: AppTheme.tileBlue,
                           child:
                               _MedsSection(medications: prepData.medications),
                         ),
@@ -1409,7 +1409,7 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                       _SectionCard(
                         title: 'Symptom Patterns',
                         icon: Icons.healing_outlined,
-                        color: const Color(0xFFE53935),
+                        color: AppTheme.statusRed,
                         child: _SymptomsSection(data: prepData),
                       ),
                       const SizedBox(height: 14),
@@ -1418,7 +1418,7 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                       _SectionCard(
                         title: 'Sleep Overview',
                         icon: Icons.bedtime_outlined,
-                        color: const Color(0xFF5C6BC0),
+                        color: AppTheme.tileIndigo,
                         child: _SleepSection(data: prepData),
                       ),
                       const SizedBox(height: 14),
@@ -1427,7 +1427,7 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                       _SectionCard(
                         title: 'Notable Events',
                         icon: Icons.warning_amber_outlined,
-                        color: const Color(0xFFF57C00),
+                        color: AppTheme.tileOrange,
                         child: _NotableEventsSection(
                             events: prepData.notableEvents),
                       ),
@@ -1717,7 +1717,7 @@ class _VitalsSection extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.only(right: 4, top: 1),
                   child: Icon(Icons.warning_amber,
-                      size: 14, color: Color(0xFFF57C00)),
+                      size: 14, color: AppTheme.tileOrange),
                 ),
               Expanded(
                 child: Column(
@@ -1729,7 +1729,7 @@ class _VitalsSection extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: v.concerning
-                            ? const Color(0xFFF57C00)
+                            ? AppTheme.tileOrange
                             : AppTheme.textPrimary,
                       ),
                     ),
@@ -1795,9 +1795,9 @@ class _MedsSection extends StatelessWidget {
     return Column(
       children: medications.map((med) {
         final adherenceColor = med.adherencePct >= 80
-            ? const Color(0xFF43A047)
+            ? AppTheme.statusGreen
             : med.adherencePct >= 50
-                ? const Color(0xFFF57C00)
+                ? AppTheme.tileOrange
                 : AppTheme.dangerColor;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -1917,7 +1917,7 @@ class _SymptomRow extends StatelessWidget {
     Color trendColor = AppTheme.textSecondary;
     IconData trendIcon = Icons.remove;
     if (trend == 'improving') {
-      trendColor = const Color(0xFF43A047);
+      trendColor = AppTheme.statusGreen;
       trendIcon = higherIsWorse ? Icons.trending_down : Icons.trending_up;
     } else if (trend == 'worsening') {
       trendColor = AppTheme.dangerColor;
@@ -2012,7 +2012,7 @@ class _NotableEventsSection extends StatelessWidget {
       children: events.map((e) {
         final color = e.highSeverity
             ? AppTheme.dangerColor
-            : const Color(0xFFF57C00);
+            : AppTheme.tileOrange;
         return Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(

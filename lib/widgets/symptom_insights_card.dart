@@ -13,7 +13,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 class SymptomInsightsCard extends StatelessWidget {
   const SymptomInsightsCard({super.key});
 
-  static const _kAccent = Color(0xFF00838F); // teal-dark
+  static const _kAccent = AppTheme.entryVitalAccent; // teal-dark
 
   @override
   Widget build(BuildContext context) {
@@ -167,12 +167,12 @@ class SymptomInsightsCard extends StatelessWidget {
                   color: const Color(0xFFFFF8E1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: const Color(0xFFFFC107).withValues(alpha: 0.3)),
+                      color: AppTheme.tileGold.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.lightbulb_outline,
-                        size: 14, color: Color(0xFFF57C00)),
+                        size: 14, color: AppTheme.tileOrange),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -227,7 +227,7 @@ class _TrendChip extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: const Color(0xFF00838F).withValues(alpha: 0.12)),
+              color: AppTheme.entryVitalAccent.withValues(alpha: 0.12)),
         ),
         child: Column(
           children: [
@@ -294,9 +294,9 @@ class _TrendChip extends StatelessWidget {
   Color _colorForTrend(TrendDirection? t, bool invert) {
     switch (t) {
       case TrendDirection.improving:
-        return const Color(0xFF43A047);
+        return AppTheme.statusGreen;
       case TrendDirection.worsening:
-        return const Color(0xFFE53935);
+        return AppTheme.statusRed;
       case TrendDirection.stable:
         return AppTheme.textSecondary;
       default:

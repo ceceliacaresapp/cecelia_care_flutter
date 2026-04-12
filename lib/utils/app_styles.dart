@@ -101,11 +101,11 @@ class AppStyles {
 
   /// Vertical gap between two logically separate form sections (e.g.
   /// "Medication name" block → "Dose" block). Use instead of repeating
-  /// SizedBox(height: 20) throughout form files.
+  /// const SizedBox(height: 20) throughout form files.
   static const double formSectionSpacing = 20.0;
 
   /// Vertical gap between a section label and its input field. Use instead
-  /// of repeating SizedBox(height: 8) at the start of every field group.
+  /// of repeating const SizedBox(height: 8) at the start of every field group.
   static const double formFieldLabelSpacing = 8.0;
 
   /// Padding applied to the outer container of a form group card when a

@@ -6,6 +6,7 @@
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
+import 'package:cecelia_care_flutter/widgets/form_section_divider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
@@ -39,7 +40,7 @@ class _NightWakingFormState extends State<NightWakingForm> {
   final _noteCtrl = TextEditingController();
   bool _isSaving = false;
 
-  static const Color _accent = Color(0xFF283593);
+  static const Color _accent = AppTheme.tileIndigoDeep;
 
   static const List<String> _durationOptions = [
     '< 15 min', '15\u201330 min', '30\u201360 min', '1\u20132 hours', '2+ hours',
@@ -134,7 +135,7 @@ class _NightWakingFormState extends State<NightWakingForm> {
           const SizedBox(height: 20),
 
           // ── Time Woke ──────────────────────────────────────
-          _label('Time Woke'),
+          FormSectionHeader(label: 'Time Woke', color: _accent),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
@@ -165,7 +166,8 @@ class _NightWakingFormState extends State<NightWakingForm> {
           const SizedBox(height: 20),
 
           // ── Duration ───────────────────────────────────────
-          _label('Duration Awake'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Duration Awake', color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
@@ -176,7 +178,8 @@ class _NightWakingFormState extends State<NightWakingForm> {
           const SizedBox(height: 20),
 
           // ── Cause ──────────────────────────────────────────
-          _label('Cause'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Cause', color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
@@ -187,7 +190,8 @@ class _NightWakingFormState extends State<NightWakingForm> {
           const SizedBox(height: 20),
 
           // ── Intervention ───────────────────────────────────
-          _label('Intervention (select all that apply)'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Interventions', color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,

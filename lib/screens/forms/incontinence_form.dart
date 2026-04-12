@@ -7,6 +7,7 @@ import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/form_section_divider.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,7 +41,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
   final _noteCtrl = TextEditingController();
   bool _isSaving = false;
 
-  static const Color _accentColor = Color(0xFF795548);
+  static const Color _accentColor = AppTheme.tileBrown;
 
   @override
   void dispose() {
@@ -116,25 +117,25 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
           const SizedBox(height: 20),
 
           // ── Type ───────────────────────────────────────────
-          _SectionLabel('Type'),
+          FormSectionHeader(label: 'Type', color: _accentColor),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               _chip('Urinary', 'urinary', _selectedType,
-                  Icons.water_drop_outlined, const Color(0xFF1E88E5)),
+                  Icons.water_drop_outlined, AppTheme.tileBlue),
               _chip('Bowel', 'bowel', _selectedType,
-                  Icons.circle, const Color(0xFF795548)),
+                  Icons.circle, AppTheme.tileBrown),
               _chip('Both', 'both', _selectedType,
-                  Icons.warning_amber_outlined, const Color(0xFFF57C00)),
+                  Icons.warning_amber_outlined, AppTheme.tileOrange),
             ],
           ),
-          const SizedBox(height: 20),
+          const FormSectionDivider(),
 
           // ── Bristol Stool Scale (bowel/both) ───────────────
           if (_selectedType == 'bowel' || _selectedType == 'both') ...[
-            _SectionLabel('Bristol Stool Scale'),
+            FormSectionHeader(label: 'Bristol Stool Scale', color: _accentColor),
             const SizedBox(height: 8),
             ..._bristolEntries.map(_bristolRow),
             const SizedBox(height: 20),
@@ -142,7 +143,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
 
           // ── Urine Color (urinary/both) ─────────────────────
           if (_selectedType == 'urinary' || _selectedType == 'both') ...[
-            _SectionLabel('Urine Color'),
+            FormSectionHeader(label: 'Urine Color', color: _accentColor),
             const SizedBox(height: 8),
             SizedBox(
               height: 76,
@@ -183,38 +184,41 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
           ],
 
           // ── Severity ───────────────────────────────────────
-          _SectionLabel('Severity'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Severity', color: _accentColor),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               _severityChip('Light', 'light', 'Pad change',
-                  const Color(0xFF43A047)),
+                  AppTheme.statusGreen),
               _severityChip('Moderate', 'moderate', 'Clothing change',
-                  const Color(0xFFF57C00)),
+                  AppTheme.tileOrange),
               _severityChip('Heavy', 'heavy', 'Full change',
-                  const Color(0xFFE53935)),
+                  AppTheme.statusRed),
             ],
           ),
           const SizedBox(height: 20),
 
           // ── Skin Check ─────────────────────────────────────
-          _SectionLabel('Skin Check'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Skin Check', color: _accentColor),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              _skinChip('Healthy', 'healthy', const Color(0xFF43A047)),
-              _skinChip('Pink / Red', 'irritated', const Color(0xFFF57C00)),
-              _skinChip('Broken / Sore', 'broken', const Color(0xFFE53935)),
+              _skinChip('Healthy', 'healthy', AppTheme.statusGreen),
+              _skinChip('Pink / Red', 'irritated', AppTheme.tileOrange),
+              _skinChip('Broken / Sore', 'broken', AppTheme.statusRed),
               _skinChip('Not Checked', 'notChecked', Colors.grey),
             ],
           ),
           const SizedBox(height: 20),
 
           // ── Changed toggle ─────────────────────────────────
+          const FormSectionDivider(),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('Clothing / bedding changed',
@@ -226,6 +230,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
           const SizedBox(height: 8),
 
           // ── Notes ──────────────────────────────────────────
+          const FormSectionDivider(),
           TextField(
             controller: _noteCtrl,
             decoration: const InputDecoration(
@@ -392,13 +397,13 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
   // ── Bristol scale ──────────────────────────────────────────────
 
   static const List<_BristolEntry> _bristolEntries = [
-    _BristolEntry(1, 'Hard lumps', 'Separate hard lumps (severe constipation)', Color(0xFFE65100)),
-    _BristolEntry(2, 'Lumpy sausage', 'Lumpy and sausage-shaped (mild constipation)', Color(0xFFF57C00)),
+    _BristolEntry(1, 'Hard lumps', 'Separate hard lumps (severe constipation)', AppTheme.tileOrangeDeep),
+    _BristolEntry(2, 'Lumpy sausage', 'Lumpy and sausage-shaped (mild constipation)', AppTheme.tileOrange),
     _BristolEntry(3, 'Cracked sausage', 'Sausage with cracks on surface (normal)', Color(0xFF66BB6A)),
-    _BristolEntry(4, 'Smooth snake', 'Smooth and soft (normal, ideal)', Color(0xFF43A047)),
+    _BristolEntry(4, 'Smooth snake', 'Smooth and soft (normal, ideal)', AppTheme.statusGreen),
     _BristolEntry(5, 'Soft blobs', 'Soft blobs with clear edges (lacking fiber)', Color(0xFFFFB300)),
     _BristolEntry(6, 'Mushy', 'Fluffy, mushy with ragged edges (mild diarrhea)', Color(0xFFEF6C00)),
-    _BristolEntry(7, 'Liquid', 'Entirely liquid, no solid pieces (severe diarrhea)', Color(0xFFE53935)),
+    _BristolEntry(7, 'Liquid', 'Entirely liquid, no solid pieces (severe diarrhea)', AppTheme.statusRed),
   ];
 
   Widget _bristolRow(_BristolEntry e) {
@@ -472,10 +477,10 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
     _UrineSwatch('paleYellow', 'Pale yellow', Color(0xFFFFFDE7), 'Normal'),
     _UrineSwatch('yellow', 'Yellow', Color(0xFFFFF9C4), 'Normal'),
     _UrineSwatch('darkYellow', 'Dark yellow', Color(0xFFFFEB3B), 'Mild dehydration'),
-    _UrineSwatch('amber', 'Amber', Color(0xFFFFC107), 'Dehydrated'),
+    _UrineSwatch('amber', 'Amber', AppTheme.tileGold, 'Dehydrated'),
     _UrineSwatch('orange', 'Orange', Color(0xFFFF9800), 'Very dehydrated'),
     _UrineSwatch('pink', 'Pink / red', Color(0xFFEF9A9A), 'Blood — contact doctor', isWarning: true),
-    _UrineSwatch('brown', 'Brown', Color(0xFF795548), 'Liver/kidney concern — contact doctor', isWarning: true),
+    _UrineSwatch('brown', 'Brown', AppTheme.tileBrown, 'Liver/kidney concern — contact doctor', isWarning: true),
   ];
 
   Widget _urineSwatch(_UrineSwatch s) {
@@ -553,17 +558,4 @@ class _UrineSwatch {
       {this.isWarning = false});
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(text,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.textSecondary,
-        ));
-  }
-}
+// _SectionLabel removed — replaced by shared FormSectionHeader

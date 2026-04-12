@@ -15,6 +15,7 @@ import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class WeightTrendScreen extends StatefulWidget {
   const WeightTrendScreen({super.key});
@@ -202,8 +203,12 @@ class _WeightTrendScreenState extends State<WeightTrendScreen> {
                         fontSize: 12, color: AppTheme.textSecondary),
                   ),
                 ] else
-                  const Text('No weight entries yet.',
-                      style: TextStyle(fontSize: 16)),
+                  const EmptyStateWidget(
+                    icon: Icons.monitor_weight_outlined,
+                    title: 'No weight data yet',
+                    subtitle: 'Log a weight vital to start tracking trends.',
+                    compact: true,
+                  ),
                 const SizedBox(height: 14),
                 // Stats row
                 Row(
@@ -301,7 +306,7 @@ class _WeightTrendScreenState extends State<WeightTrendScreen> {
                 ElevatedButton(
                   onPressed: _isSaving ? null : () => _logWeight(weights),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00695C),
+                    backgroundColor: AppTheme.entryActivityAccent,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -407,12 +412,12 @@ class _ChartPainter extends CustomPainter {
     if (points.length < 2) return;
 
     final linePaint = Paint()
-      ..color = const Color(0xFF00695C)
+      ..color = AppTheme.entryActivityAccent
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF00695C)
+      ..color = AppTheme.entryActivityAccent
       ..style = PaintingStyle.fill;
 
     final path = Path();

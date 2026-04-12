@@ -47,28 +47,28 @@ const _bands = [
   _TimeBand(
     label: 'Morning',
     icon: Icons.wb_sunny_outlined,
-    color: Color(0xFF1E88E5),
+    color: AppTheme.tileBlue,
     startHour: 5,
     endHour: 12,
   ),
   _TimeBand(
     label: 'Afternoon',
     icon: Icons.wb_cloudy_outlined,
-    color: Color(0xFFF57C00),
+    color: AppTheme.tileOrange,
     startHour: 12,
     endHour: 17,
   ),
   _TimeBand(
     label: 'Evening',
     icon: Icons.nights_stay_outlined,
-    color: Color(0xFF8E24AA),
+    color: AppTheme.tilePurple,
     startHour: 17,
     endHour: 21,
   ),
   _TimeBand(
     label: 'Night',
     icon: Icons.bedtime_outlined,
-    color: Color(0xFF5C6BC0),
+    color: AppTheme.tileIndigo,
     startHour: 21,
     endHour: 5,
   ),
@@ -116,13 +116,13 @@ class MedScheduleTimeline extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E88E5).withValues(alpha: 0.04),
+          color: AppTheme.tileBlue.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: const Color(0xFF1E88E5).withValues(alpha: 0.15)),
+              color: AppTheme.tileBlue.withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1E88E5).withValues(alpha: 0.05),
+              color: AppTheme.tileBlue.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -137,11 +137,11 @@ class MedScheduleTimeline extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
+                    color: AppTheme.tileBlue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.schedule_outlined,
-                      color: Color(0xFF1E88E5), size: 18),
+                      color: AppTheme.tileBlue, size: 18),
                 ),
                 const SizedBox(width: 10),
                 const Expanded(
@@ -150,7 +150,7 @@ class MedScheduleTimeline extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E88E5),
+                      color: AppTheme.tileBlue,
                     ),
                   ),
                 ),
@@ -158,13 +158,13 @@ class MedScheduleTimeline extends StatelessWidget {
                   '${allMeds.length} med${allMeds.length == 1 ? '' : 's'}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: const Color(0xFF1E88E5).withValues(alpha: 0.6),
+                    color: AppTheme.tileBlue.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Icon(Icons.arrow_forward_ios,
                     size: 12,
-                    color: const Color(0xFF1E88E5).withValues(alpha: 0.4)),
+                    color: AppTheme.tileBlue.withValues(alpha: 0.4)),
               ],
             ),
             const SizedBox(height: 14),
@@ -255,7 +255,7 @@ class _NowIndicator extends StatelessWidget {
           width: 8,
           height: 8,
           decoration: const BoxDecoration(
-            color: Color(0xFFE53935),
+            color: AppTheme.statusRed,
             shape: BoxShape.circle,
           ),
         ),
@@ -263,7 +263,7 @@ class _NowIndicator extends StatelessWidget {
         Expanded(
           child: Container(
             height: 1,
-            color: const Color(0xFFE53935).withValues(alpha: 0.3),
+            color: AppTheme.statusRed.withValues(alpha: 0.3),
           ),
         ),
         const SizedBox(width: 6),
@@ -272,7 +272,7 @@ class _NowIndicator extends StatelessWidget {
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: Color(0xFFE53935),
+            color: AppTheme.statusRed,
           ),
         ),
       ],
@@ -469,7 +469,7 @@ class _MedChip extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE53935).withValues(alpha: 0.1),
+                    color: AppTheme.statusRed.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -477,7 +477,7 @@ class _MedChip extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFE53935),
+                      color: AppTheme.statusRed,
                     ),
                   ),
                 ),

@@ -25,6 +25,8 @@ const List<Map<String, dynamic>> kDefaultSections = [
   {'key': 'insights', 'label': 'Symptom Insights', 'icon': 0xe3a1, 'visible': true},
   {'key': 'medSchedule', 'label': 'Med Schedule', 'icon': 0xf0575, 'visible': true},
   {'key': 'dutyTimer', 'label': 'Duty Timer', 'icon': 0xe425, 'visible': true},
+  {'key': 'timeSince', 'label': 'Time Since Last', 'icon': 0xe8b5, 'visible': true},
+  {'key': 'correlationInsights', 'label': 'Correlation Insights', 'icon': 0xe3a1, 'visible': true},
   {'key': 'weightTrend', 'label': 'Weight Trend', 'icon': 0xe3ba, 'visible': true},
   {'key': 'adherenceSummary', 'label': 'Med Adherence', 'icon': 0xe3ec, 'visible': true},
   {'key': 'hydrationProgress', 'label': 'Hydration', 'icon': 0xe3e0, 'visible': true},
@@ -145,6 +147,8 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
       case 'insights': return Icons.insights_outlined;
       case 'medSchedule': return Icons.schedule_outlined;
       case 'dutyTimer': return Icons.timer_outlined;
+      case 'timeSince': return Icons.schedule_outlined;
+      case 'correlationInsights': return Icons.insights_outlined;
       case 'weightTrend': return Icons.monitor_weight_outlined;
       case 'adherenceSummary': return Icons.medication_outlined;
       case 'hydrationProgress': return Icons.local_drink_outlined;

@@ -26,8 +26,8 @@ import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // Calm color palette for this screen — muted teal + lavender
-const _kCalmPrimary = Color(0xFF5C6BC0); // indigo
-const _kCalmSecondary = Color(0xFF00897B); // teal
+const _kCalmPrimary = AppTheme.tileIndigo; // indigo
+const _kCalmSecondary = AppTheme.tileTeal; // teal
 const _kCalmBg = Color(0xFFF3F0FF); // very light lavender
 
 class SosScreen extends StatefulWidget {
@@ -198,7 +198,7 @@ class _SosScreenState extends State<SosScreen> {
             // ── 5-minute break timer ────────────────────────────────
             _SosToolCard(
               icon: _timerRunning ? Icons.timer : Icons.timer_outlined,
-              color: const Color(0xFFF57C00),
+              color: AppTheme.tileOrange,
               title: 'Take 5 minutes',
               subtitle: _timerRunning
                   ? _formatTimer(_timerSeconds)
@@ -213,7 +213,7 @@ class _SosScreenState extends State<SosScreen> {
             // ── Journal prompt ──────────────────────────────────────
             _SosToolCard(
               icon: Icons.menu_book_outlined,
-              color: const Color(0xFF8E24AA),
+              color: AppTheme.tilePurple,
               title: 'Write it out',
               subtitle:
                   "Sometimes putting feelings into words helps. There's no wrong way to do this.",

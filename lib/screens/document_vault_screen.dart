@@ -65,7 +65,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showPickerSheet(context, elder.id),
-        backgroundColor: const Color(0xFF5C6BC0),
+        backgroundColor: AppTheme.tileIndigo,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
@@ -158,7 +158,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined,
-                  color: Color(0xFF5C6BC0)),
+                  color: AppTheme.tileIndigo),
               title: const Text('Take photo'),
               subtitle: const Text(
                   'Photograph a document with your camera'),
@@ -169,7 +169,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined,
-                  color: Color(0xFF5C6BC0)),
+                  color: AppTheme.tileIndigo),
               title: const Text('Choose from gallery'),
               subtitle: const Text('Select an image from your photos'),
               onTap: () {
@@ -180,7 +180,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.upload_file_outlined,
-                  color: Color(0xFF5C6BC0)),
+                  color: AppTheme.tileIndigo),
               title: const Text('Upload file'),
               subtitle:
                   const Text('Select a PDF or image from files'),
@@ -348,13 +348,13 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE53935)
+                            color: AppTheme.statusRed
                                 .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Icon(
                               Icons.picture_as_pdf,
-                              color: Color(0xFFE53935),
+                              color: AppTheme.statusRed,
                               size: 24),
                         ),
                       const SizedBox(width: 10),
@@ -911,7 +911,7 @@ class _CategoryFilterBar extends StatelessWidget {
           _FilterChip(
             label: 'All',
             count: totalCount,
-            color: const Color(0xFF5C6BC0),
+            color: AppTheme.tileIndigo,
             isSelected: selected == null,
             onTap: () => onSelect(null),
           ),
@@ -1051,7 +1051,7 @@ class _DocCard extends StatelessWidget {
                     )
                   : doc.isPdf
                       ? const Icon(Icons.picture_as_pdf,
-                          color: Color(0xFFE53935), size: 26)
+                          color: AppTheme.statusRed, size: 26)
                       : Icon(cat.icon, color: cat.color, size: 24),
             ),
             const SizedBox(width: 12),

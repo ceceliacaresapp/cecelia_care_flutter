@@ -12,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/entry_type_helpers.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
+import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
 import 'package:cecelia_care_flutter/utils/entry_summary.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
@@ -23,6 +25,7 @@ import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 // Color tables for entry types live in lib/utils/entry_type_helpers.dart
 // (shared with dashboard_screen.dart). Thin alias keeps the existing
@@ -33,11 +36,11 @@ EntryTypeStyle _entryTypeStyle(EntryType type) =>
 Color _avatarColorForInitial(String initial) {
   const List<Color> palette = [
     AppTheme.primaryColor,
-    Color(0xFF00695C),
-    Color(0xFF6A1B9A),
-    Color(0xFF1565C0),
-    Color(0xFF2E7D32),
-    Color(0xFF4E342E),
+    AppTheme.entryActivityAccent,
+    AppTheme.entryMoodAccent,
+    AppTheme.tileBlueDark,
+    AppTheme.entryMealAccent,
+    AppTheme.entryExpenseAccent,
   ];
   if (initial.isEmpty) return AppTheme.backgroundGray;
   return palette[initial.codeUnitAt(0) % palette.length];
@@ -89,6 +92,8 @@ class TimelineScreenState extends State<TimelineScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _filtersExpanded = false;
+  String _searchQuery = '';
+  final TextEditingController _searchCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -143,6 +148,7 @@ class TimelineScreenState extends State<TimelineScreen> {
   @override
   void dispose() {
     _messageController.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -159,7 +165,10 @@ class TimelineScreenState extends State<TimelineScreen> {
   }
 
   bool get _hasActiveFilters =>
-      _onlyMyLogs || _startDate != null || _endDate != null;
+      _onlyMyLogs ||
+      _startDate != null ||
+      _endDate != null ||
+      _searchQuery.isNotEmpty;
 
   void _resetDateFilters() {
     if (mounted) {
@@ -167,6 +176,8 @@ class TimelineScreenState extends State<TimelineScreen> {
         _startDate = null;
         _endDate = null;
         _onlyMyLogs = false;
+        _searchQuery = '';
+        _searchCtrl.clear();
       });
     }
   }
@@ -483,6 +494,14 @@ class TimelineScreenState extends State<TimelineScreen> {
                         'To ${DateFormat.MMMd(_l10n.localeName).format(_endDate!)}',
                     onRemove: () => setState(() => _endDate = null),
                   ),
+                if (_searchQuery.isNotEmpty)
+                  _FilterChip(
+                    label: '"${_searchQuery.length > 12 ? '${_searchQuery.substring(0, 10)}…' : _searchQuery}"',
+                    onRemove: () {
+                      _searchCtrl.clear();
+                      setState(() => _searchQuery = '');
+                    },
+                  ),
                 const Spacer(),
                 AnimatedRotation(
                   turns: _filtersExpanded ? 0.5 : 0,
@@ -521,6 +540,30 @@ class TimelineScreenState extends State<TimelineScreen> {
                       activeColor: AppTheme.accentColor,
                     ),
                   ],
+                ),
+                const SizedBox(height: 8),
+                // Text search
+                TextField(
+                  controller: _searchCtrl,
+                  decoration: InputDecoration(
+                    hintText: 'Search entries...',
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    suffixIcon: _searchQuery.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () {
+                              _searchCtrl.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onChanged: (v) => setState(() => _searchQuery = v),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -753,8 +796,13 @@ class TimelineScreenState extends State<TimelineScreen> {
                 }
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator());
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: List.generate(
+                          5, (_) => const SkeletonListTile()),
+                    ),
+                  );
                 }
                 if (snapshot.hasError) {
                   debugPrint(
@@ -774,7 +822,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                 }
 
                 final allDocs = snapshot.data ?? [];
-                final docsToDisplay = _showOnlyHiddenMessages
+                var docsToDisplay = _showOnlyHiddenMessages
                     ? allDocs
                         .where((e) =>
                             e.id != null &&
@@ -786,6 +834,24 @@ class TimelineScreenState extends State<TimelineScreen> {
                             !_hiddenMessageIds.contains(e.id!))
                         .toList();
 
+                // Text search filter — matches against entry text,
+                // data values, and the logged-by name.
+                if (_searchQuery.isNotEmpty) {
+                  final q = _searchQuery.toLowerCase();
+                  docsToDisplay = docsToDisplay.where((e) {
+                    final text = (e.text ?? '').toLowerCase();
+                    final data = e.data?.values
+                            .map((v) => v.toString().toLowerCase())
+                            .join(' ') ??
+                        '';
+                    final loggedBy =
+                        (e.loggedByDisplayName ?? '').toLowerCase();
+                    return text.contains(q) ||
+                        data.contains(q) ||
+                        loggedBy.contains(q);
+                  }).toList();
+                }
+
                 if (docsToDisplay.isEmpty) {
                   final emptyMessage = _showOnlyHiddenMessages
                       ? _l10n.timelineNoHiddenMessages
@@ -795,15 +861,10 @@ class TimelineScreenState extends State<TimelineScreen> {
                                   : activeElder?.profileName) ??
                               _l10n.timelineUnknownUser,
                         );
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(
-                        emptyMessage,
-                        textAlign: TextAlign.center,
-                        style: AppStyles.emptyStateText,
-                      ),
-                    ),
+                  return EmptyStateWidget(
+                    icon: Icons.timeline_outlined,
+                    title: 'No entries yet',
+                    subtitle: emptyMessage,
                   );
                 }
 
@@ -860,9 +921,13 @@ class TimelineScreenState extends State<TimelineScreen> {
                         }
 
                         // Swipe-to-delete — only on entries the current user owns
-                        if (!isOwned || entry.id == null) return card;
+                        if (!isOwned || entry.id == null) {
+                          return StaggeredFadeIn(index: index, child: card);
+                        }
 
-                        return Dismissible(
+                        return StaggeredFadeIn(
+                          index: index,
+                          child: Dismissible(
                           key: ValueKey(entry.id),
                           direction: DismissDirection.endToStart,
                           child: card,
@@ -927,12 +992,13 @@ class TimelineScreenState extends State<TimelineScreen> {
                                     fontSize: 14,
                                   ),
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Icon(Icons.delete_outline,
                                     color: Colors.white, size: 22),
                               ],
                             ),
                           ),
+                        ),
                         );
                       } catch (e, s) {
                         debugPrint(
@@ -1179,12 +1245,12 @@ class TimelineScreenState extends State<TimelineScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 7, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF546E7A)
+                                      color: AppTheme.tileBlueGrey
                                           .withValues(alpha: 0.12),
                                       borderRadius:
                                           BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: const Color(0xFF546E7A)
+                                        color: AppTheme.tileBlueGrey
                                             .withValues(alpha: 0.35),
                                       ),
                                     ),
@@ -1194,7 +1260,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                                         const Icon(
                                           Icons.lock_outline,
                                           size: 11,
-                                          color: Color(0xFF546E7A),
+                                          color: AppTheme.tileBlueGrey,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -1202,7 +1268,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                                               .timelinePrivateMessageIndicator,
                                           style: const TextStyle(
                                             fontSize: 11,
-                                            color: Color(0xFF546E7A),
+                                            color: AppTheme.tileBlueGrey,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -1346,6 +1412,7 @@ class TimelineScreenState extends State<TimelineScreen> {
               try {
                 if (hasReacted) {
                   await firestoreService.removeReaction(entry.id!, user.uid);
+                  HapticUtils.tap();
                 } else {
                   await firestoreService.addReaction(entry.id!, user.uid);
                   HapticUtils.success();
@@ -1361,7 +1428,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                   hasReacted ? Icons.favorite : Icons.favorite_border,
                   size: 18,
                   color: hasReacted
-                      ? const Color(0xFFE91E63)
+                      ? AppTheme.tilePinkBright
                       : AppTheme.textLight,
                 ),
                 if (count > 0) ...[
@@ -1372,7 +1439,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: hasReacted
-                          ? const Color(0xFFE91E63)
+                          ? AppTheme.tilePinkBright
                           : AppTheme.textSecondary,
                     ),
                   ),
@@ -1402,14 +1469,14 @@ class TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.only(top: 4),
       child: Row(
         children: [
-          const Icon(Icons.favorite, size: 14, color: Color(0xFFE91E63)),
+          const Icon(Icons.favorite, size: 14, color: AppTheme.tilePinkBright),
           const SizedBox(width: 4),
           Text(
             '$count',
             style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFE91E63)),
+                color: AppTheme.tilePinkBright),
           ),
           const SizedBox(width: 6),
           Expanded(

@@ -18,7 +18,8 @@ import 'package:cecelia_care_flutter/providers/cognitive_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/cognitive_test_games.dart';
-import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class CognitiveAssessmentScreen extends StatelessWidget {
   const CognitiveAssessmentScreen({super.key});
@@ -38,11 +39,11 @@ class CognitiveAssessmentScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cognitive Screen'),
-        backgroundColor: const Color(0xFF7B1FA2),
+        backgroundColor: AppTheme.entryMoodAccent,
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF7B1FA2),
+        backgroundColor: AppTheme.entryMoodAccent,
         foregroundColor: Colors.white,
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(
           fullscreenDialog: true,
@@ -54,7 +55,7 @@ class CognitiveAssessmentScreen extends StatelessWidget {
             : 'New Assessment'),
       ),
       body: prov.isLoading
-          ? const TimedLoadingIndicator()
+          ? const SkeletonCard(height: 200)
           : prov.history.isEmpty
               ? _emptyState(context)
               : _resultsView(context, prov),
@@ -62,26 +63,11 @@ class CognitiveAssessmentScreen extends StatelessWidget {
   }
 
   Widget _emptyState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.psychology_alt_outlined,
-                size: 64, color: Color(0xFF7B1FA2)),
-            const SizedBox(height: 16),
-            const Text('No assessments yet',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            const Text(
-              '7 brain games — about 10–15 minutes. Tracks memory, attention, and executive function over time.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-            ),
-          ],
-        ),
-      ),
+    return const EmptyStateWidget(
+      icon: Icons.psychology_alt_outlined,
+      title: 'No assessments yet',
+      subtitle: '7 brain games — about 10–15 minutes.\nTracks memory, attention, and executive function over time.',
+      color: Color(0xFF7B1FA2),
     );
   }
 
@@ -139,26 +125,36 @@ class CognitiveAssessmentScreen extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: CircularProgressIndicator(
-                    value: a.scorePercent,
-                    strokeWidth: 9,
-                    backgroundColor: Colors.white,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(a.levelColor),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: a.scorePercent),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOut,
+                  builder: (_, v, __) => SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: CircularProgressIndicator(
+                      value: v,
+                      strokeWidth: 9,
+                      backgroundColor: Colors.white,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(a.levelColor),
+                    ),
                   ),
                 ),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('${a.totalScore}',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: a.levelColor,
-                        )),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: a.totalScore.toDouble()),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOut,
+                      builder: (_, v, __) => Text('${v.toInt()}',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: a.levelColor,
+                          )),
+                    ),
                     Text('/ ${a.maxPossibleScore}',
                         style: TextStyle(
                             fontSize: 11,
@@ -270,12 +266,12 @@ class CognitiveAssessmentScreen extends StatelessWidget {
                           pct == null
                               ? Colors.grey.shade400
                               : (pct >= 0.8
-                                  ? const Color(0xFF43A047)
+                                  ? AppTheme.statusGreen
                                   : pct >= 0.6
-                                      ? const Color(0xFF1E88E5)
+                                      ? AppTheme.tileBlue
                                       : pct >= 0.4
-                                          ? const Color(0xFFF57C00)
-                                          : const Color(0xFFE53935)),
+                                          ? AppTheme.tileOrange
+                                          : AppTheme.statusRed),
                         ),
                       ),
                     ),
@@ -395,14 +391,14 @@ class _TrendLinePainter extends CustomPainter {
     final minV = values.reduce(min);
     final range = (maxV - minV).clamp(1.0, double.infinity);
     final paint = Paint()
-      ..color = const Color(0xFF7B1FA2)
+      ..color = AppTheme.entryMoodAccent
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
     final fillPaint = Paint()
-      ..color = const Color(0xFF7B1FA2).withValues(alpha: 0.12)
+      ..color = AppTheme.entryMoodAccent.withValues(alpha: 0.12)
       ..style = PaintingStyle.fill;
-    final dotPaint = Paint()..color = const Color(0xFF7B1FA2);
+    final dotPaint = Paint()..color = AppTheme.entryMoodAccent;
 
     final path = Path();
     final fillPath = Path();
@@ -444,7 +440,7 @@ class _AssessmentWizard extends StatefulWidget {
 }
 
 class _AssessmentWizardState extends State<_AssessmentWizard> {
-  static const Color _accent = Color(0xFF7B1FA2);
+  static const Color _accent = AppTheme.entryMoodAccent;
   static const int _totalPages = 10;
 
   static const List<String> _wordPool = [
@@ -1113,7 +1109,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                     icon: Icon(
                       Icons.check_circle,
                       color: ans == true
-                          ? const Color(0xFF43A047)
+                          ? AppTheme.statusGreen
                           : Colors.grey.shade400,
                     ),
                     onPressed: () => setState(() => _orientation[id] = true),
@@ -1181,25 +1177,37 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
-                  width: 160,
-                  height: 160,
-                  child: CircularProgressIndicator(
-                    value: preview.scorePercent,
-                    strokeWidth: 12,
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(preview.levelColor),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: preview.scorePercent),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOut,
+                  builder: (_, v, __) => SizedBox(
+                    width: 160,
+                    height: 160,
+                    child: CircularProgressIndicator(
+                      value: v,
+                      strokeWidth: 12,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(preview.levelColor),
+                    ),
                   ),
                 ),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('${preview.totalScore}',
-                        style: TextStyle(
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                            color: preview.levelColor)),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(
+                          begin: 0,
+                          end: preview.totalScore.toDouble()),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOut,
+                      builder: (_, v, __) => Text('${v.toInt()}',
+                          style: TextStyle(
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              color: preview.levelColor)),
+                    ),
                     Text('/ ${preview.maxPossibleScore}',
                         style: TextStyle(
                             fontSize: 13,
@@ -1220,7 +1228,8 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                 color: preview.levelColor,
               )),
         ),
-        const SizedBox(height: 16),
+        Divider(height: 32, thickness: 0.5,
+            color: AppTheme.textLight.withValues(alpha: 0.3)),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -1317,7 +1326,8 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             ),
           ),
         ],
-        const SizedBox(height: 14),
+        Divider(height: 32, thickness: 0.5,
+            color: AppTheme.textLight.withValues(alpha: 0.3)),
         TextField(
           controller: _notesCtrl,
           maxLines: 3,

@@ -17,7 +17,7 @@ import 'package:cecelia_care_flutter/widgets/event_form_modal.dart';
 import 'package:cecelia_care_flutter/services/notification_service.dart';
 
 // Calendar accent color — teal, matching the nav tab.
-const _kCalendarColor = Color(0xFF00897B);
+const _kCalendarColor = AppTheme.tileTeal;
 
 class HealthReminderEvent {
   final String id;

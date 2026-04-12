@@ -154,24 +154,31 @@ class _HydrationProgressCardState extends State<HydrationProgressCard> {
             child: Row(
               children: [
                 // Progress ring
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: CustomPaint(
-                    painter: _RingPainter(pct: pct, color: color),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('${totalOz.toStringAsFixed(0)}',
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: pct),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOut,
+                  builder: (_, animPct, __) => SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: CustomPaint(
+                      painter: _RingPainter(pct: animPct, color: color),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${(animPct * _goal).toStringAsFixed(0)}',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: color,
-                              )),
-                          Text('of ${_goal.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 9)),
-                        ],
+                              ),
+                            ),
+                            Text('of ${_goal.toStringAsFixed(0)}',
+                                style: const TextStyle(fontSize: 9)),
+                          ],
+                        ),
                       ),
                     ),
                   ),

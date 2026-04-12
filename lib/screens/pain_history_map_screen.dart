@@ -16,6 +16,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/pain_body_map.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class PainHistoryMapScreen extends StatefulWidget {
   const PainHistoryMapScreen({super.key});
@@ -28,7 +29,7 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
   int _days = 30; // 7 / 30 / 90
   String? _highlightEntryId;
 
-  static const Color _accent = Color(0xFFE53935);
+  static const Color _accent = AppTheme.statusRed;
 
   @override
   Widget build(BuildContext context) {
@@ -194,27 +195,10 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
   }
 
   Widget _emptyState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundGray,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.healing_outlined, size: 48, color: AppTheme.textLight),
-          const SizedBox(height: 8),
-          const Text('No pain markers in this window.',
-              style: TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(
-            'Pain entries logged before the body map was added show only as text and won\'t appear here.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: 12, color: AppTheme.textSecondary),
-          ),
-        ],
-      ),
+    return const EmptyStateWidget(
+      icon: Icons.healing_outlined,
+      title: 'No pain markers in this window',
+      subtitle: 'Pain entries logged before the body map was added show only as text and won\'t appear here.',
     );
   }
 

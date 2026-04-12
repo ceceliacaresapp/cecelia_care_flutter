@@ -14,7 +14,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
-import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 
 class FallRiskScreen extends StatefulWidget {
   const FallRiskScreen({super.key});
@@ -148,9 +148,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
                 }
                 if (snapshot.connectionState == ConnectionState.waiting &&
                     !snapshot.hasData) {
-                  return TimedLoadingIndicator(
-                    onRetry: () => setState(() {}),
-                  );
+                  return const SkeletonCard();
                 }
 
                 final assessments = (snapshot.data ?? [])
@@ -250,10 +248,10 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF57C00).withValues(alpha: 0.08),
+              color: AppTheme.tileOrange.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: const Color(0xFFF57C00).withValues(alpha: 0.3)),
+                  color: AppTheme.tileOrange.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,14 +260,14 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFF57C00))),
+                        color: AppTheme.tileOrange)),
                 const SizedBox(height: 6),
                 ...latest.missingProtections.map((s) => Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
                         children: [
                           const Icon(Icons.warning_amber,
-                              size: 14, color: Color(0xFFF57C00)),
+                              size: 14, color: AppTheme.tileOrange),
                           const SizedBox(width: 6),
                           Expanded(
                               child: Text(s,
@@ -330,12 +328,12 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
   Widget _buildForm() {
     // Live score preview color
     final previewColor = _liveScore <= 3
-        ? const Color(0xFF43A047)
+        ? AppTheme.statusGreen
         : _liveScore <= 7
-            ? const Color(0xFFF57C00)
+            ? AppTheme.tileOrange
             : _liveScore <= 12
                 ? const Color(0xFFE64A19)
-                : const Color(0xFFE53935);
+                : AppTheme.statusRed;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -363,9 +361,9 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
 
         // Fall History
         _sectionHeader('Fall History (weighted \u00D72)',
-            color: const Color(0xFFE53935)),
+            color: AppTheme.statusRed),
         ..._buildToggles(_fallHistory, FallRiskAssessment.kFallHistoryLabels,
-            const Color(0xFFE53935)),
+            AppTheme.statusRed),
 
         const SizedBox(height: 16),
 
@@ -379,21 +377,21 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
         // Medication Risks
         _sectionHeader('Medication Risks'),
         ..._buildToggles(_medication, FallRiskAssessment.kMedicationLabels,
-            const Color(0xFFF57C00)),
+            AppTheme.tileOrange),
 
         const SizedBox(height: 16),
 
         // Environmental Hazards
         _sectionHeader('Environmental Hazards'),
         ..._buildToggles(_environmental,
-            FallRiskAssessment.kEnvironmentalLabels, const Color(0xFF795548)),
+            FallRiskAssessment.kEnvironmentalLabels, AppTheme.tileBrown),
 
         const SizedBox(height: 20),
 
         // Protective Measures
         _sectionHeader('Protective Measures', subtitle: 'Check all in place'),
         ..._buildToggles(_protective, FallRiskAssessment.kProtectiveLabels,
-            const Color(0xFF43A047)),
+            AppTheme.statusGreen),
 
         const SizedBox(height: 16),
 
@@ -412,7 +410,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
         ElevatedButton(
           onPressed: _isSaving ? null : _handleSave,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFAD1457),
+            backgroundColor: AppTheme.tilePink,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(

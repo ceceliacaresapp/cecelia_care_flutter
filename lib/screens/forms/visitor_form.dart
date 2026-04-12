@@ -9,6 +9,7 @@ import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/form_section_divider.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _VisitorFormState extends State<VisitorForm> {
   TimeOfDay _visitTime = TimeOfDay.now();
   bool _isSaving = false;
 
-  static const Color _accent = Color(0xFF6A1B9A);
+  static const Color _accent = AppTheme.entryMoodAccent;
 
   static const List<String> _relationships = [
     'Family',
@@ -63,11 +64,11 @@ class _VisitorFormState extends State<VisitorForm> {
 
   static const List<_ResponseOption> _responses = [
     _ResponseOption('positive', 'Positive / engaged',
-        'Smiled, talked, participated', Color(0xFF43A047)),
+        'Smiled, talked, participated', AppTheme.statusGreen),
     _ResponseOption('neutral', 'Neutral / calm',
-        'No change in demeanor', Color(0xFF1E88E5)),
+        'No change in demeanor', AppTheme.tileBlue),
     _ResponseOption('agitated', 'Agitated / anxious',
-        'Restless, irritable, raised voice', Color(0xFFF57C00)),
+        'Restless, irritable, raised voice', AppTheme.tileOrange),
     _ResponseOption('withdrawn', 'Withdrawn / unresponsive',
         'Shut down, would not engage', Color(0xFF757575)),
     _ResponseOption('confused', 'Confused / disoriented',
@@ -160,7 +161,7 @@ class _VisitorFormState extends State<VisitorForm> {
           const SizedBox(height: 20),
 
           // ── Visitor name ───────────────────────────────────
-          _label('Visitor Name'),
+          FormSectionHeader(label: 'Visitor Name', color: _accent),
           const SizedBox(height: 6),
           TextField(
             controller: _nameCtrl,
@@ -175,7 +176,8 @@ class _VisitorFormState extends State<VisitorForm> {
           const SizedBox(height: 20),
 
           // ── Relationship ───────────────────────────────────
-          _label('Relationship'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Relationship', color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
@@ -188,7 +190,8 @@ class _VisitorFormState extends State<VisitorForm> {
           const SizedBox(height: 20),
 
           // ── Visit time ─────────────────────────────────────
-          _label('Visit Time'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Visit Time', color: _accent),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
@@ -218,7 +221,8 @@ class _VisitorFormState extends State<VisitorForm> {
           const SizedBox(height: 20),
 
           // ── Duration ───────────────────────────────────────
-          _label('Duration'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Duration', color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
@@ -231,7 +235,8 @@ class _VisitorFormState extends State<VisitorForm> {
           const SizedBox(height: 20),
 
           // ── Response ───────────────────────────────────────
-          _label('Recipient\'s Response'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: "Recipient's Response", color: _accent),
           const SizedBox(height: 8),
           Column(
             children: _responses.map(_responseRow).toList(),
@@ -239,7 +244,8 @@ class _VisitorFormState extends State<VisitorForm> {
           const SizedBox(height: 20),
 
           // ── Activities ─────────────────────────────────────
-          _label('Activities (select all that apply)'),
+          const FormSectionDivider(),
+          FormSectionHeader(label: 'Activities', color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
@@ -380,12 +386,7 @@ class _VisitorFormState extends State<VisitorForm> {
     );
   }
 
-  Widget _label(String text) => Text(text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppTheme.textSecondary,
-      ));
+  // _label removed — replaced by shared FormSectionHeader
 
   Widget _chip(String label, bool selected, VoidCallback onTap) {
     return GestureDetector(

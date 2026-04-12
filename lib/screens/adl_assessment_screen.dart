@@ -162,19 +162,29 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      CircularProgressIndicator(
-                        value: a.scorePercent,
-                        strokeWidth: 6,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(a.scoreColor),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: a.scorePercent),
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOut,
+                        builder: (_, v, __) => CircularProgressIndicator(
+                          value: v,
+                          strokeWidth: 6,
+                          backgroundColor: Colors.grey.shade200,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(a.scoreColor),
+                        ),
                       ),
-                      Text('${a.totalScore}',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: a.scoreColor,
-                          )),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: a.totalScore.toDouble()),
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOut,
+                        builder: (_, v, __) => Text('${v.toInt()}',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: a.scoreColor,
+                            )),
+                      ),
                     ],
                   ),
                 ),
@@ -264,7 +274,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
         ElevatedButton(
           onPressed: _canSave && !_isSaving ? _handleSave : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1565C0),
+            backgroundColor: AppTheme.tileBlueDark,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(

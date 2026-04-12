@@ -420,7 +420,7 @@ class _ImageAttachPicker extends StatelessWidget {
   final void Function(String id, String url, String title) onSelected;
   final VoidCallback onCleared;
 
-  static const _kColor = Color(0xFF5C6BC0); // indigo
+  static const _kColor = AppTheme.tileIndigo; // indigo
 
   @override
   Widget build(BuildContext context) {

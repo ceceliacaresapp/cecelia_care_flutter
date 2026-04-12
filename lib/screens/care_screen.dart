@@ -5,6 +5,7 @@
 // The grid order is user-customizable via an edit-mode reorder list, saved
 // to SharedPreferences.
 
+import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -43,6 +44,8 @@ import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/services/rxnav_service.dart';
 import 'package:cecelia_care_flutter/locator.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
 import 'package:provider/provider.dart';
 
 class CareScreen extends StatefulWidget {
@@ -245,7 +248,7 @@ class _CareScreenState extends State<CareScreen> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF5C6BC0),
+                          color: AppTheme.tileIndigo,
                         ),
                       ),
                     );
@@ -254,7 +257,7 @@ class _CareScreenState extends State<CareScreen> {
               : null,
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const ImageUploadScreen()),
+            FadeSlideRoute(page: const ImageUploadScreen()),
           ),
         ),
 
@@ -271,7 +274,10 @@ class _CareScreenState extends State<CareScreen> {
               const Spacer(),
               if (_editMode)
                 TextButton.icon(
-                  onPressed: () => setState(() => _editMode = false),
+                  onPressed: () {
+                    HapticUtils.selection();
+                    setState(() => _editMode = false);
+                  },
                   icon: const Icon(Icons.check, size: 14),
                   label: const Text('Done', style: TextStyle(fontSize: 12)),
                   style: TextButton.styleFrom(
@@ -281,7 +287,10 @@ class _CareScreenState extends State<CareScreen> {
                 )
               else
                 TextButton.icon(
-                  onPressed: () => setState(() => _editMode = true),
+                  onPressed: () {
+                    HapticUtils.selection();
+                    setState(() => _editMode = true);
+                  },
                   icon: const Icon(Icons.tune, size: 14),
                   label:
                       const Text('Reorder', style: TextStyle(fontSize: 12)),
@@ -318,7 +327,7 @@ class _CareScreenState extends State<CareScreen> {
         title: l10n.helpfulResourcesTitle,
         color: AppTheme.tileTeal,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const TrainingLibraryScreen())),
+            FadeSlideRoute(page: const TrainingLibraryScreen())),
       ),
       if (role.canAccessBudget)
         _TileSpec(
@@ -346,7 +355,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Emergency Card',
         color: AppTheme.dangerColor,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const EmergencyCardScreen())),
+            FadeSlideRoute(page: const EmergencyCardScreen())),
       ),
       _TileSpec(
         id: 'doctorSummary',
@@ -354,7 +363,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Doctor Summary',
         color: AppTheme.tileIndigo,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const DoctorSummaryScreen())),
+            FadeSlideRoute(page: const DoctorSummaryScreen())),
       ),
       _TileSpec(
         id: 'appointmentPrep',
@@ -362,7 +371,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Appointment Prep',
         color: AppTheme.tileIndigoDark,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const AppointmentPrepScreen())),
+            FadeSlideRoute(page: const AppointmentPrepScreen())),
       ),
       _TileSpec(
         id: 'carePlans',
@@ -370,7 +379,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Care Plans',
         color: AppTheme.tileTeal,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const CarePlanTemplatesScreen())),
+            FadeSlideRoute(page: const CarePlanTemplatesScreen())),
       ),
       _TileSpec(
         id: 'shiftSchedule',
@@ -378,7 +387,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Shift Schedule',
         color: AppTheme.tileBlueDark,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const ShiftScheduleScreen())),
+            FadeSlideRoute(page: const ShiftScheduleScreen())),
       ),
       _TileSpec(
         id: 'documentVault',
@@ -386,7 +395,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Document Vault',
         color: AppTheme.tileIndigo,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const DocumentVaultScreen())),
+            FadeSlideRoute(page: const DocumentVaultScreen())),
       ),
       _TileSpec(
         id: 'respiteFinder',
@@ -394,7 +403,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Respite Finder',
         color: AppTheme.tileTeal,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const RespiteCareFinderScreen())),
+            FadeSlideRoute(page: const RespiteCareFinderScreen())),
       ),
       _TileSpec(
         id: 'adlScore',
@@ -402,7 +411,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'ADL Score',
         color: AppTheme.tileBlueDark,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const AdlAssessmentScreen())),
+            FadeSlideRoute(page: const AdlAssessmentScreen())),
       ),
       _TileSpec(
         id: 'commCards',
@@ -420,7 +429,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Wound Tracker',
         color: AppTheme.statusRed,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const WoundTrackingScreen())),
+            FadeSlideRoute(page: const WoundTrackingScreen())),
       ),
       _TileSpec(
         id: 'behavioralLog',
@@ -428,7 +437,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Behavioral Log',
         color: AppTheme.tileOrangeDeep,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const BehavioralLogScreen())),
+            FadeSlideRoute(page: const BehavioralLogScreen())),
       ),
       _TileSpec(
         id: 'wanderingRisk',
@@ -436,7 +445,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Wandering Risk',
         color: AppTheme.tileRedDeep,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const WanderingRiskScreen())),
+            FadeSlideRoute(page: const WanderingRiskScreen())),
       ),
       _TileSpec(
         id: 'elopement',
@@ -444,7 +453,7 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Elopement Protocol',
         color: AppTheme.statusRedDeep,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const ElopementProtocolScreen())),
+            FadeSlideRoute(page: const ElopementProtocolScreen())),
       ),
       _TileSpec(
         id: 'fallRisk',
@@ -452,37 +461,37 @@ class _CareScreenState extends State<CareScreen> {
         title: 'Fall Risk',
         color: AppTheme.tilePink,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const FallRiskScreen())),
+            FadeSlideRoute(page: const FallRiskScreen())),
       ),
       _TileSpec(
         id: 'skinIntegrity',
         icon: Icons.airline_seat_flat_outlined,
         title: 'Skin Integrity',
-        color: const Color(0xFF00838F),
+        color: AppTheme.entryVitalAccent,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const SkinIntegrityScreen())),
+            FadeSlideRoute(page: const SkinIntegrityScreen())),
       ),
       _TileSpec(
         id: 'weightTrends',
         icon: Icons.monitor_weight_outlined,
         title: 'Weight Trends',
-        color: const Color(0xFF00695C),
+        color: AppTheme.entryActivityAccent,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const WeightTrendScreen())),
+            FadeSlideRoute(page: const WeightTrendScreen())),
       ),
       _TileSpec(
         id: 'taskBoard',
         icon: Icons.task_alt_outlined,
         title: 'Task Board',
-        color: const Color(0xFF0277BD),
+        color: AppTheme.tileBlueDark,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const TaskDelegationScreen())),
+            FadeSlideRoute(page: const TaskDelegationScreen())),
       ),
       _TileSpec(
         id: 'dischargePlan',
         icon: Icons.assignment_turned_in_outlined,
         title: 'Discharge Plan',
-        color: const Color(0xFF1565C0),
+        color: AppTheme.tileBlueDark,
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -492,7 +501,7 @@ class _CareScreenState extends State<CareScreen> {
         id: 'cognitiveScreen',
         icon: Icons.psychology_alt_outlined,
         title: 'Cognitive Screen',
-        color: const Color(0xFF7B1FA2),
+        color: AppTheme.entryMoodAccent,
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -502,9 +511,9 @@ class _CareScreenState extends State<CareScreen> {
         id: 'painMap',
         icon: Icons.accessibility_outlined,
         title: 'Pain Map',
-        color: const Color(0xFFE53935),
+        color: AppTheme.statusRed,
         onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const PainHistoryMapScreen())),
+            FadeSlideRoute(page: const PainHistoryMapScreen())),
       ),
     ];
   }
@@ -523,11 +532,14 @@ class _CareScreenState extends State<CareScreen> {
       itemCount: tiles.length,
       itemBuilder: (_, i) {
         final t = tiles[i];
-        return CompactGridTile(
-          icon: t.icon,
-          title: t.title,
-          color: t.color,
-          onTap: t.onTap,
+        return StaggeredFadeIn(
+          index: i,
+          child: CompactGridTile(
+            icon: t.icon,
+            title: t.title,
+            color: t.color,
+            onTap: t.onTap,
+          ),
         );
       },
     );

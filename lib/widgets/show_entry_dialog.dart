@@ -1,5 +1,6 @@
 // lib/widgets/show_entry_dialog.dart
 
+import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -25,6 +26,7 @@ import 'package:cecelia_care_flutter/providers/custom_entry_types_provider.dart'
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
+import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
 
 // Opens a form as a modal bottom sheet (popping the picker screen first).
 void _showFormSheet(BuildContext context, Widget form) {
@@ -96,8 +98,7 @@ void showEntryDialog(
   }
 
   Navigator.of(context, rootNavigator: true).push(
-    MaterialPageRoute(
-      builder: (_) => _AddLogScreen(
+    FadeSlideRoute(page: _AddLogScreen(
         l10n: l10n,
         activeElder: activeElder,
         journalService: journalService,
@@ -388,11 +389,14 @@ class _AddLogScreen extends StatelessWidget {
           itemCount: tiles.length,
           itemBuilder: (_, i) {
             final t = tiles[i];
-            return CompactGridTile(
-              icon: t.icon,
-              title: t.label,
-              color: t.color,
-              onTap: t.onTap,
+            return StaggeredFadeIn(
+              index: i,
+              child: CompactGridTile(
+                icon: t.icon,
+                title: t.label,
+                color: t.color,
+                onTap: t.onTap,
+              ),
             );
           },
         ),

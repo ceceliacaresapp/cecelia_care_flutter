@@ -7,6 +7,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
+import 'package:cecelia_care_flutter/widgets/form_section_divider.dart';
 import 'package:cecelia_care_flutter/widgets/pain_body_map.dart';
 import 'package:cecelia_care_flutter/screens/pain_history_map_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -347,7 +348,7 @@ class _PainFormState extends State<PainForm> {
                             color: AppTheme.textSecondary),
                       ),
                     ),
-                  const SizedBox(height: 20),
+                  const FormSectionDivider(),
                   Text(
                     '${_l10n.painFormLabelDescription}*',
                     style: _theme.textTheme.bodyLarge
@@ -458,7 +459,7 @@ class _PainFormState extends State<PainForm> {
                       },
                     ),
                   ],
-                  const SizedBox(height: 20),
+                  const FormSectionDivider(),
                   Text(
                     _l10n.formLabelNotesOptional,
                     style: _theme.textTheme.bodyLarge

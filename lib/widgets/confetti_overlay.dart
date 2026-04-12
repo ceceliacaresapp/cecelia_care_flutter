@@ -6,6 +6,7 @@
 //
 // Uses the `confetti` package (^0.7.0).
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 
@@ -95,13 +96,13 @@ class _ConfettiOverlayState extends State<ConfettiOverlay> {
               minBlastForce: 10,
               gravity: 0.15,
               colors: const [
-                Color(0xFFE91E63), // pink
-                Color(0xFF1E88E5), // blue
-                Color(0xFF43A047), // green
-                Color(0xFFFFC107), // gold
-                Color(0xFF8E24AA), // purple
-                Color(0xFFF57C00), // orange
-                Color(0xFF00897B), // teal
+                AppTheme.tilePinkBright, // pink
+                AppTheme.tileBlue, // blue
+                AppTheme.statusGreen, // green
+                AppTheme.tileGold, // gold
+                AppTheme.tilePurple, // purple
+                AppTheme.tileOrange, // orange
+                AppTheme.tileTeal, // teal
               ],
             ),
           ),

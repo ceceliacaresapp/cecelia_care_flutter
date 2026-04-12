@@ -16,4 +16,10 @@ class HapticUtils {
 
   /// Light impact — delete confirmations, warnings, dismissals.
   static Future<void> warning() => HapticFeedback.lightImpact();
+
+  /// Selection click — tab switches, segment toggles, picker changes.
+  static Future<void> selection() => HapticFeedback.selectionClick();
+
+  /// Lightest tap — tile presses, list item taps, micro-interactions.
+  static Future<void> tap() => HapticFeedback.lightImpact();
 }

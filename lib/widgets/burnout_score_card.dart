@@ -19,9 +19,9 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 // ---------------------------------------------------------------------------
 // Color scheme per risk level
 // ---------------------------------------------------------------------------
-const _kGreenColor = Color(0xFF43A047);
+const _kGreenColor = AppTheme.statusGreen;
 const _kYellowColor = Color(0xFFF9A825);
-const _kRedColor = Color(0xFFE53935);
+const _kRedColor = AppTheme.statusRed;
 
 Color _colorForLevel(BurnoutRiskLevel level) {
   switch (level) {

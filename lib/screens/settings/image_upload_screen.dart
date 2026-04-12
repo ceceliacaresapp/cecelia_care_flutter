@@ -16,7 +16,7 @@ import '../../providers/journal_service_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_styles.dart';
 
-const _kImageColor = Color(0xFF5C6BC0); // indigo — matches Care screen tile
+const _kImageColor = AppTheme.tileIndigo; // indigo — matches Care screen tile
 
 // ---------------------------------------------------------------------------
 // Screen

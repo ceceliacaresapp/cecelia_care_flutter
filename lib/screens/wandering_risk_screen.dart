@@ -13,7 +13,7 @@ import 'package:cecelia_care_flutter/models/wandering_assessment.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
-import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 
 class WanderingRiskScreen extends StatefulWidget {
@@ -132,9 +132,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
                 }
                 if (snapshot.connectionState == ConnectionState.waiting &&
                     !snapshot.hasData) {
-                  return TimedLoadingIndicator(
-                    onRetry: () => setState(() {}),
-                  );
+                  return const SkeletonCard();
                 }
 
                 final assessments = (snapshot.data ?? [])
@@ -223,10 +221,10 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF57C00).withValues(alpha: 0.08),
+              color: AppTheme.tileOrange.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: const Color(0xFFF57C00).withValues(alpha: 0.3)),
+                  color: AppTheme.tileOrange.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,14 +233,14 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFFF57C00))),
+                        color: AppTheme.tileOrange)),
                 const SizedBox(height: 6),
                 ...latest.missingSafeguards.map((s) => Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
                         children: [
                           const Icon(Icons.warning_amber,
-                              size: 14, color: Color(0xFFF57C00)),
+                              size: 14, color: AppTheme.tileOrange),
                           const SizedBox(width: 6),
                           Expanded(
                               child: Text(s,
@@ -330,7 +328,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
               value: _riskFactors[e.key]!,
               onChanged: (v) =>
                   setState(() => _riskFactors[e.key] = v),
-              activeColor: const Color(0xFFE53935),
+              activeColor: AppTheme.statusRed,
             )),
 
         const SizedBox(height: 20),
@@ -354,7 +352,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
               value: _safeguards[e.key]!,
               onChanged: (v) =>
                   setState(() => _safeguards[e.key] = v),
-              activeColor: const Color(0xFF43A047),
+              activeColor: AppTheme.statusGreen,
             )),
 
         const SizedBox(height: 20),
@@ -395,7 +393,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
         ElevatedButton(
           onPressed: _isSaving ? null : _handleSave,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFD84315),
+            backgroundColor: AppTheme.tileRedDeep,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(

@@ -6,6 +6,7 @@ import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
+import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/utils/string_extensions.dart';
@@ -223,6 +224,14 @@ class JournalServiceProvider extends ChangeNotifier {
               'JournalServiceProvider: error triggering badge check: '
               '$badgeError');
         }
+
+        // Request notification permission after the user's first real
+        // action — not at app startup. This fires at most once (gated
+        // by SharedPreferences inside requestPermissionIfNeeded).
+        try {
+          await NotificationService.instance.requestPermissionIfNeeded();
+        } catch (_) {}
+
         notifyListeners();
         return resultData;
       }

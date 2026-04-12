@@ -13,7 +13,7 @@ import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 
-const _kHandoffColor = Color(0xFF00897B);
+const _kHandoffColor = AppTheme.tileTeal;
 
 class HandoffForm extends StatefulWidget {
   final String currentDate;

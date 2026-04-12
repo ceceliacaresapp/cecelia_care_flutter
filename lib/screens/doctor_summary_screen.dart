@@ -23,7 +23,7 @@ import 'package:cecelia_care_flutter/services/export_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 
-const _kColor = Color(0xFF5C6BC0); // indigo — matches export screen
+const _kColor = AppTheme.tileIndigo; // indigo — matches export screen
 
 // Entry types meaningful for a doctor review. Excludes expense, message,
 // caregiver journal, and image — those are internal caregiver tools.
@@ -354,14 +354,14 @@ class _EntryCountChips extends StatelessWidget {
   };
 
   static const _typeColors = {
-    EntryType.medication: Color(0xFF1E88E5),
-    EntryType.vital: Color(0xFFF57C00),
-    EntryType.pain: Color(0xFFE53935),
-    EntryType.sleep: Color(0xFF5C6BC0),
-    EntryType.mood: Color(0xFFE91E63),
-    EntryType.meal: Color(0xFF43A047),
-    EntryType.activity: Color(0xFF00897B),
-    EntryType.handoff: Color(0xFF00897B),
+    EntryType.medication: AppTheme.tileBlue,
+    EntryType.vital: AppTheme.tileOrange,
+    EntryType.pain: AppTheme.statusRed,
+    EntryType.sleep: AppTheme.tileIndigo,
+    EntryType.mood: AppTheme.tilePinkBright,
+    EntryType.meal: AppTheme.statusGreen,
+    EntryType.activity: AppTheme.tileTeal,
+    EntryType.handoff: AppTheme.tileTeal,
   };
 
   @override
@@ -438,7 +438,7 @@ class _KeyHighlights extends StatelessWidget {
       if (value.isNotEmpty) {
         highlights.add(_Highlight(
           icon: Icons.monitor_heart_outlined,
-          color: const Color(0xFFF57C00),
+          color: AppTheme.tileOrange,
           label: vt,
           value:
               unit.isNotEmpty ? '$value $unit' : value,
@@ -462,7 +462,7 @@ class _KeyHighlights extends StatelessWidget {
     if (highestPain != null) {
       highlights.add(_Highlight(
         icon: Icons.healing_outlined,
-        color: const Color(0xFFE53935),
+        color: AppTheme.statusRed,
         label: 'Peak pain${painLocation != null ? ' ($painLocation)' : ''}',
         value: '$highestPain / 10',
       ));
@@ -477,7 +477,7 @@ class _KeyHighlights extends StatelessWidget {
     if (medNames.isNotEmpty) {
       highlights.add(_Highlight(
         icon: Icons.medication_outlined,
-        color: const Color(0xFF1E88E5),
+        color: AppTheme.tileBlue,
         label: '${medNames.length} medication${medNames.length == 1 ? '' : 's'} logged',
         value: medNames.take(3).join(', ') +
             (medNames.length > 3 ? ' +${medNames.length - 3} more' : ''),
@@ -496,7 +496,7 @@ class _KeyHighlights extends StatelessWidget {
           sleepValues.reduce((a, b) => a + b) / sleepValues.length;
       highlights.add(_Highlight(
         icon: Icons.bedtime_outlined,
-        color: const Color(0xFF5C6BC0),
+        color: AppTheme.tileIndigo,
         label: 'Avg sleep (${sleepValues.length} night${sleepValues.length == 1 ? '' : 's'})',
         value: '${avg.toStringAsFixed(1)} hrs',
       ));
@@ -508,7 +508,7 @@ class _KeyHighlights extends StatelessWidget {
     if (handoffCount > 0) {
       highlights.add(_Highlight(
         icon: Icons.swap_horiz_outlined,
-        color: const Color(0xFF00897B),
+        color: AppTheme.tileTeal,
         label: 'Shift handoffs',
         value: handoffCount.toString(),
       ));

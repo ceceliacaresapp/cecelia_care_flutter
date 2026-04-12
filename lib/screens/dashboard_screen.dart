@@ -2,6 +2,7 @@
 //
 // The home dashboard — first tab the user lands on.
 
+import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -41,9 +42,15 @@ import 'package:cecelia_care_flutter/widgets/symptom_insights_card.dart';
 import 'package:cecelia_care_flutter/widgets/med_schedule_timeline.dart';
 import 'package:cecelia_care_flutter/widgets/orientation_board_card.dart';
 import 'package:cecelia_care_flutter/widgets/task_summary_card.dart';
+import 'package:cecelia_care_flutter/widgets/time_since_card.dart';
+import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
+import 'package:cecelia_care_flutter/widgets/correlation_insights_card.dart';
 import 'package:cecelia_care_flutter/widgets/duty_timer_card.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
+import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
 import 'package:cecelia_care_flutter/widgets/weekly_team_summary_card.dart';
 import 'package:cecelia_care_flutter/widgets/weight_trend_card.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 import 'package:cecelia_care_flutter/widgets/adherence_summary_card.dart';
 import 'package:cecelia_care_flutter/widgets/hydration_progress_card.dart';
 import 'package:cecelia_care_flutter/screens/weight_trend_screen.dart';
@@ -490,8 +497,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             levelTitle: gamProv.levelTitle,
             hasCheckedInToday: wellProv.hasCheckedInToday,
             onTap: () => Navigator.of(ctx).push(
-              MaterialPageRoute(
-                  builder: (_) => const WellnessCheckinScreen()),
+              FadeSlideRoute(page: const WellnessCheckinScreen()),
             ),
           );
         }),
@@ -558,7 +564,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData) {
-                    return const _TodayLoadingCard();
+                    return const SkeletonDashboardSection();
                   }
                   return _TodaySummaryGrid(entries: snapshot.data ?? []);
                 },
@@ -587,7 +593,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               }
               if (snapshot.connectionState == ConnectionState.waiting &&
                   !snapshot.hasData) {
-                return const _TodayLoadingCard();
+                return const SkeletonDashboardSection();
               }
               return _TodaySummaryGrid(entries: snapshot.data ?? []);
             },
@@ -599,7 +605,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _SectionLabel(
           label: 'Achievements',
           onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const BadgesScreen())),
+              FadeSlideRoute(page: const BadgesScreen())),
         ),
         const SizedBox(height: 10),
         const BadgesRow(),
@@ -670,9 +676,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _SectionLabel(label: 'Med schedule'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 MedScheduleTimeline(),
               ],
             );
@@ -685,6 +691,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 10),
         const DutyTimerCard(),
       ],
+      'timeSince': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Time since last'),
+          const SizedBox(height: 10),
+          const TimeSinceCard(),
+        ];
+      },
+      'correlationInsights': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 20),
+          const _SectionLabel(label: 'Insights'),
+          const SizedBox(height: 10),
+          const CorrelationInsightsCard(),
+        ];
+      },
       'weightTrend': () {
         if (isMultiView) return <Widget>[];
         return <Widget>[
@@ -692,8 +716,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _SectionLabel(
             label: 'Weight trend',
             onTap: () => Navigator.push(context,
-                MaterialPageRoute(
-                    builder: (_) => const WeightTrendScreen())),
+                FadeSlideRoute(page: const WeightTrendScreen())),
           ),
           const SizedBox(height: 10),
           const WeightTrendCard(),
@@ -706,8 +729,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _SectionLabel(
             label: 'Med adherence',
             onTap: () => Navigator.push(context,
-                MaterialPageRoute(
-                    builder: (_) => const MedicationAdherenceScreen())),
+                FadeSlideRoute(page: const MedicationAdherenceScreen())),
           ),
           const SizedBox(height: 10),
           const AdherenceSummaryCard(),
@@ -754,6 +776,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Use saved order, or defaults if not loaded yet.
     final order = _sectionConfig ?? kDefaultSections;
     final widgets = <Widget>[];
+    int sectionIdx = 0;
 
     // Track which sections were hidden because they aren't compatible
     // with multi-elder view (e.g. WeightTrendCard, AdherenceSummaryCard,
@@ -772,8 +795,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final result = builder();
       if (result.isEmpty && isMultiView && _isMultiViewIncompatible(key)) {
         hiddenInMultiView.add(_friendlySectionLabel(key));
-      } else {
-        widgets.addAll(result);
+      } else if (result.isNotEmpty) {
+        widgets.add(StaggeredFadeIn(
+          index: sectionIdx++,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: result,
+          ),
+        ));
       }
     }
 
@@ -858,8 +887,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onPressed: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (_) => const DashboardSettingsScreen()),
+                  FadeSlideRoute(page: const DashboardSettingsScreen()),
                 );
                 // Reload config when returning from settings
                 _loadSectionConfig();
@@ -1198,7 +1226,7 @@ class _QuickActionsGrid extends StatelessWidget {
       itemCount: actions.length,
       itemBuilder: (context, i) {
         final action = actions[i];
-        return GestureDetector(
+        return TapScaleWrapper(
           onTap: action.onTap,
           child: Container(
             decoration: BoxDecoration(
@@ -1264,19 +1292,11 @@ class _TodaySummaryGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Center(
-          child: Text(
-            'No entries logged today yet.\nTap a quick log button below to get started.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-          ),
-        ),
+      return const EmptyStateWidget(
+        icon: Icons.edit_note_outlined,
+        title: 'No entries logged today yet',
+        subtitle: 'Tap a quick log button below to get started.',
+        compact: true,
       );
     }
 
@@ -1368,17 +1388,7 @@ class _EntryTypeChip extends StatelessWidget {
 // the current user, with a button to open the full journal screen.
 // ---------------------------------------------------------------------------
 
-class _TodayLoadingCard extends StatelessWidget {
-  const _TodayLoadingCard();
-  @override
-  Widget build(BuildContext context) => Container(
-        height: 80,
-        decoration: BoxDecoration(
-            color: AppTheme.backgroundGray,
-            borderRadius: BorderRadius.circular(12)),
-        child: const Center(child: CircularProgressIndicator()),
-      );
-}
+// _TodayLoadingCard removed — replaced by SkeletonDashboardSection
 
 // ---------------------------------------------------------------------------
 // Badge info dialog — shown when tapping any badge (locked or unlocked)

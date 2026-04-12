@@ -11,10 +11,11 @@
 //
 // Pure presentation — accepts all data via constructor, no provider reads.
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-const _kCardColor = Color(0xFF8E24AA); // purple — matches Self Care
+const _kCardColor = AppTheme.tilePurple; // purple — matches Self Care
 
 class WellnessSummaryCard extends StatelessWidget {
   const WellnessSummaryCard({
@@ -53,11 +54,11 @@ class WellnessSummaryCard extends StatelessWidget {
   Color get _riskColor {
     switch (burnoutRiskLevel) {
       case 'green':
-        return const Color(0xFF43A047);
+        return AppTheme.statusGreen;
       case 'yellow':
         return const Color(0xFFF9A825);
       case 'red':
-        return const Color(0xFFE53935);
+        return AppTheme.statusRed;
       default:
         return _kCardColor;
     }
@@ -132,12 +133,17 @@ class WellnessSummaryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: _riskColor.withValues(alpha: 0.3)),
                   ),
-                  child: Text(
-                    '${wellbeingScore.toInt()}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: _riskColor,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: wellbeingScore),
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOut,
+                    builder: (_, v, __) => Text(
+                      '${v.toInt()}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: _riskColor,
+                      ),
                     ),
                   ),
                 ),
@@ -170,7 +176,7 @@ class WellnessSummaryCard extends StatelessWidget {
                       icon: Icons.arrow_upward,
                       label: bestDim,
                       value: bestVal,
-                      color: const Color(0xFF43A047),
+                      color: AppTheme.statusGreen,
                     ),
                   if (bestDim != null && worstDim != null)
                     const SizedBox(width: 10),
@@ -179,7 +185,7 @@ class WellnessSummaryCard extends StatelessWidget {
                       icon: Icons.arrow_downward,
                       label: worstDim,
                       value: worstVal,
-                      color: const Color(0xFFE53935),
+                      color: AppTheme.statusRed,
                     ),
                 ],
               ),
@@ -192,14 +198,14 @@ class WellnessSummaryCard extends StatelessWidget {
                 // Streak
                 if (currentStreak > 0) ...[
                   Icon(Icons.local_fire_department,
-                      size: 14, color: const Color(0xFFF57C00)),
+                      size: 14, color: AppTheme.tileOrange),
                   const SizedBox(width: 3),
                   Text(
                     '$currentStreak day${currentStreak == 1 ? '' : 's'}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFF57C00),
+                      color: AppTheme.tileOrange,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -231,7 +237,7 @@ class WellnessSummaryCard extends StatelessWidget {
                       children: [
                         Icon(Icons.add_circle_outline,
                             size: 12, color: _kCardColor),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
                           'Check in',
                           style: TextStyle(
@@ -245,7 +251,7 @@ class WellnessSummaryCard extends StatelessWidget {
                   )
                 else
                   const Icon(Icons.check_circle,
-                      size: 16, color: Color(0xFF43A047)),
+                      size: 16, color: AppTheme.statusGreen),
               ],
             ),
           ],

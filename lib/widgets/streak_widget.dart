@@ -15,8 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // Accent color — warm orange for streaks
-const _kStreakColor = Color(0xFFF57C00);
-const _kStreakMilestoneColor = Color(0xFFE53935);
+const _kStreakColor = AppTheme.tileOrange;
+const _kStreakMilestoneColor = AppTheme.statusRed;
 const _kFreezeColor = Color(0xFF42A5F5);
 
 class StreakWidget extends StatelessWidget {

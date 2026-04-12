@@ -36,15 +36,15 @@ class InsuranceTrackerCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1565C0).withValues(alpha: 0.06),
+          color: AppTheme.tileBlueDark.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: const Color(0xFF1565C0).withValues(alpha: 0.25)),
+              color: AppTheme.tileBlueDark.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             const Icon(Icons.health_and_safety_outlined,
-                color: Color(0xFF1565C0), size: 28),
+                color: AppTheme.tileBlueDark, size: 28),
             const SizedBox(width: 12),
             const Expanded(
               child: Column(
@@ -53,7 +53,7 @@ class InsuranceTrackerCard extends StatelessWidget {
                   Text('Track your insurance progress',
                       style: TextStyle(
                           fontWeight: FontWeight.w800, fontSize: 14)),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     'Set your annual deductible and out-of-pocket max to see how close you are to insurance picking up the rest.',
                     style: TextStyle(
@@ -66,7 +66,7 @@ class InsuranceTrackerCard extends StatelessWidget {
             ElevatedButton(
               onPressed: onSetup,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
+                backgroundColor: AppTheme.tileBlueDark,
                 foregroundColor: Colors.white,
                 visualDensity: VisualDensity.compact,
               ),
@@ -109,7 +109,7 @@ class InsuranceTrackerCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: const Color(0xFF1565C0).withValues(alpha: 0.25)),
+            color: AppTheme.tileBlueDark.withValues(alpha: 0.25)),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -125,11 +125,11 @@ class InsuranceTrackerCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1565C0).withValues(alpha: 0.12),
+                  color: AppTheme.tileBlueDark.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.health_and_safety_outlined,
-                    color: Color(0xFF1565C0), size: 18),
+                    color: AppTheme.tileBlueDark, size: 18),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -151,7 +151,7 @@ class InsuranceTrackerCard extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined,
-                    color: Color(0xFF1565C0), size: 18),
+                    color: AppTheme.tileBlueDark, size: 18),
                 tooltip: 'Edit insurance settings',
                 onPressed: onSetup,
                 padding: EdgeInsets.zero,
@@ -168,9 +168,9 @@ class InsuranceTrackerCard extends StatelessWidget {
             max: p.deductibleAmount,
             progress: deductibleProgress,
             color: deductibleHit
-                ? const Color(0xFF43A047)
+                ? AppTheme.statusGreen
                 : (deductibleProgress > 0.6
-                    ? const Color(0xFFF57C00)
+                    ? AppTheme.tileOrange
                     : Colors.grey.shade500),
             celebration: deductibleHit
                 ? 'Deductible met — insurance starts paying more!'
@@ -185,9 +185,9 @@ class InsuranceTrackerCard extends StatelessWidget {
             max: p.outOfPocketMax,
             progress: oopProgress,
             color: oopHit
-                ? const Color(0xFF43A047)
+                ? AppTheme.statusGreen
                 : (oopProgress > 0.75
-                    ? const Color(0xFF1E88E5)
+                    ? AppTheme.tileBlue
                     : Colors.grey.shade500),
             celebration: oopHit
                 ? 'Max reached — everything else is covered!'
@@ -205,21 +205,21 @@ class InsuranceTrackerCard extends StatelessWidget {
                 child: _Stat(
                   label: 'YTD medical',
                   value: _money.format(ytdMedicalSpend),
-                  color: const Color(0xFF1565C0),
+                  color: AppTheme.tileBlueDark,
                 ),
               ),
               Expanded(
                 child: _Stat(
                   label: 'Tax-deductible',
                   value: _money.format(ytdTaxDeductible),
-                  color: const Color(0xFF7B1FA2),
+                  color: AppTheme.entryMoodAccent,
                 ),
               ),
               Expanded(
                 child: _Stat(
                   label: 'Monthly avg',
                   value: _money.format(monthlyAverage),
-                  color: const Color(0xFFF57C00),
+                  color: AppTheme.tileOrange,
                 ),
               ),
             ],

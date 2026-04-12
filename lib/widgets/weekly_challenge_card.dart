@@ -16,8 +16,8 @@ import 'package:cecelia_care_flutter/models/weekly_challenge.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // Challenge accent — teal
-const _kChallengeColor = Color(0xFF00897B);
-const _kCompletedColor = Color(0xFF43A047);
+const _kChallengeColor = AppTheme.tileTeal;
+const _kCompletedColor = AppTheme.statusGreen;
 
 class WeeklyChallengeCard extends StatelessWidget {
   const WeeklyChallengeCard({

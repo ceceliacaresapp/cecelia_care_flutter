@@ -11,6 +11,8 @@ import 'package:cecelia_care_flutter/models/medication_entry.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class MedicationAdherenceScreen extends StatefulWidget {
   const MedicationAdherenceScreen({super.key});
@@ -50,7 +52,7 @@ class _MedicationAdherenceScreenState
                 }
                 if (snapshot.connectionState == ConnectionState.waiting &&
                     !snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const SkeletonCard(height: 200);
                 }
 
                 final allEntries = snapshot.data ?? [];
@@ -68,6 +70,14 @@ class _MedicationAdherenceScreenState
   }
 
   Widget _buildContent(List<MedicationEntry> entries) {
+    if (entries.isEmpty) {
+      return const EmptyStateWidget(
+        icon: Icons.medication_outlined,
+        title: 'No medications tracked',
+        subtitle: 'Add medications in the Manage Medications screen.',
+      );
+    }
+
     // Group by medication name.
     final grouped = <String, List<MedicationEntry>>{};
     for (final e in entries) {

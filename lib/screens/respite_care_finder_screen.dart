@@ -31,7 +31,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
   List<RespiteProvider> _national = [];
   String? _error;
 
-  static const _kAccent = Color(0xFF00897B);
+  static const _kAccent = AppTheme.tileTeal;
 
   @override
   void dispose() {
@@ -154,7 +154,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
                 title: 'Clinical Facilities',
                 subtitle: '${_clinical.length} Medicare-verified',
                 icon: Icons.local_hospital_outlined,
-                color: const Color(0xFFE53935),
+                color: AppTheme.statusRed,
               ),
               const SizedBox(height: 8),
               ..._clinical.map((p) => _ProviderCard(provider: p)),
@@ -217,7 +217,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
               title: 'National Resources',
               subtitle: 'Hotlines & directories',
               icon: Icons.phone_in_talk_outlined,
-              color: const Color(0xFF8E24AA),
+              color: AppTheme.tilePurple,
             ),
             const SizedBox(height: 8),
             ..._national.map((p) => _ProviderCard(provider: p)),
@@ -736,7 +736,7 @@ class _ProviderCard extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: provider.source == 'cms_api'
-                      ? const Color(0xFF1E88E5).withValues(alpha: 0.1)
+                      ? AppTheme.tileBlue.withValues(alpha: 0.1)
                       : _RespiteCareFinderScreenState._kAccent
                           .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -747,7 +747,7 @@ class _ProviderCard extends StatelessWidget {
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
                     color: provider.source == 'cms_api'
-                        ? const Color(0xFF1E88E5)
+                        ? AppTheme.tileBlue
                         : _RespiteCareFinderScreenState._kAccent,
                   ),
                 ),
@@ -822,7 +822,7 @@ class _ProviderCard extends StatelessWidget {
                   _ActionChip(
                     icon: Icons.phone_outlined,
                     label: provider.phone!,
-                    color: const Color(0xFF43A047),
+                    color: AppTheme.statusGreen,
                     onTap: () => _launchPhone(provider.phone!),
                   ),
                 if (hasPhone && hasWeb) const SizedBox(width: 8),
@@ -830,7 +830,7 @@ class _ProviderCard extends StatelessWidget {
                   _ActionChip(
                     icon: Icons.open_in_new,
                     label: 'Website',
-                    color: const Color(0xFF1E88E5),
+                    color: AppTheme.tileBlue,
                     onTap: () => _launchUrl(provider.website!),
                   ),
                 const Spacer(),

@@ -13,8 +13,10 @@ import 'package:cecelia_care_flutter/models/behavioral_entry.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class BehavioralLogScreen extends StatefulWidget {
   const BehavioralLogScreen({super.key});
@@ -55,7 +57,7 @@ class _BehavioralLogScreenState extends State<BehavioralLogScreen> {
       appBar: AppBar(title: const Text('Behavioral Log')),
       floatingActionButton: FloatingActionButton(
         onPressed: _openLogForm,
-        backgroundColor: const Color(0xFFE65100),
+        backgroundColor: AppTheme.tileOrangeDeep,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: elderId.isEmpty
@@ -74,7 +76,12 @@ class _BehavioralLogScreenState extends State<BehavioralLogScreen> {
                 }
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: List.generate(4, (_) => const SkeletonListTile()),
+            ),
+          );
         }
 
         final entries = (snapshot.data ?? [])
@@ -83,25 +90,10 @@ class _BehavioralLogScreenState extends State<BehavioralLogScreen> {
             .toList();
 
         if (entries.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.psychology_outlined,
-                      size: 48, color: Colors.grey.shade300),
-                  const SizedBox(height: 12),
-                  const Text('No behavioral observations logged yet.',
-                      style: TextStyle(fontSize: 16)),
-                  const Text(
-                    'Tap + to document a behavior episode.\nTracking patterns helps doctors adjust care plans.',
-                    style: TextStyle(color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
+          return const EmptyStateWidget(
+            icon: Icons.psychology_outlined,
+            title: 'No behaviors logged',
+            subtitle: 'Tracking patterns helps identify triggers.',
           );
         }
 
@@ -358,7 +350,7 @@ class _BehavioralLogFormState extends State<_BehavioralLogForm> {
             children: BehavioralEntry.kBehaviorTypes
                 .map((t) => _selectionChip(
                     t, _selectedType == t, () => setState(() => _selectedType = t),
-                    const Color(0xFFE65100)))
+                    AppTheme.tileOrangeDeep))
                 .toList(),
           ),
           const SizedBox(height: 16),
@@ -457,7 +449,7 @@ class _BehavioralLogFormState extends State<_BehavioralLogForm> {
                 .map((t) => _selectionChip(
                     t, _selectedTrigger == t,
                     () => setState(() => _selectedTrigger = t),
-                    const Color(0xFF1565C0)))
+                    AppTheme.tileBlueDark))
                 .toList(),
           ),
           const SizedBox(height: 16),
@@ -472,7 +464,7 @@ class _BehavioralLogFormState extends State<_BehavioralLogForm> {
                 .map((t) => _selectionChip(
                     t, _selectedTechnique == t,
                     () => setState(() => _selectedTechnique = t),
-                    const Color(0xFF00897B)))
+                    AppTheme.tileTeal))
                 .toList(),
           ),
           const SizedBox(height: 16),
@@ -509,7 +501,7 @@ class _BehavioralLogFormState extends State<_BehavioralLogForm> {
           ElevatedButton(
             onPressed: _canSave && !_isSaving ? _handleSave : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE65100),
+              backgroundColor: AppTheme.tileOrangeDeep,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(

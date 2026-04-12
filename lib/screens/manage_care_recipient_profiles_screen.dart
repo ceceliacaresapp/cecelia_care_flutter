@@ -399,7 +399,7 @@ class _ManageCareRecipientProfilesScreenState
                   _ActionChip(
                     icon: Icons.person_add_alt_1_outlined,
                     label: 'Invite',
-                    color: const Color(0xFF00897B),
+                    color: AppTheme.tileTeal,
                     onTap: () => _showInviteDialog(profile),
                   ),
               ],
@@ -541,12 +541,12 @@ class _ManageCareRecipientProfilesScreenState
                             horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: isAdmin
-                              ? const Color(0xFF1E88E5).withValues(alpha: 0.04)
+                              ? AppTheme.tileBlue.withValues(alpha: 0.04)
                               : AppTheme.backgroundGray,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: isAdmin
-                                ? const Color(0xFF1E88E5).withValues(alpha: 0.2)
+                                ? AppTheme.tileBlue.withValues(alpha: 0.2)
                                 : AppTheme.textLight.withValues(alpha: 0.3),
                           ),
                         ),
@@ -578,7 +578,7 @@ class _ManageCareRecipientProfilesScreenState
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: recentlyActive
-                                                ? const Color(0xFF43A047)
+                                                ? AppTheme.statusGreen
                                                 : AppTheme.textLight,
                                             fontStyle: FontStyle.italic,
                                           ),
@@ -613,7 +613,7 @@ class _ManageCareRecipientProfilesScreenState
                               const Padding(
                                 padding: EdgeInsets.only(right: 8),
                                 child: Icon(Icons.shield_outlined,
-                                    size: 18, color: Color(0xFF1E88E5)),
+                                    size: 18, color: AppTheme.tileBlue),
                               ),
                           ],
                         ),
@@ -940,11 +940,11 @@ class _RoleBadge extends StatelessWidget {
   Color _colorForRole(CaregiverRole r) {
     switch (r) {
       case CaregiverRole.admin:
-        return const Color(0xFF1E88E5);
+        return AppTheme.tileBlue;
       case CaregiverRole.caregiver:
-        return const Color(0xFF00897B);
+        return AppTheme.tileTeal;
       case CaregiverRole.viewer:
-        return const Color(0xFF8E24AA);
+        return AppTheme.tilePurple;
       default:
         return AppTheme.textSecondary;
     }

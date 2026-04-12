@@ -80,8 +80,8 @@ class SymptomAnalyticsScreen extends StatelessWidget {
                           aggregates: analytics.dailyAggregates,
                           selector: (a) => a.painCount > 0 ? a.avgPain : null,
                           maxValue: 10,
-                          goodColor: const Color(0xFF43A047),
-                          badColor: const Color(0xFFE53935),
+                          goodColor: AppTheme.statusGreen,
+                          badColor: AppTheme.statusRed,
                           invertColors: true,
                         ),
                         const SizedBox(height: 20),
@@ -94,8 +94,8 @@ class SymptomAnalyticsScreen extends StatelessWidget {
                           aggregates: analytics.dailyAggregates,
                           selector: (a) => a.moodCount > 0 ? a.avgMood : null,
                           maxValue: 5,
-                          goodColor: const Color(0xFF43A047),
-                          badColor: const Color(0xFFE53935),
+                          goodColor: AppTheme.statusGreen,
+                          badColor: AppTheme.statusRed,
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -108,8 +108,8 @@ class SymptomAnalyticsScreen extends StatelessWidget {
                           selector: (a) =>
                               a.sleepCount > 0 ? a.avgSleepQuality : null,
                           maxValue: 5,
-                          goodColor: const Color(0xFF43A047),
-                          badColor: const Color(0xFFE53935),
+                          goodColor: AppTheme.statusGreen,
+                          badColor: AppTheme.statusRed,
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -182,15 +182,15 @@ class _PeriodHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF00838F).withValues(alpha: 0.06),
+        color: AppTheme.entryVitalAccent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: const Color(0xFF00838F).withValues(alpha: 0.15)),
+            color: AppTheme.entryVitalAccent.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
           const Icon(Icons.date_range_outlined,
-              size: 20, color: Color(0xFF00838F)),
+              size: 20, color: AppTheme.entryVitalAccent),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,14 +200,14 @@ class _PeriodHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF00838F),
+                  color: AppTheme.entryVitalAccent,
                 ),
               ),
               Text(
                 '${fmt.format(start)} – ${fmt.format(now)} · $daysWithData days with data',
                 style: TextStyle(
                   fontSize: 12,
-                  color: const Color(0xFF00838F).withValues(alpha: 0.7),
+                  color: AppTheme.entryVitalAccent.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -246,7 +246,7 @@ class _TrendCardsRow extends StatelessWidget {
               value: painAvg,
               maxLabel: '/10',
               trend: trends['pain'],
-              color: const Color(0xFFE53935),
+              color: AppTheme.statusRed,
             ),
           ),
         if (painAvg > 0 && moodAvg > 0) const SizedBox(width: 10),
@@ -258,7 +258,7 @@ class _TrendCardsRow extends StatelessWidget {
               value: moodAvg,
               maxLabel: '/5',
               trend: trends['mood'],
-              color: const Color(0xFF8E24AA),
+              color: AppTheme.tilePurple,
             ),
           ),
         if ((painAvg > 0 || moodAvg > 0) && sleepAvg > 0)
@@ -271,7 +271,7 @@ class _TrendCardsRow extends StatelessWidget {
               value: sleepAvg,
               maxLabel: '/5',
               trend: trends['sleepQuality'],
-              color: const Color(0xFF5C6BC0),
+              color: AppTheme.tileIndigo,
             ),
           ),
       ],
@@ -302,10 +302,10 @@ class _TrendCard extends StatelessWidget {
     Color trendColor = AppTheme.textSecondary;
     if (trend == TrendDirection.improving) {
       trendText = 'Improving';
-      trendColor = const Color(0xFF43A047);
+      trendColor = AppTheme.statusGreen;
     } else if (trend == TrendDirection.worsening) {
       trendText = 'Worsening';
-      trendColor = const Color(0xFFE53935);
+      trendColor = AppTheme.statusRed;
     } else if (trend == TrendDirection.stable) {
       trendText = 'Stable';
     }
@@ -489,13 +489,13 @@ class _InsightCard extends StatelessWidget {
         color: const Color(0xFFFFF8E1),
         borderRadius: BorderRadius.circular(10),
         border:
-            Border.all(color: const Color(0xFFFFC107).withValues(alpha: 0.3)),
+            Border.all(color: AppTheme.tileGold.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(Icons.lightbulb_outline,
-              size: 16, color: Color(0xFFF57C00)),
+              size: 16, color: AppTheme.tileOrange),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

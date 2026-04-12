@@ -69,7 +69,7 @@ class _TaskSummaryCardState extends State<TaskSummaryCard> {
         final hasTasks = tasks.isNotEmpty;
         final accent = overdue > 0
             ? AppTheme.dangerColor
-            : const Color(0xFF0277BD);
+            : AppTheme.tileBlueDark;
 
         return GestureDetector(
           onTap: () => Navigator.push(

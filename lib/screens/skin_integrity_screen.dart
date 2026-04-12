@@ -17,7 +17,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/screens/wound_tracking_screen.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
-import 'package:cecelia_care_flutter/widgets/timed_loading_indicator.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 
 class SkinIntegrityScreen extends StatefulWidget {
@@ -178,9 +178,7 @@ class _AssessmentTabState extends State<_AssessmentTab> {
         }
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
-          return TimedLoadingIndicator(
-            onRetry: () => setState(() {}),
-          );
+          return const SkeletonCard();
         }
 
         final assessments = (snapshot.data ?? [])
@@ -317,7 +315,7 @@ class _AssessmentTabState extends State<_AssessmentTab> {
         ElevatedButton(
           onPressed: _isSaving ? null : _save,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00838F),
+            backgroundColor: AppTheme.entryVitalAccent,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -441,7 +439,7 @@ class _TurningLogTab extends StatelessWidget {
                         if (ctx.mounted) Navigator.pop(ctx);
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00838F),
+                  backgroundColor: AppTheme.entryVitalAccent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -464,7 +462,7 @@ class _TurningLogTab extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         heroTag: 'turningLogFab',
         onPressed: () => _logTurn(context),
-        backgroundColor: const Color(0xFF00838F),
+        backgroundColor: AppTheme.entryVitalAccent,
         child: const Icon(Icons.rotate_left, color: Colors.white),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
@@ -479,7 +477,7 @@ class _TurningLogTab extends StatelessWidget {
             // _TurningLogTab is a StatelessWidget so we can't trigger a
             // local rebuild. The timeout still shows a friendly error
             // after 10s; users can refresh by switching tabs.
-            return const TimedLoadingIndicator();
+            return const SkeletonCard();
           }
 
           final logs = (snapshot.data ?? [])
@@ -500,20 +498,20 @@ class _TurningLogTab extends StatelessWidget {
                 color: timeSinceLast == null
                     ? Colors.grey.shade100
                     : timeSinceLast.inHours < 2
-                        ? const Color(0xFF43A047).withValues(alpha: 0.08)
+                        ? AppTheme.statusGreen.withValues(alpha: 0.08)
                         : timeSinceLast.inHours < 3
-                            ? const Color(0xFFF57C00).withValues(alpha: 0.08)
-                            : const Color(0xFFE53935).withValues(alpha: 0.08),
+                            ? AppTheme.tileOrange.withValues(alpha: 0.08)
+                            : AppTheme.statusRed.withValues(alpha: 0.08),
                 child: Row(
                   children: [
                     Icon(Icons.timer_outlined, size: 20,
                         color: timeSinceLast == null
                             ? Colors.grey
                             : timeSinceLast.inHours < 2
-                                ? const Color(0xFF43A047)
+                                ? AppTheme.statusGreen
                                 : timeSinceLast.inHours < 3
-                                    ? const Color(0xFFF57C00)
-                                    : const Color(0xFFE53935)),
+                                    ? AppTheme.tileOrange
+                                    : AppTheme.statusRed),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -523,7 +521,7 @@ class _TurningLogTab extends StatelessWidget {
                               ' \u00B7 ${logs.length} turn${logs.length == 1 ? '' : 's'} today',
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
                             color: timeSinceLast == null ? Colors.grey
-                                : timeSinceLast.inHours >= 3 ? const Color(0xFFE53935)
+                                : timeSinceLast.inHours >= 3 ? AppTheme.statusRed
                                 : null),
                       ),
                     ),
@@ -579,7 +577,7 @@ class _TurningLogTab extends StatelessWidget {
               ],
             )),
             if (log.skinCheckDone)
-              const Icon(Icons.check_circle, size: 16, color: Color(0xFF43A047)),
+              const Icon(Icons.check_circle, size: 16, color: AppTheme.statusGreen),
           ],
         ),
       ),

@@ -458,7 +458,7 @@ class _MedicationAdherenceCard extends StatelessWidget {
                     final e = stripEntries[idx];
                     final Color dotColor;
                     if (e.takenAt != null && e.taken) {
-                      dotColor = const Color(0xFF43A047); // green
+                      dotColor = AppTheme.statusGreen; // green
                     } else if (e.takenAt != null && !e.taken) {
                       dotColor = AppTheme.dangerColor; // red
                     } else {
@@ -543,7 +543,7 @@ class _AdherenceActionsState extends State<_AdherenceActions> {
               ? '${widget.entry.name} marked as taken ✓'
               : '${widget.entry.name} marked as skipped'),
           backgroundColor:
-              taken ? const Color(0xFF43A047) : AppTheme.dangerColor,
+              taken ? AppTheme.statusGreen : AppTheme.dangerColor,
         ));
       }
     } catch (e) {
@@ -564,7 +564,7 @@ class _AdherenceActionsState extends State<_AdherenceActions> {
             takenToday ? Icons.check_circle : Icons.cancel,
             size: 16,
             color: takenToday
-                ? const Color(0xFF43A047)
+                ? AppTheme.statusGreen
                 : AppTheme.dangerColor,
           ),
           const SizedBox(width: 6),
@@ -573,7 +573,7 @@ class _AdherenceActionsState extends State<_AdherenceActions> {
             style: TextStyle(
               fontSize: 12,
               color: takenToday
-                  ? const Color(0xFF43A047)
+                  ? AppTheme.statusGreen
                   : AppTheme.dangerColor,
               fontWeight: FontWeight.w500,
             ),
@@ -594,8 +594,8 @@ class _AdherenceActionsState extends State<_AdherenceActions> {
                 icon: const Icon(Icons.check, size: 16),
                 label: const Text('Taken'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF43A047),
-                  side: const BorderSide(color: Color(0xFF43A047)),
+                  foregroundColor: AppTheme.statusGreen,
+                  side: const BorderSide(color: AppTheme.statusGreen),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 6),
                   minimumSize: Size.zero,
@@ -947,7 +947,7 @@ class _ReminderCardState extends State<_ReminderCard> {
                   icon: Icon(
                     def.pinned ? Icons.star : Icons.star_border,
                     color: def.pinned
-                        ? const Color(0xFFFFC107)
+                        ? AppTheme.tileGold
                         : AppTheme.textLight,
                     size: 22,
                   ),

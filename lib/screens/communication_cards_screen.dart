@@ -83,7 +83,7 @@ class _CommunicationCardsScreenState extends State<CommunicationCardsScreen> {
                         minHeight: 6,
                         backgroundColor: Colors.grey.shade200,
                         valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF43A047)),
+                            AppTheme.statusGreen),
                       ),
                     ),
                   ),
@@ -267,19 +267,19 @@ class _CommunicationCardsScreenState extends State<CommunicationCardsScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E88E5)
+                              color: AppTheme.tileBlue
                                   .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text('New',
                                 style: TextStyle(
                                     fontSize: 10,
-                                    color: Color(0xFF1E88E5),
+                                    color: AppTheme.tileBlue,
                                     fontWeight: FontWeight.w600)),
                           ),
                         if (isLearned)
                           const Icon(Icons.check_circle,
-                              size: 16, color: Color(0xFF43A047)),
+                              size: 16, color: AppTheme.statusGreen),
                       ],
                     ),
                     Text('"${card.speakText}"',

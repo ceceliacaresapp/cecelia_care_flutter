@@ -141,12 +141,20 @@ class NotificationService {
     }
   }
 
+  static const String _permRequestedKey = 'notification_permission_requested';
+
   Future<void> _initFirebaseMessaging() async {
-    await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    // Permission request is deferred to requestPermissionIfNeeded() —
+    // called after the user's first real action (first journal entry or
+    // onboarding completion). This increases opt-in rates vs asking at
+    // cold launch.
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_permRequestedKey) == true) {
+      // Already asked — just refresh the token.
+      await _fcm.requestPermission(
+        alert: true, badge: true, sound: true,
+      );
+    }
     await _saveFcmToken();
     _fcm.onTokenRefresh.listen((_) => _saveFcmToken());
 
@@ -178,6 +186,24 @@ class NotificationService {
           'FCM: App opened from background by notification: ${message.messageId}');
       // TODO: Handle navigation
     });
+  }
+
+  /// Request notification permission if we haven't already. Call this after
+  /// the user's first meaningful action (first journal entry, onboarding
+  /// completion) — not at app startup. Asking when the user has just
+  /// experienced value increases opt-in rates by up to 157%.
+  Future<void> requestPermissionIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_permRequestedKey) == true) return; // already asked
+
+    await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    await prefs.setBool(_permRequestedKey, true);
+    await _saveFcmToken(); // refresh token after permission grant
+    debugPrint('NotificationService: permission requested (first time).');
   }
 
   Future<void> _saveFcmToken() async {

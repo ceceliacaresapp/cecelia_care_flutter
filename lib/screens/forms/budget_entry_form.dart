@@ -1,5 +1,6 @@
 // lib/screens/forms/budget_entry_form.dart
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
@@ -269,11 +270,11 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00897B).withValues(alpha: 0.08),
+                    color: AppTheme.tileTeal.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                         color:
-                            const Color(0xFF00897B).withValues(alpha: 0.3)),
+                            AppTheme.tileTeal.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,7 +309,7 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
                           ElevatedButton.icon(
                             onPressed: _calculateMileage,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00897B),
+                              backgroundColor: AppTheme.tileTeal,
                               foregroundColor: Colors.white,
                             ),
                             icon: const Icon(Icons.calculate, size: 16),

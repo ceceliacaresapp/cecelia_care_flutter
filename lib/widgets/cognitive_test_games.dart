@@ -373,9 +373,12 @@ class _TrailMakingGameState extends State<TrailMakingGame> {
                   Positioned(
                     left: _points[i].x * w - 26,
                     top: _points[i].y * h - 26,
-                    child: GestureDetector(
-                      onTap: () => _onTap(_points[i].number, i),
-                      child: AnimatedContainer(
+                    child: Semantics(
+                      label: 'Circle ${_points[i].number}${_points[i].reached ? ", reached" : ""}',
+                      button: true,
+                      child: GestureDetector(
+                        onTap: () => _onTap(_points[i].number, i),
+                        child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 52,
                         height: 52,
@@ -413,6 +416,7 @@ class _TrailMakingGameState extends State<TrailMakingGame> {
                           ),
                         ),
                       ),
+                    ),
                     ),
                   ),
               ],
@@ -519,6 +523,7 @@ class _DigitSpanGameState extends State<DigitSpanGame> {
     setState(() {});
     _displayTimer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) return;
+      HapticUtils.tap(); // subtle tick as each digit appears
       setState(() {
         _displayIdx++;
         if (_displayIdx >= _sequence.length) {
@@ -703,7 +708,7 @@ class _DigitSpanGameState extends State<DigitSpanGame> {
                 child: ElevatedButton(
                   onPressed: isDisplaying ? null : () => _record(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF43A047),
+                    backgroundColor: AppTheme.statusGreen,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
@@ -814,8 +819,8 @@ class _CategoryFluencyTimerState extends State<CategoryFluencyTimer> {
                   backgroundColor: Colors.grey.shade200,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     _remaining > 15
-                        ? const Color(0xFF1E88E5)
-                        : const Color(0xFFE53935),
+                        ? AppTheme.tileBlue
+                        : AppTheme.statusRed,
                   ),
                 ),
               ),
@@ -862,7 +867,7 @@ class _CategoryFluencyTimerState extends State<CategoryFluencyTimer> {
             icon: const Icon(Icons.add, size: 28),
             label: Text(_started ? 'Tap for each answer' : 'Start'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E88E5),
+              backgroundColor: AppTheme.tileBlue,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
                   horizontal: 28, vertical: 18),
@@ -999,28 +1004,32 @@ class _PatternSequenceGameState extends State<PatternSequenceGame> {
           runSpacing: 16,
           children: [
             for (int i = 0; i < p.choices.length; i++)
-              GestureDetector(
-                onTap: () => _pick(i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _showResult && _selected == i
-                        ? (i == p.answerIndex
-                            ? Colors.green.shade100
-                            : Colors.red.shade100)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
+              Semantics(
+                label: 'Choice ${i + 1}: ${p.choices[i].replaceAll('-', ' ')}',
+                button: true,
+                child: GestureDetector(
+                  onTap: () => _pick(i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
                       color: _showResult && _selected == i
                           ? (i == p.answerIndex
-                              ? Colors.green
-                              : Colors.red)
-                          : Colors.grey.shade300,
-                      width: 2,
+                              ? Colors.green.shade100
+                              : Colors.red.shade100)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _showResult && _selected == i
+                            ? (i == p.answerIndex
+                                ? Colors.green
+                                : Colors.red)
+                            : Colors.grey.shade300,
+                        width: 2,
+                      ),
                     ),
+                    child: _shapeBox(p.choices[i], 64),
                   ),
-                  child: _shapeBox(p.choices[i], 64),
                 ),
               ),
           ],
@@ -1095,11 +1104,11 @@ class _PatternSequenceGameState extends State<PatternSequenceGame> {
   Color _colorFromName(String name) {
     switch (name) {
       case 'red':
-        return const Color(0xFFE53935);
+        return AppTheme.statusRed;
       case 'blue':
-        return const Color(0xFF1E88E5);
+        return AppTheme.tileBlue;
       case 'green':
-        return const Color(0xFF43A047);
+        return AppTheme.statusGreen;
       default:
         return Colors.indigo;
     }

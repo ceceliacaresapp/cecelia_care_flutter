@@ -19,7 +19,9 @@ import 'package:cecelia_care_flutter/screens/forms/set_budgets_form.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/expense_breakdown_chart.dart';
 import 'package:cecelia_care_flutter/widgets/insurance_tracker_card.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/widgets/stream_error_card.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 import 'package:cecelia_care_flutter/screens/forms/income_entry_form.dart';
 import 'package:cecelia_care_flutter/screens/forms/asset_entry_form.dart';
@@ -49,7 +51,7 @@ class Transaction {
 }
 
 // Accent color for the budget screen — amber-orange matching the Care tab tile.
-const _kBudgetColor = Color(0xFFF57C00);
+const _kBudgetColor = AppTheme.tileOrange;
 
 class BudgetScreen extends StatefulWidget {
   final String careRecipientId;
@@ -493,7 +495,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     setState(() => _insurancePlan = plan);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
+                    backgroundColor: AppTheme.tileBlueDark,
                     foregroundColor: Colors.white,
                   ),
                   child: const Text('Save'),
@@ -543,7 +545,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: const Color(0xFF7B1FA2).withValues(alpha: 0.25)),
+                color: AppTheme.entryMoodAccent.withValues(alpha: 0.25)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,11 +556,11 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color:
-                          const Color(0xFF7B1FA2).withValues(alpha: 0.12),
+                          AppTheme.entryMoodAccent.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.receipt_long_outlined,
-                        color: Color(0xFF7B1FA2), size: 18),
+                        color: AppTheme.entryMoodAccent, size: 18),
                   ),
                   const SizedBox(width: 10),
                   const Expanded(
@@ -573,7 +575,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                       label: const Text('Export',
                           style: TextStyle(fontSize: 11)),
                       style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF7B1FA2),
+                        foregroundColor: AppTheme.entryMoodAccent,
                         visualDensity: VisualDensity.compact,
                       ),
                     ),
@@ -596,7 +598,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF7B1FA2))),
+                            color: AppTheme.entryMoodAccent)),
                   ],
                 ),
                 Text('${deductible.length} entries',
@@ -638,7 +640,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: highlight
-                  ? const Color(0xFF43A047)
+                  ? AppTheme.statusGreen
                   : AppTheme.textPrimary,
             )),
       ],
@@ -717,7 +719,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         }
         final netWorth = snapshot.data ?? 0.0;
         final formattedNetWorth = NumberFormat.simpleCurrency(decimalDigits: 2).format(netWorth);
-        final color = netWorth >= 0 ? const Color(0xFF43A047) : AppTheme.dangerColor;
+        final color = netWorth >= 0 ? AppTheme.statusGreen : AppTheme.dangerColor;
         return _StyledCard(
           color: _kBudgetColor,
           child: Row(
@@ -770,7 +772,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         final cashFlow = snapshot.data ?? 0.0;
         final formattedCashFlow = NumberFormat.simpleCurrency(decimalDigits: 2).format(cashFlow);
         final isPositive = cashFlow >= 0;
-        final color = isPositive ? const Color(0xFF43A047) : AppTheme.dangerColor;
+        final color = isPositive ? AppTheme.statusGreen : AppTheme.dangerColor;
         return _StyledCard(
           color: _kBudgetColor,
           child: Row(
@@ -837,7 +839,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               );
             }
             if (budgetSnapshot.connectionState == ConnectionState.waiting) {
-              return const Card(child: Center(child: CircularProgressIndicator()));
+              return const SkeletonCard(height: 80);
             }
             final categoryBudgets = budgetSnapshot.data ?? {};
             return Card(
@@ -924,14 +926,22 @@ class _BudgetScreenState extends State<BudgetScreen> {
       stream: combinedStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: List.generate(3, (_) => const SkeletonListTile()),
+            ),
+          );
         }
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Padding(padding: EdgeInsets.all(24.0), child: Text('No transactions logged for this month.')),
+          return const EmptyStateWidget(
+            icon: Icons.receipt_long_outlined,
+            title: 'No transactions this month',
+            subtitle: 'Tap + to add an expense or income.',
+            color: Color(0xFFF57C00),
           );
         }
         
@@ -948,7 +958,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
             final amountPrefix = transaction.isIncome ? '+\$' : '-\$';
 
             final entryColor = transaction.isIncome
-                ? const Color(0xFF43A047)
+                ? AppTheme.statusGreen
                 : AppTheme.dangerColor;
             return GestureDetector(
               onTap: () {

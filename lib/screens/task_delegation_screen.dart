@@ -15,7 +15,9 @@ import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class TaskDelegationScreen extends StatefulWidget {
   const TaskDelegationScreen({super.key});
@@ -89,7 +91,7 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF0277BD),
+        backgroundColor: AppTheme.tileBlueDark,
         foregroundColor: Colors.white,
         onPressed: () => _openTaskEditor(elder.id),
         icon: const Icon(Icons.add),
@@ -103,15 +105,22 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
       stream: _firestore.getActiveTasksStream(elderId),
       builder: (_, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: List.generate(3, (_) => const SkeletonListTile()),
+            ),
+          );
         }
         final tasks = (snap.data ?? [])
             .map((d) =>
                 CareTask.fromFirestore(elderId, d['id'] as String, d))
             .toList();
         if (tasks.isEmpty) {
-          return _emptyState(
-              Icons.task_alt_outlined, 'No active tasks', 'Tap "New Task" to delegate.');
+          return const EmptyStateWidget(
+              icon: Icons.task_alt_outlined,
+              title: 'No active tasks',
+              subtitle: 'Tap New Task to delegate.');
         }
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
@@ -131,15 +140,22 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
       stream: _firestore.getCompletedTasksStream(elderId),
       builder: (_, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: List.generate(3, (_) => const SkeletonListTile()),
+            ),
+          );
         }
         final tasks = (snap.data ?? [])
             .map((d) =>
                 CareTask.fromFirestore(elderId, d['id'] as String, d))
             .toList();
         if (tasks.isEmpty) {
-          return _emptyState(Icons.history, 'No completed tasks yet',
-              'Completed tasks will show here.');
+          return const EmptyStateWidget(
+              icon: Icons.history,
+              title: 'No completed tasks yet',
+              subtitle: 'Completed tasks will show here.');
         }
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
@@ -155,28 +171,6 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
     );
   }
 
-  Widget _emptyState(IconData icon, String title, String hint) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 56, color: AppTheme.textLight),
-            const SizedBox(height: 12),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            Text(hint,
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.textSecondary),
-                textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
 
   Future<void> _handleAction(
       CareTask task, String action, [dynamic arg]) async {
@@ -404,11 +398,11 @@ class _TaskCardState extends State<_TaskCard> {
                     children: [
                       if (isUnassigned)
                         _actionBtn('I\'ll do it', Icons.pan_tool_outlined,
-                            const Color(0xFF0277BD),
+                            AppTheme.tileBlueDark,
                             () => widget.onAction(t, 'claim')),
                       if (isAssignee && t.status == 'open')
                         _actionBtn('Accept', Icons.thumb_up_outlined,
-                            const Color(0xFF1E88E5),
+                            AppTheme.tileBlue,
                             () => widget.onAction(t, 'accept')),
                       if (isAssignee && t.status == 'open')
                         _actionBtn('Decline',
@@ -420,7 +414,7 @@ class _TaskCardState extends State<_TaskCard> {
                         _actionBtn(
                             'Mark complete',
                             Icons.check_circle_outline,
-                            const Color(0xFF43A047),
+                            AppTheme.statusGreen,
                             () => _confirmComplete(t)),
                       if (isCreator)
                         _actionBtn('Edit', Icons.edit_outlined,
@@ -789,7 +783,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                   ? null
                   : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0277BD),
+                backgroundColor: AppTheme.tileBlueDark,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(

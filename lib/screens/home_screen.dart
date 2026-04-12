@@ -1,3 +1,4 @@
+import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +24,7 @@ import 'onboarding_screen.dart';
 import 'package:cecelia_care_flutter/widgets/elder_view_toggle.dart';
 import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
 import 'package:cecelia_care_flutter/screens/burnout_intervention_screen.dart';
+import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
  
 // ---------------------------------------------------------------------------
 // Tab accent colors — 6 tabs. Settings lives in the AppBar gear icon.
@@ -85,9 +87,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _onboardingChecked = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Navigator.of(context).push(MaterialPageRoute(
+      Navigator.of(context).push(FadeSlideRoute(
         fullscreenDialog: true,
-        builder: (_) => OnboardingScreen(
+        page: OnboardingScreen(
           onComplete: () {
             if (mounted) Navigator.of(context).pop();
           },
@@ -107,14 +109,15 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       final suppressed = await BurnoutInterventionScreen.shouldSuppress();
       if (suppressed || !mounted) return;
-      Navigator.of(context).push(MaterialPageRoute(
+      Navigator.of(context).push(FadeSlideRoute(
         fullscreenDialog: true,
-        builder: (_) => const BurnoutInterventionScreen(),
+        page: const BurnoutInterventionScreen(),
       ));
     });
   }
 
   void _onItemTapped(int index) {
+    HapticUtils.selection();
     if (index == _selectedIndex) {
       // Same tab tapped again → pop to root (standard mobile pattern).
       _navigatorKeys[index]
@@ -222,8 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTab(int index, Widget child) {
     return Navigator(
       key: _navigatorKeys[index],
-      onGenerateRoute: (_) => MaterialPageRoute(
-        builder: (_) => _TabScaffold(tabIndex: index, body: child),
+      onGenerateRoute: (_) => FadeSlideRoute(page: _TabScaffold(tabIndex: index, body: child),
       ),
     );
   }
@@ -450,8 +452,7 @@ class _TabScaffold extends StatelessWidget {
                 child: Center(
                   child: GestureDetector(
                     onLongPress: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) =>
+                      Navigator.of(context).push(FadeSlideRoute(page:
                             const ManageCareRecipientProfilesScreen(),
                       ));
                     },
@@ -465,8 +466,7 @@ class _TabScaffold extends StatelessWidget {
                     child: Center(
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) =>
+                          Navigator.of(context).push(FadeSlideRoute(page:
                                 const ManageCareRecipientProfilesScreen(),
                           ));
                         },
@@ -534,8 +534,7 @@ class _TabScaffold extends StatelessWidget {
             onPressed: () {
               // Push Settings onto the current tab's nested navigator
               // so the bottom nav stays visible.
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => Scaffold(
+              Navigator.of(context).push(FadeSlideRoute(page: Scaffold(
                   appBar: AppBar(
                     title: Text(l10n.homeScreenBaseTitleSettings),
                     centerTitle: true,

@@ -97,12 +97,19 @@ class _AdherenceSummaryCardState extends State<AdherenceSummaryCard> {
                           valueColor:
                               AlwaysStoppedAnimation<Color>(color),
                         ),
-                        Text('${pct.toStringAsFixed(0)}',
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: pct),
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.easeOut,
+                          builder: (_, v, __) => Text(
+                            '${v.toStringAsFixed(0)}',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                               color: color,
-                            )),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),

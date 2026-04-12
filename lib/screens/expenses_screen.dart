@@ -14,7 +14,7 @@ import 'package:cecelia_care_flutter/screens/forms/expense_form.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 
 // Expenses accent color — amber, matching the nav tab.
-const _kExpenseColor = Color(0xFFF57C00);
+const _kExpenseColor = AppTheme.tileOrange;
 
 class _ExpenseDoc {
   final String id;

@@ -313,7 +313,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                             icon: Icons.cake_outlined,
                             label: 'Date of Birth',
                             value: activeElder.dateOfBirth,
-                            color: const Color(0xFF5C6BC0),
+                            color: AppTheme.tileIndigo,
                           ),
                         _InfoRow(
                           icon: Icons.warning_amber_outlined,
@@ -321,7 +321,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                           value: activeElder.allergies.isNotEmpty
                               ? activeElder.allergies.join(', ')
                               : 'None listed',
-                          color: const Color(0xFFF57C00),
+                          color: AppTheme.tileOrange,
                           isWarning: activeElder.allergies.isNotEmpty,
                         ),
                         if (activeElder.dietaryRestrictions.isNotEmpty)
@@ -329,7 +329,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                             icon: Icons.restaurant_outlined,
                             label: 'Dietary Restrictions',
                             value: activeElder.dietaryRestrictions,
-                            color: const Color(0xFF43A047),
+                            color: AppTheme.statusGreen,
                           ),
                         _InfoRow(
                           icon: Icons.medication_outlined,
@@ -342,7 +342,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                                       : m.name)
                                   .join('\n')
                               : 'None listed',
-                          color: const Color(0xFF1E88E5),
+                          color: AppTheme.tileBlue,
                         ),
                         const Divider(height: 32),
                         if (activeElder.emergencyContactName != null &&
@@ -1012,7 +1012,7 @@ class _InfoRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     border: isWarning
                         ? Border.all(
-                            color: const Color(0xFFF57C00)
+                            color: AppTheme.tileOrange
                                 .withValues(alpha: 0.3))
                         : null,
                   ),
@@ -1023,7 +1023,7 @@ class _InfoRow extends StatelessWidget {
                       fontWeight:
                           isWarning ? FontWeight.w600 : FontWeight.normal,
                       color: isWarning
-                          ? const Color(0xFFE65100)
+                          ? AppTheme.tileOrangeDeep
                           : AppTheme.textPrimary,
                       height: 1.4,
                     ),

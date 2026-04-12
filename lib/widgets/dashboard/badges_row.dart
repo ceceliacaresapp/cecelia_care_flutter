@@ -214,7 +214,7 @@ void showBadgeInfoDialog(BuildContext context, Badge badge) {
               children: [
                 Icon(Icons.info_outline,
                     size: 14, color: AppTheme.tilePurple),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Achievements reward you for taking care of yourself '

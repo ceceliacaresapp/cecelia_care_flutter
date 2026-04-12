@@ -21,11 +21,11 @@ class _MedicalGlossaryScreenState extends State<MedicalGlossaryScreen> {
 
   static const Map<String, Color> _categoryColors = {
     'general': Color(0xFF607D8B),
-    'vitals': Color(0xFFE91E63),
-    'medications': Color(0xFFD32F2F),
-    'conditions': Color(0xFFF57C00),
-    'procedures': Color(0xFF1E88E5),
-    'care': Color(0xFF00897B),
+    'vitals': AppTheme.tilePinkBright,
+    'medications': AppTheme.dangerColor,
+    'conditions': AppTheme.tileOrange,
+    'procedures': AppTheme.tileBlue,
+    'care': AppTheme.tileTeal,
   };
 
   @override

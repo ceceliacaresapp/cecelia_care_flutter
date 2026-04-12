@@ -5,6 +5,7 @@
 // 7 days of journal entries, groups by caregiver, and highlights each
 // person's top contribution.
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -186,7 +187,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF4E342E),
+                            color: AppTheme.entryExpenseAccent,
                           )),
                       Text(s.weekLabel,
                           style: const TextStyle(
@@ -206,7 +207,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
               style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
-                color: Color(0xFF4E342E),
+                color: AppTheme.entryExpenseAccent,
               ),
             ),
             const SizedBox(height: 12),
@@ -224,7 +225,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
                           text: TextSpan(
                             style: const TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF4E342E),
+                                color: AppTheme.entryExpenseAccent,
                                 height: 1.3),
                             children: [
                               TextSpan(
@@ -248,7 +249,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
               Row(
                 children: [
                   const Icon(Icons.favorite,
-                      size: 14, color: Color(0xFFE91E63)),
+                      size: 14, color: AppTheme.tilePinkBright),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -273,7 +274,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
               child: const Row(
                 children: [
                   Text('\uD83D\uDCAA', style: TextStyle(fontSize: 16)), // 💪
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Every log matters. Every handoff counts. Thank you for showing up.',

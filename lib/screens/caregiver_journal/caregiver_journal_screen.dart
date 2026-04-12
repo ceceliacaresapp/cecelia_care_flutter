@@ -25,8 +25,8 @@ import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 
 // Purple — matches the Self Care tab that hosts this screen.
-const _kJournalColor = Color(0xFF8E24AA);
-const _kPromptColor = Color(0xFF00897B); // teal for the prompt card
+const _kJournalColor = AppTheme.tilePurple;
+const _kPromptColor = AppTheme.tileTeal; // teal for the prompt card
 const _kMaxChars = 1000;
 
 class CareGiverJournalScreen extends StatefulWidget {

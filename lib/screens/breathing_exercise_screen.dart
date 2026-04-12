@@ -53,7 +53,7 @@ const _patterns = [
     name: 'Box breathing',
     description: 'Equal timing. Great for focus and calm.',
     icon: Icons.crop_square_outlined,
-    color: Color(0xFF5C6BC0),
+    color: AppTheme.tileIndigo,
     phases: [
       _BreathPhase('Breathe in', 4, true),
       _BreathPhase('Hold', 4, false),
@@ -65,7 +65,7 @@ const _patterns = [
     name: '4-7-8 breathing',
     description: 'Long exhale. Reduces anxiety and aids sleep.',
     icon: Icons.nights_stay_outlined,
-    color: Color(0xFF1E88E5),
+    color: AppTheme.tileBlue,
     phases: [
       _BreathPhase('Breathe in', 4, true),
       _BreathPhase('Hold', 7, false),
@@ -76,7 +76,7 @@ const _patterns = [
     name: 'Calm breath',
     description: 'Simple and gentle. Good for beginners.',
     icon: Icons.spa_outlined,
-    color: Color(0xFF00897B),
+    color: AppTheme.tileTeal,
     phases: [
       _BreathPhase('Breathe in', 5, true),
       _BreathPhase('Breathe out', 5, false),
@@ -512,13 +512,13 @@ class _CompletionView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF43A047).withValues(alpha: 0.1),
+            color: AppTheme.statusGreen.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
             Icons.check_circle,
             size: 64,
-            color: Color(0xFF43A047),
+            color: AppTheme.statusGreen,
           ),
         ),
         const SizedBox(height: 20),
@@ -527,7 +527,7 @@ class _CompletionView extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF43A047),
+            color: AppTheme.statusGreen,
           ),
         ),
         const SizedBox(height: 6),

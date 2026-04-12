@@ -1,3 +1,4 @@
+import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/providers/locale_provider.dart';
@@ -19,6 +20,7 @@ import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_scre
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/custom_entry_types_screen.dart';
 import 'package:cecelia_care_flutter/screens/accessibility_settings_screen.dart';
+import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? navigateToManageCareRecipientProfiles;
@@ -182,39 +184,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // ── People row ────────────────────────────────────────────
         _SectionHeader(label: 'People'),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            if (canAccessProfilesScreen)
+        StaggeredFadeIn(
+          index: 0,
+          child: Row(
+            children: [
+              if (canAccessProfilesScreen)
+                Expanded(
+                  child: _SettingsGridTile(
+                    icon: Icons.group_outlined,
+                    title: l10n.settingsItemManageProfiles,
+                    subtitle: activeElder?.profileName ?? 'Set up profiles',
+                    color: AppTheme.tileBlue,
+                    onTap: widget.navigateToManageCareRecipientProfiles ??
+                        () => Navigator.push(
+                              context,
+                              FadeSlideRoute(page:
+                                      const ManageCareRecipientProfilesScreen()),
+                            ),
+                  ),
+                )
+              else
+                const Expanded(child: SizedBox.shrink()),
+              const SizedBox(width: 14),
               Expanded(
                 child: _SettingsGridTile(
-                  icon: Icons.group_outlined,
-                  title: l10n.settingsItemManageProfiles,
-                  subtitle: activeElder?.profileName ?? 'Set up profiles',
-                  color: AppTheme.tileBlue,
-                  onTap: widget.navigateToManageCareRecipientProfiles ??
-                      () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const ManageCareRecipientProfilesScreen()),
-                          ),
+                  icon: Icons.account_circle_outlined,
+                  title: l10n.settingsTitleMyAccount,
+                  subtitle: 'Profile & preferences',
+                  color: AppTheme.primaryColor,
+                  onTap: () => Navigator.push(context,
+                      FadeSlideRoute(page: const MyAccountScreen())),
                 ),
-              )
-            else
-              const Expanded(child: SizedBox.shrink()),
-            const SizedBox(width: 14),
-            Expanded(
-              child: _SettingsGridTile(
-                icon: Icons.account_circle_outlined,
-                title: l10n.settingsTitleMyAccount,
-                subtitle: 'Profile & preferences',
-                color: AppTheme.primaryColor,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) => const MyAccountScreen())),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(height: 14),
@@ -222,34 +225,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // ── Customize row ─────────────────────────────────────────
         _SectionHeader(label: 'Customize'),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: _SettingsGridTile(
-                icon: Icons.dashboard_customize_outlined,
-                title: 'Dashboard',
-                subtitle: 'Reorder sections',
-                color: AppTheme.tileTeal,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            const DashboardSettingsScreen())),
+        StaggeredFadeIn(
+          index: 1,
+          child: Row(
+            children: [
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.dashboard_customize_outlined,
+                  title: 'Dashboard',
+                  subtitle: 'Reorder sections',
+                  color: AppTheme.tileTeal,
+                  onTap: () => Navigator.push(context,
+                      FadeSlideRoute(page:
+                              const DashboardSettingsScreen())),
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: _SettingsGridTile(
-                icon: Icons.extension_outlined,
-                title: 'Entry Types',
-                subtitle: 'Custom log fields',
-                color: AppTheme.tileIndigo,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            const CustomEntryTypesScreen())),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.extension_outlined,
+                  title: 'Entry Types',
+                  subtitle: 'Custom log fields',
+                  color: AppTheme.tileIndigo,
+                  onTap: () => Navigator.push(context,
+                      FadeSlideRoute(page:
+                              const CustomEntryTypesScreen())),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(height: 14),
@@ -257,34 +261,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // ── Preferences row ───────────────────────────────────────
         _SectionHeader(label: 'Preferences'),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: _SettingsGridTile(
-                icon: Icons.notifications_active_outlined,
-                title: 'Notifications',
-                subtitle: 'Alerts & reminders',
-                color: AppTheme.tileTeal,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            const NotificationSettingsScreen())),
+        StaggeredFadeIn(
+          index: 2,
+          child: Row(
+            children: [
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.notifications_active_outlined,
+                  title: 'Notifications',
+                  subtitle: 'Alerts & reminders',
+                  color: AppTheme.tileTeal,
+                  onTap: () => Navigator.push(context,
+                      FadeSlideRoute(page:
+                              const NotificationSettingsScreen())),
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: _SettingsGridTile(
-                icon: Icons.accessibility_new_outlined,
-                title: 'Accessibility',
-                subtitle: 'Visual & sensory',
-                color: AppTheme.tileBlueDark,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            const AccessibilitySettingsScreen())),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.accessibility_new_outlined,
+                  title: 'Accessibility',
+                  subtitle: 'Visual & sensory',
+                  color: AppTheme.tileBlueDark,
+                  onTap: () => Navigator.push(context,
+                      FadeSlideRoute(page:
+                              const AccessibilitySettingsScreen())),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(height: 14),
@@ -292,48 +297,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // ── More row ──────────────────────────────────────────────
         _SectionHeader(label: 'More'),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            if (canExport)
+        StaggeredFadeIn(
+          index: 3,
+          child: Row(
+            children: [
+              if (canExport)
+                Expanded(
+                  child: _SettingsGridTile(
+                    icon: Icons.download_outlined,
+                    title: 'Export Logs',
+                    subtitle: 'CSV & PDF reports',
+                    color: AppTheme.tileIndigo,
+                    onTap: () {
+                      if (activeElder == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Please select a care recipient first.')));
+                        return;
+                      }
+                      Navigator.push(
+                          context,
+                          FadeSlideRoute(page:
+                                  ExportScreen(activeElder: activeElder)));
+                    },
+                  ),
+                )
+              else
+                const Expanded(child: SizedBox.shrink()),
+              const SizedBox(width: 14),
               Expanded(
                 child: _SettingsGridTile(
-                  icon: Icons.download_outlined,
-                  title: 'Export Logs',
-                  subtitle: 'CSV & PDF reports',
-                  color: AppTheme.tileIndigo,
-                  onTap: () {
-                    if (activeElder == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Please select a care recipient first.')));
-                      return;
-                    }
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                ExportScreen(activeElder: activeElder)));
-                  },
+                  icon: Icons.diversity_3_outlined,
+                  title: 'Language Guide',
+                  subtitle: 'Inclusive care terms',
+                  color: AppTheme.tilePurple,
+                  onTap: () => Navigator.push(
+                      context,
+                      FadeSlideRoute(page:
+                              const InclusiveLanguageGuideScreen())),
                 ),
-              )
-            else
-              const Expanded(child: SizedBox.shrink()),
-            const SizedBox(width: 14),
-            Expanded(
-              child: _SettingsGridTile(
-                icon: Icons.diversity_3_outlined,
-                title: 'Language Guide',
-                subtitle: 'Inclusive care terms',
-                color: AppTheme.tilePurple,
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            const InclusiveLanguageGuideScreen())),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(height: 18),
@@ -586,7 +592,7 @@ class _SettingsGridTile extends StatelessWidget {
 class _DarkModeSelector extends StatelessWidget {
   const _DarkModeSelector();
 
-  static const _kColor = Color(0xFF5C6BC0); // indigo — matches export tile
+  static const _kColor = AppTheme.tileIndigo; // indigo — matches export tile
 
   @override
   Widget build(BuildContext context) {
@@ -674,7 +680,7 @@ class _ThemeChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  static const _kColor = Color(0xFF5C6BC0);
+  static const _kColor = AppTheme.tileIndigo;
 
   @override
   Widget build(BuildContext context) {

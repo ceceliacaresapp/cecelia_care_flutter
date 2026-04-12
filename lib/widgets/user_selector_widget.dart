@@ -6,7 +6,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 enum MessageAudience { all, specific }
 
 // Message accent color — blue-grey, matching the message card/tile color.
-const _kMsgColor = Color(0xFF546E7A);
+const _kMsgColor = AppTheme.tileBlueGrey;
 
 class UserSelectorWidget extends StatefulWidget {
   final List<UserProfile> allUsers;

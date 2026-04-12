@@ -21,13 +21,13 @@ class ExpenseBreakdownChart extends StatelessWidget {
   final String monthLabel;
 
   static const Map<String, Color> _categoryColors = {
-    'Medical & Health': Color(0xFFD32F2F),
-    'Housing': Color(0xFF1565C0),
-    'Professional Care': Color(0xFF6A1B9A),
-    'Daily Living': Color(0xFFF57C00),
-    'Transportation': Color(0xFF00897B),
+    'Medical & Health': AppTheme.dangerColor,
+    'Housing': AppTheme.tileBlueDark,
+    'Professional Care': AppTheme.entryMoodAccent,
+    'Daily Living': AppTheme.tileOrange,
+    'Transportation': AppTheme.tileTeal,
     'Legal & Financial': Color(0xFF455A64),
-    'Caregiver Support': Color(0xFFE91E63),
+    'Caregiver Support': AppTheme.tilePinkBright,
   };
 
   @override

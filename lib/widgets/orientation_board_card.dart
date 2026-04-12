@@ -172,7 +172,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF4E342E),
+                            color: AppTheme.entryExpenseAccent,
                           )),
                       if (elderName.isNotEmpty)
                         Text('Caring for $elderName today',
@@ -216,7 +216,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF4E342E),
+                            color: AppTheme.entryExpenseAccent,
                           )),
                       Text(fullDate,
                           style: const TextStyle(
@@ -267,9 +267,9 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
   Widget _buildWeatherRow() {
     if (_loadingWeather) {
       return const Row(children: [
-        SizedBox(width: 16, height: 16,
+        const SizedBox(width: 16, height: 16,
             child: CircularProgressIndicator(strokeWidth: 2)),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Text('Loading weather...', style: TextStyle(color: Color(0xFF5D4037))),
       ]);
     }
@@ -287,7 +287,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.location_on_outlined, size: 18, color: Color(0xFF5D4037)),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text('Tap to add your location',
                   style: TextStyle(
                     fontSize: 14,
@@ -308,7 +308,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF4E342E),
+              color: AppTheme.entryExpenseAccent,
             )),
         const SizedBox(width: 8),
         Expanded(
@@ -386,7 +386,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF4E342E),
+                      color: AppTheme.entryExpenseAccent,
                     )),
               ),
             ],
@@ -444,7 +444,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF4E342E),
+                        color: AppTheme.entryExpenseAccent,
                       )),
                   const SizedBox(width: 6),
                   const Text('\u2014',

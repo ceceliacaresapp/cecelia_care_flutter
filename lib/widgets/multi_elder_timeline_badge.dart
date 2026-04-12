@@ -3,6 +3,7 @@
 // Small colored chip showing which elder a timeline entry belongs to.
 // Only displayed in multi-elder view mode.
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
@@ -18,14 +19,14 @@ class MultiElderTimelineBadge extends StatelessWidget {
   final int elderIndex;
 
   static const List<Color> _palette = [
-    Color(0xFF1E88E5),
-    Color(0xFFE53935),
-    Color(0xFF43A047),
-    Color(0xFFF57C00),
-    Color(0xFF8E24AA),
-    Color(0xFF00897B),
-    Color(0xFF5C6BC0),
-    Color(0xFFD84315),
+    AppTheme.tileBlue,
+    AppTheme.statusRed,
+    AppTheme.statusGreen,
+    AppTheme.tileOrange,
+    AppTheme.tilePurple,
+    AppTheme.tileTeal,
+    AppTheme.tileIndigo,
+    AppTheme.tileRedDeep,
   ];
 
   @override

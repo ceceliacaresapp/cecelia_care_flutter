@@ -20,7 +20,7 @@ import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/confetti_overlay.dart';
 
 // Accent — purple, matching the Self Care tab.
-const _kAccent = Color(0xFF8E24AA);
+const _kAccent = AppTheme.tilePurple;
 
 class WellnessCheckinScreen extends StatefulWidget {
   const WellnessCheckinScreen({super.key});
@@ -185,7 +185,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                     label: 'Mood',
                     value: _mood,
                     labels: WellnessCheckin.moodLabels,
-                    color: const Color(0xFFE91E63),
+                    color: AppTheme.tilePinkBright,
                     onChanged: (v) => setState(() => _mood = v),
                   ),
                   const SizedBox(height: 20),
@@ -195,7 +195,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                     label: 'Sleep quality',
                     value: _sleep,
                     labels: WellnessCheckin.sleepLabels,
-                    color: const Color(0xFF5C6BC0),
+                    color: AppTheme.tileIndigo,
                     onChanged: (v) => setState(() => _sleep = v),
                   ),
                   const SizedBox(height: 20),
@@ -205,7 +205,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                     label: 'Exercise',
                     value: _exercise,
                     labels: WellnessCheckin.exerciseLabels,
-                    color: const Color(0xFF00897B),
+                    color: AppTheme.tileTeal,
                     onChanged: (v) => setState(() => _exercise = v),
                   ),
                   const SizedBox(height: 20),
@@ -215,7 +215,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                     label: 'Social connection',
                     value: _social,
                     labels: WellnessCheckin.socialLabels,
-                    color: const Color(0xFF1E88E5),
+                    color: AppTheme.tileBlue,
                     onChanged: (v) => setState(() => _social = v),
                   ),
                   const SizedBox(height: 20),
@@ -285,7 +285,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.check_circle_outline, size: 20),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
                                   'Save check-in',
                                   style: TextStyle(
@@ -293,7 +293,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
                                   '+10 pts',
                                   style: TextStyle(
@@ -451,13 +451,13 @@ class _SuccessView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF43A047).withValues(alpha: 0.1),
+              color: AppTheme.statusGreen.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.check_circle,
               size: 56,
-              color: Color(0xFF43A047),
+              color: AppTheme.statusGreen,
             ),
           ),
           const SizedBox(height: 16),
@@ -466,7 +466,7 @@ class _SuccessView extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF43A047),
+              color: AppTheme.statusGreen,
             ),
           ),
           const SizedBox(height: 4),

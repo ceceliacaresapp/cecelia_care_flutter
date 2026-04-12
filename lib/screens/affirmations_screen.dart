@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cecelia_care_flutter/utils/gratitude_prompts.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
-const _kAccent = Color(0xFF00897B); // teal — matches the relief tile
+const _kAccent = AppTheme.tileTeal; // teal — matches the relief tile
 
 // Card gradient pairs — gentle, calming
 const _kCardGradients = [
@@ -35,7 +35,7 @@ const _kCardTextColors = [
   Color(0xFF1B5E20), // green 900
   Color(0xFF0D47A1), // blue 900
   Color(0xFF4A148C), // purple 900
-  Color(0xFFE65100), // orange 900
+  AppTheme.tileOrangeDeep, // orange 900
   Color(0xFF004D40), // teal 900
 ];
 
@@ -164,7 +164,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                 _showFavorites
                     ? Icons.favorite
                     : Icons.favorite_border,
-                color: _showFavorites ? const Color(0xFFE91E63) : null,
+                color: _showFavorites ? AppTheme.tilePinkBright : null,
               ),
               tooltip:
                   _showFavorites ? 'Show daily set' : 'Show favorites',
@@ -369,7 +369,7 @@ class _AffirmationCard extends StatelessWidget {
                       key: ValueKey(isFavorite),
                       size: 28,
                       color: isFavorite
-                          ? const Color(0xFFE91E63)
+                          ? AppTheme.tilePinkBright
                           : textColor.withValues(alpha: 0.3),
                     ),
                   ),

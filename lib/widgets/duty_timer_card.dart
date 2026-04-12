@@ -53,9 +53,9 @@ class _DutyTimerCardState extends State<DutyTimerCard> {
   static const Duration _standardShift = Duration(hours: 8);
   static const Duration _longShift = Duration(hours: 12);
 
-  static const Color _greenColor = Color(0xFF43A047);
-  static const Color _amberColor = Color(0xFFF57C00);
-  static const Color _redColor = Color(0xFFE53935);
+  static const Color _greenColor = AppTheme.statusGreen;
+  static const Color _amberColor = AppTheme.tileOrange;
+  static const Color _redColor = AppTheme.statusRed;
 
   Color _colorForDuration(Duration d) {
     if (d >= _longShift) return _redColor;

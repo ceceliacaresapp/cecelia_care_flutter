@@ -150,12 +150,19 @@ class _WeightTrendCardState extends State<WeightTrendCard> {
                                 child: Icon(Icons.warning_amber,
                                     size: 16, color: AppTheme.statusRed),
                               ),
-                            Text('${latest.display} ${latest.unit}',
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: latest.display),
+                              duration: const Duration(milliseconds: 800),
+                              curve: Curves.easeOut,
+                              builder: (_, v, __) => Text(
+                                '${v.toStringAsFixed(1)} ${latest.unit}',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: pctColor,
-                                )),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         Text(

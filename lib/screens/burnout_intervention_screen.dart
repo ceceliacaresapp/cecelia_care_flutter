@@ -4,6 +4,7 @@
 // score has been <= 40 for 3+ consecutive days. Not clinical. Not alarming.
 // A friend checking in.
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -122,10 +123,10 @@ class BurnoutInterventionScreen extends StatelessWidget {
                     children: scores.map((s) {
                       final height = (s / 100) * 50;
                       final color = s <= 30
-                          ? const Color(0xFFE53935)
+                          ? AppTheme.statusRed
                           : s <= 60
-                              ? const Color(0xFFF57C00)
-                              : const Color(0xFF43A047);
+                              ? AppTheme.tileOrange
+                              : AppTheme.statusGreen;
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Column(
@@ -182,7 +183,7 @@ class BurnoutInterventionScreen extends StatelessWidget {
                 emoji: '\uD83C\uDF2C\uFE0F', // 🌬️
                 title: 'Take a breath',
                 subtitle: 'A quick breathing exercise to reset',
-                color: const Color(0xFF00897B),
+                color: AppTheme.tileTeal,
                 onTap: () => Navigator.push(context, MaterialPageRoute(
                     builder: (_) => const BreathingExerciseScreen())),
               ),
@@ -191,7 +192,7 @@ class BurnoutInterventionScreen extends StatelessWidget {
                 emoji: '\uD83D\uDCDD', // 📝
                 title: 'Talk it out',
                 subtitle: 'Write in your private journal',
-                color: const Color(0xFF5C6BC0),
+                color: AppTheme.tileIndigo,
                 onTap: () => Navigator.push(context, MaterialPageRoute(
                     builder: (_) => const CareGiverJournalScreen())),
               ),
@@ -200,7 +201,7 @@ class BurnoutInterventionScreen extends StatelessWidget {
                 emoji: '\uD83C\uDD98', // 🆘
                 title: 'I need help now',
                 subtitle: 'Crisis tools, hotlines, and support',
-                color: const Color(0xFFE53935),
+                color: AppTheme.statusRed,
                 onTap: () => Navigator.push(context, MaterialPageRoute(
                     builder: (_) => const SosScreen())),
               ),

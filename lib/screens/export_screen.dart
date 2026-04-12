@@ -22,7 +22,7 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 // Constants
 // ---------------------------------------------------------------------------
 
-const _kExportColor = Color(0xFF5C6BC0); // indigo — matches Settings tile
+const _kExportColor = AppTheme.tileIndigo; // indigo — matches Settings tile
 
 // Entry types that are meaningful to export. Messages and caregiver journal
 // entries are kept out of medical exports by default but the caregiver can
@@ -506,12 +506,12 @@ class _ExportScreenState extends State<ExportScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: _includeWellness
-                    ? const Color(0xFF8E24AA).withValues(alpha: 0.06)
+                    ? AppTheme.tilePurple.withValues(alpha: 0.06)
                     : AppTheme.backgroundGray,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _includeWellness
-                      ? const Color(0xFF8E24AA)
+                      ? AppTheme.tilePurple
                       : AppTheme.textLight.withValues(alpha: 0.4),
                   width: _includeWellness ? 1.5 : 1,
                 ),
@@ -522,7 +522,7 @@ class _ExportScreenState extends State<ExportScreen> {
                     Icons.favorite_outline,
                     size: 20,
                     color: _includeWellness
-                        ? const Color(0xFF8E24AA)
+                        ? AppTheme.tilePurple
                         : AppTheme.textSecondary,
                   ),
                   const SizedBox(width: 12),
@@ -536,7 +536,7 @@ class _ExportScreenState extends State<ExportScreen> {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: _includeWellness
-                                ? const Color(0xFF8E24AA)
+                                ? AppTheme.tilePurple
                                 : AppTheme.textPrimary,
                           ),
                         ),
@@ -557,7 +557,7 @@ class _ExportScreenState extends State<ExportScreen> {
                         : Icons.circle_outlined,
                     size: 22,
                     color: _includeWellness
-                        ? const Color(0xFF8E24AA)
+                        ? AppTheme.tilePurple
                         : AppTheme.textLight,
                   ),
                 ],
@@ -728,16 +728,16 @@ class _ExportScreenState extends State<ExportScreen> {
 
   Color _colorForType(EntryType t) {
     switch (t) {
-      case EntryType.medication: return const Color(0xFF1E88E5);
-      case EntryType.vital: return const Color(0xFFF57C00);
-      case EntryType.mood: return const Color(0xFFE91E63);
-      case EntryType.sleep: return const Color(0xFF5C6BC0);
-      case EntryType.meal: return const Color(0xFF43A047);
-      case EntryType.activity: return const Color(0xFF00897B);
-      case EntryType.pain: return const Color(0xFFE53935);
-      case EntryType.expense: return const Color(0xFF8E24AA);
-      case EntryType.message: return const Color(0xFF546E7A);
-      case EntryType.caregiverJournal: return const Color(0xFF546E7A);
+      case EntryType.medication: return AppTheme.tileBlue;
+      case EntryType.vital: return AppTheme.tileOrange;
+      case EntryType.mood: return AppTheme.tilePinkBright;
+      case EntryType.sleep: return AppTheme.tileIndigo;
+      case EntryType.meal: return AppTheme.statusGreen;
+      case EntryType.activity: return AppTheme.tileTeal;
+      case EntryType.pain: return AppTheme.statusRed;
+      case EntryType.expense: return AppTheme.tilePurple;
+      case EntryType.message: return AppTheme.tileBlueGrey;
+      case EntryType.caregiverJournal: return AppTheme.tileBlueGrey;
       default: return AppTheme.textSecondary;
     }
   }

@@ -570,7 +570,7 @@ class _OnDutyBanner extends StatelessWidget {
             width: 10,
             height: 10,
             decoration: BoxDecoration(
-              color: const Color(0xFF43A047),
+              color: AppTheme.statusGreen,
               shape: BoxShape.circle,
             ),
           ),

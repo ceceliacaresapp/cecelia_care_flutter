@@ -28,6 +28,8 @@ import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
+import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
 
 // Screens
 import 'package:cecelia_care_flutter/screens/wellness_checkin_screen.dart';
@@ -486,12 +488,13 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
 // Check-in CTA — shown when the user hasn't checked in today
 // ---------------------------------------------------------------------------
 class _CheckinCta extends StatelessWidget {
+  // Uses TapScaleWrapper for press feedback
   const _CheckinCta({required this.onTap});
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TapScaleWrapper(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(18),
@@ -630,35 +633,47 @@ class _ReliefToolsGrid extends StatelessWidget {
       mainAxisSpacing: 10,
       childAspectRatio: 1.6,
       children: [
-        _ReliefTile(
-          icon: Icons.air_outlined,
-          label: 'Breathing',
-          subtitle: '+10 pts',
-          color: AppTheme.tileIndigo,
-          onTap: onBreathing,
+        StaggeredFadeIn(
+          index: 0,
+          child: _ReliefTile(
+            icon: Icons.air_outlined,
+            label: 'Breathing',
+            subtitle: '+10 pts',
+            color: AppTheme.tileIndigo,
+            onTap: onBreathing,
+          ),
         ),
-        _ReliefTile(
-          icon: Icons.spa_outlined,
-          label: 'SOS mode',
-          subtitle: 'Crisis toolkit',
-          color: AppTheme.statusRed,
-          onTap: onSos,
+        StaggeredFadeIn(
+          index: 1,
+          child: _ReliefTile(
+            icon: Icons.spa_outlined,
+            label: 'SOS mode',
+            subtitle: 'Crisis toolkit',
+            color: AppTheme.statusRed,
+            onTap: onSos,
+          ),
         ),
-        _ReliefTile(
-          icon: Icons.menu_book_outlined,
-          label: 'Journal',
-          subtitle: '+15 pts',
-          color: _kSelfCareColor,
-          onTap: onJournal,
+        StaggeredFadeIn(
+          index: 2,
+          child: _ReliefTile(
+            icon: Icons.menu_book_outlined,
+            label: 'Journal',
+            subtitle: '+15 pts',
+            color: _kSelfCareColor,
+            onTap: onJournal,
+          ),
         ),
-        _ReliefTile(
-          icon: Icons.format_quote_outlined,
-          label: 'Affirmations',
-          subtitle: 'Daily encouragement',
-          color: AppTheme.tileTeal,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (_) => const AffirmationsScreen()),
+        StaggeredFadeIn(
+          index: 3,
+          child: _ReliefTile(
+            icon: Icons.format_quote_outlined,
+            label: 'Affirmations',
+            subtitle: 'Daily encouragement',
+            color: AppTheme.tileTeal,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const AffirmationsScreen()),
+            ),
           ),
         ),
       ],
@@ -683,7 +698,7 @@ class _ReliefTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TapScaleWrapper(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(

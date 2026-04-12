@@ -7,6 +7,7 @@
 // Usage: place once near the top of the widget tree (e.g. in HomeScreen).
 // No provider, no main.dart changes — fully self-managing.
 
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -93,15 +94,15 @@ class _OfflineBannerState extends State<OfflineBanner>
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.cloud_off_outlined, size: 16, color: Color(0xFFF57C00)),
-            SizedBox(width: 8),
+            Icon(Icons.cloud_off_outlined, size: 16, color: AppTheme.tileOrange),
+            const SizedBox(width: 8),
             Flexible(
               child: Text(
                 'You\'re offline — changes will sync when reconnected',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFFE65100),
+                  color: AppTheme.tileOrangeDeep,
                 ),
                 textAlign: TextAlign.center,
               ),

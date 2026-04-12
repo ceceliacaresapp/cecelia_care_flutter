@@ -17,7 +17,9 @@ import 'package:cecelia_care_flutter/models/wound_entry.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
+import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class WoundTrackingScreen extends StatefulWidget {
   const WoundTrackingScreen({super.key});
@@ -97,7 +99,7 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
       appBar: AppBar(title: const Text('Wound Tracker')),
       floatingActionButton: FloatingActionButton(
         onPressed: _captureAndUpload,
-        backgroundColor: const Color(0xFFE53935),
+        backgroundColor: AppTheme.statusRed,
         child: const Icon(Icons.add_a_photo, color: Colors.white),
       ),
       body: elderId.isEmpty
@@ -150,7 +152,7 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
       child: FilterChip(
         selected: isSelected,
         label: Text(label, style: const TextStyle(fontSize: 12)),
-        selectedColor: const Color(0xFFE53935).withValues(alpha: 0.15),
+        selectedColor: AppTheme.statusRed.withValues(alpha: 0.15),
         backgroundColor: Colors.grey.shade100,
         onSelected: (_) => setState(() => _regionFilter = key),
         side: BorderSide.none,
@@ -169,7 +171,12 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
                 }
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: List.generate(3, (_) => const SkeletonListTile()),
+            ),
+          );
         }
 
         final allEntries = (snapshot.data ?? [])
@@ -184,24 +191,10 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
                 .toList();
 
         if (entries.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.healing_outlined,
-                      size: 48, color: Colors.grey.shade300),
-                  const SizedBox(height: 12),
-                  const Text('No wound photos yet.',
-                      style: TextStyle(fontSize: 16)),
-                  const Text(
-                    'Tap + to document a wound or condition.',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
+          return const EmptyStateWidget(
+            icon: Icons.healing_outlined,
+            title: 'No wound photos yet',
+            subtitle: 'Document conditions for your care team.',
           );
         }
 
@@ -266,7 +259,7 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
+                          color: AppTheme.tileBlue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text('${region.icon} ${region.label}',
@@ -388,8 +381,8 @@ class _ComparisonSheet extends StatelessWidget {
 
   Color get _deltaColor {
     final d = _delta;
-    if (d == 'Improving') return const Color(0xFF43A047);
-    if (d == 'Worsening') return const Color(0xFFE53935);
+    if (d == 'Improving') return AppTheme.statusGreen;
+    if (d == 'Worsening') return AppTheme.statusRed;
     return Colors.grey;
   }
 
@@ -631,12 +624,12 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
                       horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFFE53935).withValues(alpha: 0.1)
+                        ? AppTheme.statusRed.withValues(alpha: 0.1)
                         : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFFE53935)
+                          ? AppTheme.statusRed
                           : Colors.grey.shade300,
                     ),
                   ),
@@ -646,7 +639,7 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.normal,
                         color: isSelected
-                            ? const Color(0xFFE53935)
+                            ? AppTheme.statusRed
                             : null,
                       )),
                 ),
@@ -675,11 +668,11 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
           const SizedBox(height: 8),
           Row(
             children: [
-              _severityChip('mild', 'Mild', const Color(0xFF43A047)),
+              _severityChip('mild', 'Mild', AppTheme.statusGreen),
               const SizedBox(width: 8),
-              _severityChip('moderate', 'Moderate', const Color(0xFFF57C00)),
+              _severityChip('moderate', 'Moderate', AppTheme.tileOrange),
               const SizedBox(width: 8),
-              _severityChip('severe', 'Severe', const Color(0xFFE53935)),
+              _severityChip('severe', 'Severe', AppTheme.statusRed),
             ],
           ),
           const SizedBox(height: 16),
@@ -701,7 +694,7 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
           ElevatedButton(
             onPressed: _canSave && !_isSaving ? _handleSave : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53935),
+              backgroundColor: AppTheme.statusRed,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(

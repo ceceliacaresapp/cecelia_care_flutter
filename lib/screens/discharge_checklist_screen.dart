@@ -46,7 +46,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
   bool _initialized = false;
   bool _saving = false;
 
-  static const Color _accent = Color(0xFF1565C0);
+  static const Color _accent = AppTheme.tileBlueDark;
 
   @override
   void initState() {
@@ -534,12 +534,12 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
               runSpacing: 6,
               children: [
                 _statusChip(m, 'continued', 'Continuing',
-                    const Color(0xFF43A047)),
+                    AppTheme.statusGreen),
                 _statusChip(m, 'changed', 'Dose changed',
-                    const Color(0xFFF57C00)),
+                    AppTheme.tileOrange),
                 _statusChip(
-                    m, 'stopped', 'Stopped', const Color(0xFFE53935)),
-                _statusChip(m, 'new', 'New', const Color(0xFF1E88E5)),
+                    m, 'stopped', 'Stopped', AppTheme.statusRed),
+                _statusChip(m, 'new', 'New', AppTheme.tileBlue),
               ],
             ),
             const SizedBox(height: 8),
@@ -678,7 +678,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                             ? Icons.event_available
                             : Icons.event_outlined,
                         color: scheduled
-                            ? const Color(0xFF43A047)
+                            ? AppTheme.statusGreen
                             : _accent,
                       ),
                       const SizedBox(width: 8),
@@ -719,7 +719,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                             style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF43A047)),
+                                color: AppTheme.statusGreen),
                           ),
                         )
                       else
