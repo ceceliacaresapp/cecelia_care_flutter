@@ -4,6 +4,7 @@
 // responded. Builds a record of which people calm vs. agitate — useful for
 // dementia/sundowning management.
 
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -44,46 +45,46 @@ class _VisitorFormState extends State<VisitorForm> {
 
   static const Color _accent = AppTheme.entryMoodAccent;
 
-  static const List<String> _relationships = [
-    'Family',
-    'Friend',
-    'Neighbor',
-    'Home health aide',
-    'Therapist',
-    'Clergy / spiritual',
-    'Other',
+  static List<String> _relationships(AppLocalizations l10n) => [
+    l10n.visitorRelationshipFamily,
+    l10n.visitorRelationshipFriend,
+    l10n.visitorRelationshipNeighbor,
+    l10n.visitorRelationshipHomeHealthAide,
+    l10n.visitorRelationshipTherapist,
+    l10n.visitorRelationshipClergy,
+    l10n.visitorRelationshipOther,
   ];
 
-  static const List<String> _durations = [
-    '< 15 min',
-    '15\u201330 min',
-    '30\u201360 min',
-    '1\u20132 hours',
-    '2+ hours',
+  static List<String> _durations(AppLocalizations l10n) => [
+    l10n.visitorDurationUnder15Min,
+    l10n.visitorDuration15To30Min,
+    l10n.visitorDuration30To60Min,
+    l10n.visitorDuration1To2Hours,
+    l10n.visitorDuration2PlusHours,
   ];
 
-  static const List<_ResponseOption> _responses = [
-    _ResponseOption('positive', 'Positive / engaged',
-        'Smiled, talked, participated', AppTheme.statusGreen),
-    _ResponseOption('neutral', 'Neutral / calm',
-        'No change in demeanor', AppTheme.tileBlue),
-    _ResponseOption('agitated', 'Agitated / anxious',
-        'Restless, irritable, raised voice', AppTheme.tileOrange),
-    _ResponseOption('withdrawn', 'Withdrawn / unresponsive',
-        'Shut down, would not engage', Color(0xFF757575)),
-    _ResponseOption('confused', 'Confused / disoriented',
-        'Did not recognize visitor', Color(0xFFEF6C00)),
+  static List<_ResponseOption> _responses(AppLocalizations l10n) => [
+    _ResponseOption('positive', l10n.visitorResponsePositive,
+        l10n.visitorResponsePositiveHint, AppTheme.statusGreen),
+    _ResponseOption('neutral', l10n.visitorResponseNeutral,
+        l10n.visitorResponseNeutralHint, AppTheme.tileBlue),
+    _ResponseOption('agitated', l10n.visitorResponseAgitated,
+        l10n.visitorResponseAgitatedHint, AppTheme.tileOrange),
+    _ResponseOption('withdrawn', l10n.visitorResponseWithdrawn,
+        l10n.visitorResponseWithdrawnHint, Color(0xFF757575)),
+    _ResponseOption('confused', l10n.visitorResponseConfused,
+        l10n.visitorResponseConfusedHint, Color(0xFFEF6C00)),
   ];
 
-  static const List<String> _activityOptions = [
-    'Conversation',
-    'Watched TV',
-    'Played games',
-    'Looked at photos',
-    'Went outside',
-    'Ate together',
-    'Music / singing',
-    'Just sat together',
+  static List<String> _activityOptions(AppLocalizations l10n) => [
+    l10n.visitorActivityConversation,
+    l10n.visitorActivityWatchedTV,
+    l10n.visitorActivityPlayedGames,
+    l10n.visitorActivityLookedAtPhotos,
+    l10n.visitorActivityWentOutside,
+    l10n.visitorActivityAteTogether,
+    l10n.visitorActivityMusicSinging,
+    l10n.visitorActivityJustSatTogether,
   ];
 
   bool get _canSave =>
@@ -102,11 +103,12 @@ class _VisitorFormState extends State<VisitorForm> {
   Future<void> _handleSave() async {
     if (!_canSave) return;
     setState(() => _isSaving = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final journal = context.read<JournalServiceProvider>();
       final user = AuthService.currentUser;
       if (user == null) {
-        _showSnackBar('Not authenticated.', Colors.red);
+        _showSnackBar(l10n.errorNotAuthenticated, Colors.red);
         return;
       }
       final payload = <String, dynamic>{
@@ -130,13 +132,13 @@ class _VisitorFormState extends State<VisitorForm> {
         'visibleToUserIds': <String>[],
       };
       await journal.addJournalEntry('visitor', payload, user.uid);
-      _showSnackBar('Visitor log saved.', Colors.green);
+      _showSnackBar(l10n.visitorLogSaveSuccess, Colors.green);
       HapticUtils.success();
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving visitor log: $e');
-      _showSnackBar('Failed to save. Please try again.', Colors.red);
+      _showSnackBar(l10n.visitorLogSaveError, Colors.red);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -151,23 +153,25 @@ class _VisitorFormState extends State<VisitorForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
           24, 8, 24, MediaQuery.of(context).viewInsets.bottom + 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FormSheetHeader(title: 'Log Visitor'),
+          FormSheetHeader(title: l10n.visitorFormTitle),
           const SizedBox(height: 20),
 
-          // ── Visitor name ───────────────────────────────────
-          FormSectionHeader(label: 'Visitor Name', color: _accent),
+          // -- Visitor name -------------------------------------------
+          FormSectionHeader(label: l10n.visitorFormNameLabel, color: _accent),
           const SizedBox(height: 6),
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(
-              hintText: 'e.g. Aunt Susan',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: l10n.visitorFormNameHint,
+              border: const OutlineInputBorder(),
               isDense: true,
             ),
             textCapitalization: TextCapitalization.words,
@@ -175,23 +179,23 @@ class _VisitorFormState extends State<VisitorForm> {
           ),
           const SizedBox(height: 20),
 
-          // ── Relationship ───────────────────────────────────
+          // -- Relationship -------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Relationship', color: _accent),
+          FormSectionHeader(label: l10n.visitorFormRelationshipLabel, color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _relationships
+            children: _relationships(l10n)
                 .map((r) => _chip(r, _relationship == r,
                     () => setState(() => _relationship = r)))
                 .toList(),
           ),
           const SizedBox(height: 20),
 
-          // ── Visit time ─────────────────────────────────────
+          // -- Visit time ---------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Visit Time', color: _accent),
+          FormSectionHeader(label: l10n.visitorFormVisitTimeLabel, color: _accent),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
@@ -206,7 +210,7 @@ class _VisitorFormState extends State<VisitorForm> {
                   horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               child: Row(
                 children: [
@@ -220,37 +224,37 @@ class _VisitorFormState extends State<VisitorForm> {
           ),
           const SizedBox(height: 20),
 
-          // ── Duration ───────────────────────────────────────
+          // -- Duration -----------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Duration', color: _accent),
+          FormSectionHeader(label: l10n.visitorFormDurationLabel, color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _durations
+            children: _durations(l10n)
                 .map((d) => _chip(d, _duration == d,
                     () => setState(() => _duration = d)))
                 .toList(),
           ),
           const SizedBox(height: 20),
 
-          // ── Response ───────────────────────────────────────
+          // -- Response -----------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: "Recipient's Response", color: _accent),
+          FormSectionHeader(label: l10n.visitorFormResponseLabel, color: _accent),
           const SizedBox(height: 8),
           Column(
-            children: _responses.map(_responseRow).toList(),
+            children: _responses(l10n).map(_responseRow).toList(),
           ),
           const SizedBox(height: 20),
 
-          // ── Activities ─────────────────────────────────────
+          // -- Activities ---------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Activities', color: _accent),
+          FormSectionHeader(label: l10n.visitorFormActivitiesLabel, color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _activityOptions.map((a) {
+            children: _activityOptions(l10n).map((a) {
               final selected = _activities.contains(a);
               return _chip(a, selected, () {
                 setState(() {
@@ -265,20 +269,20 @@ class _VisitorFormState extends State<VisitorForm> {
           ),
           const SizedBox(height: 20),
 
-          // ── Notes ──────────────────────────────────────────
+          // -- Notes --------------------------------------------------
           TextField(
             controller: _noteCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Notes (optional)',
-              border: OutlineInputBorder(),
-              hintText: 'Any observations...',
+            decoration: InputDecoration(
+              labelText: l10n.visitorFormNotesLabel,
+              border: const OutlineInputBorder(),
+              hintText: l10n.visitorFormNotesHint,
             ),
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: 24),
 
-          // ── Cancel + Save ──────────────────────────────────
+          // -- Cancel + Save ------------------------------------------
           Row(
             children: [
               Expanded(
@@ -291,10 +295,10 @@ class _VisitorFormState extends State<VisitorForm> {
                     side: BorderSide(color: Colors.grey.shade400),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
-                  child: const Text('Cancel',
-                      style: TextStyle(
+                  child: Text(l10n.visitorFormCancelButton,
+                      style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
@@ -307,7 +311,7 @@ class _VisitorFormState extends State<VisitorForm> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
                   child: _isSaving
                       ? const SizedBox(
@@ -316,8 +320,8 @@ class _VisitorFormState extends State<VisitorForm> {
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text('Save',
-                          style: TextStyle(
+                      : Text(l10n.visitorFormSaveButton,
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
@@ -340,7 +344,7 @@ class _VisitorFormState extends State<VisitorForm> {
           color: isSelected
               ? r.color.withValues(alpha: 0.12)
               : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: isSelected ? r.color : Colors.grey.shade300,
             width: isSelected ? 1.5 : 1,
@@ -398,7 +402,7 @@ class _VisitorFormState extends State<VisitorForm> {
           color: selected
               ? _accent.withValues(alpha: 0.12)
               : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: selected ? _accent : Colors.grey.shade300,
             width: selected ? 1.5 : 1,

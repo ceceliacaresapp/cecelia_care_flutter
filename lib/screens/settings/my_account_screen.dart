@@ -10,6 +10,7 @@ import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/app_styles.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
@@ -353,24 +354,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                             child: Stack(
                               alignment: Alignment.bottomRight,
                               children: [
-                                CircleAvatar(
+                                CachedAvatar(
+                                  imageUrl: userProfile.avatarUrl,
                                   radius: 48,
                                   backgroundColor: AppTheme.primaryColor
                                       .withAlpha(
                                           (255 * 0.2).round()),
-                                  backgroundImage: (userProfile.avatarUrl !=
-                                              null &&
-                                          userProfile
-                                              .avatarUrl!.isNotEmpty)
-                                      ? NetworkImage(
-                                          userProfile.avatarUrl!)
-                                      : null,
-                                  child: _isUploadingPhoto
+                                  fallbackChild: _isUploadingPhoto
                                       ? const CircularProgressIndicator()
-                                      : (userProfile.avatarUrl == null ||
-                                              userProfile
-                                                  .avatarUrl!.isEmpty)
-                                          ? (userProfile
+                                      : (userProfile
                                                   .displayName.isNotEmpty
                                               ? Text(
                                                   userProfile
@@ -389,8 +381,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                                                   size: 48,
                                                   color:
                                                       AppTheme.primaryColor,
-                                                ))
-                                          : null,
+                                                )),
                                 ),
                                 // Camera badge
                                 Container(

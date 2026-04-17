@@ -124,7 +124,7 @@ class _SosScreenState extends State<SosScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radiusL),
                 boxShadow: [
                   BoxShadow(
                     color: _kCalmPrimary.withValues(alpha: 0.08),
@@ -232,7 +232,7 @@ class _SosScreenState extends State<SosScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 border: Border.all(
                     color: AppTheme.dangerColor.withValues(alpha: 0.15)),
               ),
@@ -256,6 +256,20 @@ class _SosScreenState extends State<SosScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  _HotlineRow(
+                    name: 'Emergency',
+                    number: '911',
+                    note: 'Life-threatening emergencies',
+                    onCall: () => _launchPhone('911'),
+                  ),
+                  const Divider(height: 16),
+                  _HotlineRow(
+                    name: 'Poison Control',
+                    number: '1-800-222-1222',
+                    note: '24/7 — ingestion emergencies',
+                    onCall: () => _launchPhone('18002221222'),
+                  ),
+                  const Divider(height: 16),
                   _HotlineRow(
                     name: '988 Suicide & Crisis Lifeline',
                     number: '988',
@@ -322,7 +336,7 @@ class _SosToolCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: isActive ? color : color.withValues(alpha: 0.15)),
         boxShadow: [
@@ -380,7 +394,7 @@ class _SosToolCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   side: BorderSide(color: color.withValues(alpha: 0.3)),
                 ),
               ),
@@ -454,7 +468,7 @@ class _GroundingCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: isActive ? color : color.withValues(alpha: 0.15)),
         boxShadow: [
@@ -521,7 +535,7 @@ class _GroundingCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 8),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       side: BorderSide(color: color.withValues(alpha: 0.3)),
                     ),
                   ),
@@ -565,7 +579,7 @@ class _GroundingCard extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 child: Row(
                   children: [
@@ -618,7 +632,7 @@ class _GroundingCard extends StatelessWidget {
                       backgroundColor: color,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       ),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),

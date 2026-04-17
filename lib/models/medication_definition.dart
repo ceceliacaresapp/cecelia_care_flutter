@@ -22,6 +22,26 @@ class MedicationDefinition {
   // Photo of the pill/bottle for visual identification.
   final String? photoUrl;
 
+  // PRN (as-needed) medication tracking.
+  final bool isPRN;
+
+  /// Delay in minutes before a "did it help?" follow-up notification.
+  /// null = follow-up disabled. Common values: 30, 60, 90.
+  final int? prnFollowUpMinutes;
+
+  // Controlled substance fields.
+  /// True if this medication is a controlled/scheduled substance (opioids, etc.).
+  final bool isControlled;
+
+  /// DEA schedule (2-5). null = not applicable.
+  final int? deaSchedule;
+
+  /// If true, opening controlled substance details requires the care team PIN.
+  final bool requiresVerification;
+
+  /// If true, two caregivers must confirm each dose administration.
+  final bool requiresTwoPersonVerify;
+
   MedicationDefinition({
     this.id,
     required this.name,
@@ -35,6 +55,12 @@ class MedicationDefinition {
     this.pillCount,
     this.refillThreshold,
     this.photoUrl,
+    this.isPRN = false,
+    this.prnFollowUpMinutes,
+    this.isControlled = false,
+    this.deaSchedule,
+    this.requiresVerification = false,
+    this.requiresTwoPersonVerify = false,
   });
 
   bool get hasPhoto => photoUrl != null && photoUrl!.isNotEmpty;
@@ -53,6 +79,12 @@ class MedicationDefinition {
       pillCount: null,
       refillThreshold: null,
       photoUrl: null,
+      isPRN: false,
+      prnFollowUpMinutes: null,
+      isControlled: false,
+      deaSchedule: null,
+      requiresVerification: false,
+      requiresTwoPersonVerify: false,
     );
   }
 
@@ -75,6 +107,12 @@ class MedicationDefinition {
       pillCount: data?['pillCount'] as int?,
       refillThreshold: data?['refillThreshold'] as int?,
       photoUrl: data?['photoUrl'] as String?,
+      isPRN: data?['isPRN'] as bool? ?? false,
+      prnFollowUpMinutes: data?['prnFollowUpMinutes'] as int?,
+      isControlled: data?['isControlled'] as bool? ?? false,
+      deaSchedule: data?['deaSchedule'] as int?,
+      requiresVerification: data?['requiresVerification'] as bool? ?? false,
+      requiresTwoPersonVerify: data?['requiresTwoPersonVerify'] as bool? ?? false,
     );
   }
 
@@ -91,6 +129,13 @@ class MedicationDefinition {
       if (pillCount != null) 'pillCount': pillCount,
       if (refillThreshold != null) 'refillThreshold': refillThreshold,
       if (photoUrl != null) 'photoUrl': photoUrl,
+      'isPRN': isPRN,
+      if (prnFollowUpMinutes != null)
+        'prnFollowUpMinutes': prnFollowUpMinutes,
+      'isControlled': isControlled,
+      if (deaSchedule != null) 'deaSchedule': deaSchedule,
+      'requiresVerification': requiresVerification,
+      'requiresTwoPersonVerify': requiresTwoPersonVerify,
     };
   }
 
@@ -108,6 +153,12 @@ class MedicationDefinition {
     Object? pillCount = _kSentinel,
     Object? refillThreshold = _kSentinel,
     Object? photoUrl = _kSentinel,
+    bool? isPRN,
+    Object? prnFollowUpMinutes = _kSentinel,
+    bool? isControlled,
+    Object? deaSchedule = _kSentinel,
+    bool? requiresVerification,
+    bool? requiresTwoPersonVerify,
   }) {
     return MedicationDefinition(
       id: id ?? this.id,
@@ -127,6 +178,18 @@ class MedicationDefinition {
       photoUrl: identical(photoUrl, _kSentinel)
           ? this.photoUrl
           : photoUrl as String?,
+      isPRN: isPRN ?? this.isPRN,
+      prnFollowUpMinutes: identical(prnFollowUpMinutes, _kSentinel)
+          ? this.prnFollowUpMinutes
+          : prnFollowUpMinutes as int?,
+      isControlled: isControlled ?? this.isControlled,
+      deaSchedule: identical(deaSchedule, _kSentinel)
+          ? this.deaSchedule
+          : deaSchedule as int?,
+      requiresVerification:
+          requiresVerification ?? this.requiresVerification,
+      requiresTwoPersonVerify:
+          requiresTwoPersonVerify ?? this.requiresTwoPersonVerify,
     );
   }
 }

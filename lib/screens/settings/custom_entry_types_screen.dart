@@ -172,7 +172,7 @@ class _TypeCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: type.color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: type.color.withValues(alpha: 0.2)),
         ),
         child: Row(
@@ -181,7 +181,7 @@ class _TypeCard extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: type.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               child: Icon(type.iconData, color: type.color, size: 24),
             ),
@@ -397,7 +397,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 border: Border.all(color: color.withValues(alpha: 0.25)),
               ),
               child: Row(
@@ -407,7 +407,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     ),
                     child: Icon(
                       CustomEntryType.kAvailableIcons[_selectedIcon] ??
@@ -440,7 +440,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
               filled: true,
               fillColor: color.withValues(alpha: 0.04),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS)),
             ),
             onChanged: (_) => setState(() {}),
           ),
@@ -469,7 +469,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                           color: _selectedIcon == e.key
                               ? color.withValues(alpha: 0.15)
                               : AppTheme.backgroundGray,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           border: Border.all(
                             color: _selectedIcon == e.key
                                 ? color
@@ -519,7 +519,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                             horizontal: 2),
                         decoration: BoxDecoration(
                           color: c,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           border: selected
                               ? Border.all(
                                   color: Colors.white, width: 2.5)
@@ -575,7 +575,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppTheme.backgroundGray,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               child: Column(
                 children: [
@@ -590,7 +590,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                             isDense: true,
                             border: OutlineInputBorder(
                                 borderRadius:
-                                    BorderRadius.circular(8)),
+                                    BorderRadius.circular(AppTheme.radiusS)),
                           ),
                         ),
                       ),
@@ -605,7 +605,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                             isDense: true,
                             border: OutlineInputBorder(
                                 borderRadius:
-                                    BorderRadius.circular(8)),
+                                    BorderRadius.circular(AppTheme.radiusS)),
                           ),
                           items: const [
                             DropdownMenuItem(
@@ -649,7 +649,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                         hintText: 'Improving, Stable, Worsening',
                         isDense: true,
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                       ),
                     ),
                   ],
@@ -685,7 +685,7 @@ class _CustomEntryTypeEditorState extends State<_CustomEntryTypeEditor> {
                 backgroundColor: color,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               ),
               child: _isSaving
                   ? const SizedBox(

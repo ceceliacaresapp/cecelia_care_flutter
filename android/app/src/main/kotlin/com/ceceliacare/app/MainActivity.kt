@@ -1,4 +1,4 @@
-package com.example.cecelia_care_flutter
+package com.ceceliacare.app
 
 import io.flutter.embedding.android.FlutterActivity
 

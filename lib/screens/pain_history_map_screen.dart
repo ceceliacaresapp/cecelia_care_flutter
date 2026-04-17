@@ -5,6 +5,7 @@
 // shared body silhouette + a region frequency table + a horizontal
 // timeline strip of recent entries.
 
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -33,18 +34,19 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final elder = context.watch<ActiveElderProvider>().activeElder;
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (elder == null || uid.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Pain History')),
-        body: const Center(child: Text('No care recipient selected.')),
+        appBar: AppBar(title: Text(l10n.painHistoryScreenTitle)),
+        body: Center(child: Text(l10n.painHistoryNoCareRecipient)),
       );
     }
     final start = DateTime.now().subtract(Duration(days: _days));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pain History'),
+        title: Text(l10n.painHistoryScreenTitle),
         backgroundColor: _accent,
         foregroundColor: Colors.white,
       ),
@@ -124,11 +126,12 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
   }
 
   Widget _periodSelector() {
+    final l10n = AppLocalizations.of(context)!;
     return SegmentedButton<int>(
-      segments: const [
-        ButtonSegment(value: 7, label: Text('7d')),
-        ButtonSegment(value: 30, label: Text('30d')),
-        ButtonSegment(value: 90, label: Text('90d')),
+      segments: [
+        ButtonSegment(value: 7, label: Text(l10n.painHistoryPeriod7Days)),
+        ButtonSegment(value: 30, label: Text(l10n.painHistoryPeriod30Days)),
+        ButtonSegment(value: 90, label: Text(l10n.painHistoryPeriod90Days)),
       ],
       selected: {_days},
       onSelectionChanged: (s) => setState(() {
@@ -139,11 +142,12 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
   }
 
   Widget _summaryRow(int entryCount, int pointCount) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: _statBox(
-            label: 'Pain entries',
+            label: l10n.painHistorySummaryPainEntries,
             value: '$entryCount',
             color: _accent,
           ),
@@ -151,7 +155,7 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: _statBox(
-            label: 'Locations marked',
+            label: l10n.painHistorySummaryLocationsMarked,
             value: '$pointCount',
             color: const Color(0xFFFF9800),
           ),
@@ -169,7 +173,7 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -195,14 +199,16 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
   }
 
   Widget _emptyState() {
-    return const EmptyStateWidget(
+    final l10n = AppLocalizations.of(context)!;
+    return EmptyStateWidget(
       icon: Icons.healing_outlined,
-      title: 'No pain markers in this window',
-      subtitle: 'Pain entries logged before the body map was added show only as text and won\'t appear here.',
+      title: l10n.painHistoryEmptyTitle,
+      subtitle: l10n.painHistoryEmptySubtitle,
     );
   }
 
   Widget _legendRow() {
+    final l10n = AppLocalizations.of(context)!;
     Widget chip(int n, String label) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -228,28 +234,29 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
       spacing: 14,
       runSpacing: 4,
       children: [
-        chip(2, 'Mild 1–3'),
-        chip(5, 'Moderate 4–6'),
-        chip(8, 'Severe 7–8'),
-        chip(10, 'Extreme 9–10'),
+        chip(2, l10n.painIntensityMildRange),
+        chip(5, l10n.painIntensityModerateRange),
+        chip(8, l10n.painIntensitySevereRange),
+        chip(10, l10n.painIntensityExtremeRange),
       ],
     );
   }
 
   Widget _frequencyTable(List<MapEntry<String, _RegionStat>> data) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Region frequency',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+          Text(l10n.painHistoryRegionFrequencyLabel,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
           ...data.map((e) {
             final stat = e.value;
@@ -299,14 +306,15 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
     final withPoints =
         sorted.where((e) => pointsByEntry.containsKey((e.id ?? ''))).toList();
     if (withPoints.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text('Timeline',
+            Text(l10n.painHistoryTimelineLabel,
                 style:
-                    TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
             const Spacer(),
             if (_highlightEntryId != null)
               TextButton(
@@ -315,8 +323,8 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: const Text('Show all',
-                    style: TextStyle(fontSize: 11)),
+                child: Text(l10n.painHistoryShowAllButton,
+                    style: const TextStyle(fontSize: 11)),
               ),
           ],
         ),
@@ -347,7 +355,7 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
                     color: selected
                         ? color.withValues(alpha: 0.18)
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                       color: selected ? color : Colors.grey.shade300,
                       width: selected ? 2 : 1,
@@ -376,7 +384,7 @@ class _PainHistoryMapScreenState extends State<PainHistoryMapScreen> {
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: color,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusS),
                             ),
                             child: Text(
                               '$peak/10',

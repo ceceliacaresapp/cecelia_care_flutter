@@ -59,7 +59,7 @@ const List<GlossaryTerm> kGlossaryTerms = [
   GlossaryTerm(term: 'CPR (Cardiopulmonary Resuscitation)', definition: 'Chest compressions and rescue breaths used when someone\'s heart stops.', category: 'procedures'),
 
   // ── D ───────────────────────────────────────────────────
-  GlossaryTerm(term: 'Dehydration', definition: 'Not enough fluid in the body. In elders, it can cause confusion, dizziness, and falls.', category: 'conditions'),
+  GlossaryTerm(term: 'Dehydration', definition: 'Not enough fluid in the body. In older adults, it can cause confusion, dizziness, and falls.', category: 'conditions'),
   GlossaryTerm(term: 'Delirium', definition: 'A sudden change in mental state — confusion, agitation, hallucinations. Often caused by infection (especially UTI), medications, or dehydration.', category: 'conditions'),
   GlossaryTerm(term: 'Dementia', definition: 'A decline in memory and thinking severe enough to interfere with daily life. Alzheimer\'s is the most common cause.', category: 'conditions'),
   GlossaryTerm(term: 'Diabetes', definition: 'A condition where the body can\'t properly regulate blood sugar.', category: 'conditions'),
@@ -136,10 +136,10 @@ const List<GlossaryTerm> kGlossaryTerms = [
   // ── P ───────────────────────────────────────────────────
   GlossaryTerm(term: 'Palliative', definition: 'Care focused on relieving symptoms and improving quality of life, not curing the disease. Can be provided alongside curative treatment.', category: 'care'),
   GlossaryTerm(term: 'Parkinson\'s Disease', definition: 'A progressive brain disorder causing tremors, stiffness, and balance problems.', category: 'conditions'),
-  GlossaryTerm(term: 'Pneumonia', definition: 'A lung infection. Especially dangerous in elders and those with swallowing problems.', category: 'conditions'),
+  GlossaryTerm(term: 'Pneumonia', definition: 'A lung infection. Especially dangerous in older adults and those with swallowing problems.', category: 'conditions'),
   GlossaryTerm(term: 'POA (Power of Attorney)', definition: 'A legal authority for one person to make decisions for another. Healthcare POA covers medical decisions.', category: 'care'),
   GlossaryTerm(term: 'POLST', definition: 'Physician Orders for Life-Sustaining Treatment. A medical form documenting end-of-life wishes.', category: 'care'),
-  GlossaryTerm(term: 'Polypharmacy', definition: 'Taking multiple medications, common in elders. Increases risk of drug interactions.', category: 'medications'),
+  GlossaryTerm(term: 'Polypharmacy', definition: 'Taking multiple medications, common in older adults. Increases risk of drug interactions.', category: 'medications'),
   GlossaryTerm(term: 'Pressure Ulcer', definition: 'See Bedsore. A skin injury from prolonged pressure.', category: 'conditions'),
   GlossaryTerm(term: 'PRN', definition: 'As needed. A medication taken only when symptoms occur, not on a regular schedule.', category: 'medications'),
   GlossaryTerm(term: 'Prognosis', definition: 'The expected outcome or course of a disease.', category: 'general'),
@@ -178,7 +178,7 @@ const List<GlossaryTerm> kGlossaryTerms = [
 
   // ── U ───────────────────────────────────────────────────
   GlossaryTerm(term: 'Ulcer', definition: 'An open sore, on the skin (pressure ulcer) or in the body (stomach ulcer).', category: 'conditions'),
-  GlossaryTerm(term: 'UTI (Urinary Tract Infection)', definition: 'Infection in the bladder or kidneys. In elderly patients, may cause sudden confusion rather than typical burning symptoms.', category: 'conditions'),
+  GlossaryTerm(term: 'UTI (Urinary Tract Infection)', definition: 'Infection in the bladder or kidneys. In older adults, may cause sudden confusion rather than typical burning symptoms.', category: 'conditions'),
 
   // ── V ───────────────────────────────────────────────────
   GlossaryTerm(term: 'Vascular', definition: 'Relating to blood vessels.', category: 'general'),

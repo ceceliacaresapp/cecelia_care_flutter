@@ -88,7 +88,7 @@ class WellnessSummaryCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: _kCardColor.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: _kCardColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
@@ -130,7 +130,7 @@ class WellnessSummaryCard extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: _riskColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
                     border: Border.all(color: _riskColor.withValues(alpha: 0.3)),
                   ),
                   child: TweenAnimationBuilder<double>(
@@ -230,7 +230,7 @@ class WellnessSummaryCard extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: _kCardColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -282,7 +282,7 @@ class _DimChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -51,7 +51,6 @@ class StreakWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final flameColor = _isMilestone ? _kStreakMilestoneColor : _kStreakColor;
 
     return GestureDetector(
@@ -59,7 +58,7 @@ class StreakWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: _kStreakColor.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           border: Border.all(color: _kStreakColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
@@ -70,7 +69,7 @@ class StreakWidget extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -153,7 +152,7 @@ class StreakWidget extends StatelessWidget {
                                 horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: flameColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                               border: Border.all(
                                   color: flameColor.withValues(alpha: 0.3)),
                             ),
@@ -190,7 +189,7 @@ class StreakWidget extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryColor
                                     .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                                 border: Border.all(
                                   color: AppTheme.primaryColor
                                       .withValues(alpha: 0.25),

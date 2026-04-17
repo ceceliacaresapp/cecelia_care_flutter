@@ -6,10 +6,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
-import 'app_localizations_es.dart';
-import 'app_localizations_ja.dart';
-import 'app_localizations_ko.dart';
-import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -96,13 +92,7 @@ abstract class AppLocalizations {
   ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('es'),
-    Locale('ja'),
-    Locale('ko'),
-    Locale('zh')
-  ];
+  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
   /// No description provided for @appTitle.
   ///
@@ -2653,13 +2643,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Care Log'**
-  String bottomNavCareLog(Object term);
+  String get bottomNavCareLog;
 
   /// Bottom navigation label for calendar.
   ///
   /// In en, this message translates to:
   /// **'Calendar'**
-  String bottomNavCalendar(Object term);
+  String bottomNavCalendar(String term);
 
   /// No description provided for @bottomNavExpenses.
   ///
@@ -5233,6 +5223,1386 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid format for {fieldName}'**
   String validationErrorInvalidFormat(String fieldName);
+
+  /// No description provided for @dischargePlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discharge Plan'**
+  String get dischargePlanTitle;
+
+  /// No description provided for @shareSummaryTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share summary'**
+  String get shareSummaryTooltip;
+
+  /// No description provided for @saveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveTooltip;
+
+  /// No description provided for @overallProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall {percent}% complete'**
+  String overallProgressLabel(String percent);
+
+  /// No description provided for @stepsTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps ({percent}%)'**
+  String stepsTabLabel(String percent);
+
+  /// No description provided for @medsTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meds'**
+  String get medsTabLabel;
+
+  /// No description provided for @safetyTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety ({percent}%)'**
+  String safetyTabLabel(String percent);
+
+  /// No description provided for @followUpsTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-ups'**
+  String get followUpsTabLabel;
+
+  /// No description provided for @saveProgressButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save progress'**
+  String get saveProgressButton;
+
+  /// No description provided for @markCompleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark complete'**
+  String get markCompleteButton;
+
+  /// No description provided for @dischargePlanCompleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Discharge plan complete'**
+  String get dischargePlanCompleteMessage;
+
+  /// No description provided for @savedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedMessage;
+
+  /// No description provided for @appliedMedicationChangesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied: {added} new, {updated} dose changes'**
+  String appliedMedicationChangesMessage(String added, String updated);
+
+  /// No description provided for @scheduleFailureMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not schedule: {error}'**
+  String scheduleFailureMessage(String error);
+
+  /// No description provided for @dischargeDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discharge details'**
+  String get dischargeDetailsTitle;
+
+  /// No description provided for @facilityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Facility (optional)'**
+  String get facilityLabel;
+
+  /// No description provided for @facilityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Mass General Hospital'**
+  String get facilityHint;
+
+  /// No description provided for @dischargeDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discharge date: {date}'**
+  String dischargeDateLabel(String date);
+
+  /// No description provided for @medicationComparisonInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare the discharge medication list against pre-hospital meds. Mark each as continuing, dose changed, stopped, or new.'**
+  String get medicationComparisonInstructions;
+
+  /// No description provided for @addNewMedicationButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new medication from discharge'**
+  String get addNewMedicationButton;
+
+  /// No description provided for @applyMedicationChangesButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply changes to medication list'**
+  String get applyMedicationChangesButton;
+
+  /// No description provided for @medicationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Medication'**
+  String get medicationLabel;
+
+  /// No description provided for @medicationStatusContinuing.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuing'**
+  String get medicationStatusContinuing;
+
+  /// No description provided for @medicationStatusDoseChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Dose changed'**
+  String get medicationStatusDoseChanged;
+
+  /// No description provided for @medicationStatusStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get medicationStatusStopped;
+
+  /// No description provided for @medicationStatusNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get medicationStatusNew;
+
+  /// No description provided for @preHospitalDoseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-hospital dose'**
+  String get preHospitalDoseLabel;
+
+  /// No description provided for @dischargeDoseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discharge dose'**
+  String get dischargeDoseLabel;
+
+  /// No description provided for @notesOptionalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get notesOptionalLabel;
+
+  /// No description provided for @followUpNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (provider, location, prep)'**
+  String get followUpNotesLabel;
+
+  /// No description provided for @notScheduledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Not scheduled'**
+  String get notScheduledLabel;
+
+  /// No description provided for @rescheduleButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get rescheduleButton;
+
+  /// No description provided for @addToCalendarButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to calendar'**
+  String get addToCalendarButton;
+
+  /// No description provided for @newFollowUpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New follow-up'**
+  String get newFollowUpLabel;
+
+  /// No description provided for @addCustomFollowUpButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom follow-up'**
+  String get addCustomFollowUpButton;
+
+  /// No description provided for @cognitiveScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cognitive Screen'**
+  String get cognitiveScreenTitle;
+
+  /// No description provided for @startFirstAssessmentButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start First Assessment'**
+  String get startFirstAssessmentButton;
+
+  /// No description provided for @newAssessmentButton.
+  ///
+  /// In en, this message translates to:
+  /// **'New Assessment'**
+  String get newAssessmentButton;
+
+  /// No description provided for @noAssessmentsYetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No assessments yet'**
+  String get noAssessmentsYetTitle;
+
+  /// No description provided for @noAssessmentsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'7 brain games — about 10–15 minutes.\nTracks memory, attention, and executive function over time.'**
+  String get noAssessmentsSubtitle;
+
+  /// No description provided for @educationalScreeningDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Educational screening only — not a clinical diagnosis. Always follow up with a doctor for cognitive concerns.'**
+  String get educationalScreeningDisclaimer;
+
+  /// No description provided for @domainBreakdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain breakdown'**
+  String get domainBreakdownTitle;
+
+  /// No description provided for @skippedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get skippedLabel;
+
+  /// No description provided for @trendCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get trendCardTitle;
+
+  /// No description provided for @assessmentCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} assessments'**
+  String assessmentCountLabel(String count);
+
+  /// No description provided for @historyCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyCardTitle;
+
+  /// No description provided for @assessmentSavedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment saved'**
+  String get assessmentSavedMessage;
+
+  /// No description provided for @assessmentStepLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String assessmentStepLabel(String current, String total);
+
+  /// No description provided for @exitAssessmentDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit assessment?'**
+  String get exitAssessmentDialogTitle;
+
+  /// No description provided for @exitAssessmentDialogContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress will be lost.'**
+  String get exitAssessmentDialogContent;
+
+  /// No description provided for @stayButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get stayButton;
+
+  /// No description provided for @exitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exitButton;
+
+  /// No description provided for @backButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get backButton;
+
+  /// No description provided for @skipButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skipButton;
+
+  /// No description provided for @nextButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextButton;
+
+  /// No description provided for @letsBrainExercisesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s do some brain exercises!'**
+  String get letsBrainExercisesTitle;
+
+  /// No description provided for @assessmentInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'This takes about 10–15 minutes. Sit together with the care recipient — you facilitate, they participate. You can skip any section.'**
+  String get assessmentInstructionsText;
+
+  /// No description provided for @letsBeginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Begin'**
+  String get letsBeginButton;
+
+  /// No description provided for @memoryWordListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory: Word List'**
+  String get memoryWordListTitle;
+
+  /// No description provided for @wordListInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Read these 5 words OUT LOUD to the care recipient and ask them to remember them. We will test recall after the other exercises.'**
+  String get wordListInstructionsText;
+
+  /// No description provided for @startWordListButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start word list'**
+  String get startWordListButton;
+
+  /// No description provided for @allReadMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All read!'**
+  String get allReadMessage;
+
+  /// No description provided for @readAllWordsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve read them all'**
+  String get readAllWordsButton;
+
+  /// No description provided for @clockDrawingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visuospatial: Clock Drawing'**
+  String get clockDrawingTitle;
+
+  /// No description provided for @clockDrawingInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask: \"Please draw a clock showing 10 minutes past 11.\"'**
+  String get clockDrawingInstructionsText;
+
+  /// No description provided for @caregiverScoringLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Caregiver scoring'**
+  String get caregiverScoringLabel;
+
+  /// No description provided for @clockCircleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Circle roughly correct?'**
+  String get clockCircleLabel;
+
+  /// No description provided for @clockNumbersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All 12 numbers present?'**
+  String get clockNumbersLabel;
+
+  /// No description provided for @clockPositionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers in correct positions?'**
+  String get clockPositionsLabel;
+
+  /// No description provided for @clockHandsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hands showing correct time?'**
+  String get clockHandsLabel;
+
+  /// No description provided for @trailMakingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attention: Trail Making'**
+  String get trailMakingTitle;
+
+  /// No description provided for @trailMakingInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the numbered circles in order, 1 through 15, as fast as you can.'**
+  String get trailMakingInstructionsText;
+
+  /// No description provided for @digitSpanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Working Memory: Digit Span'**
+  String get digitSpanTitle;
+
+  /// No description provided for @digitSpanInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Read each number out loud as it appears, then ask the recipient to repeat.'**
+  String get digitSpanInstructionsText;
+
+  /// No description provided for @categoryFluencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language: Category Fluency'**
+  String get categoryFluencyTitle;
+
+  /// No description provided for @categoryFluencyInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"+\" for each valid answer the recipient names.'**
+  String get categoryFluencyInstructionsText;
+
+  /// No description provided for @delayedWordRecallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory: Delayed Word Recall'**
+  String get delayedWordRecallTitle;
+
+  /// No description provided for @delayedWordRecallInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask: \"What were the 5 words I showed you earlier?\" Tap each word the recipient correctly recalls.'**
+  String get delayedWordRecallInstructionsText;
+
+  /// No description provided for @wordsRecalledCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{recalled} of {total} recalled'**
+  String wordsRecalledCountLabel(String recalled, String total);
+
+  /// No description provided for @orientationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Orientation'**
+  String get orientationTitle;
+
+  /// No description provided for @orientationInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask each question and tap whether they answered correctly.'**
+  String get orientationInstructionsText;
+
+  /// No description provided for @correctAnswerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct: {answer}'**
+  String correctAnswerLabel(String answer);
+
+  /// No description provided for @patternSequenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Executive: Pattern Sequence'**
+  String get patternSequenceTitle;
+
+  /// No description provided for @patternSequenceInstructionsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask: \"What comes next in the pattern?\"'**
+  String get patternSequenceInstructionsText;
+
+  /// No description provided for @weakestDomainLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weakest: {domain}'**
+  String weakestDomainLabel(String domain);
+
+  /// No description provided for @sessionNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything to remember about this session...'**
+  String get sessionNotesHint;
+
+  /// No description provided for @saveAssessmentButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Assessment'**
+  String get saveAssessmentButton;
+
+  /// No description provided for @taskBoardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Board'**
+  String get taskBoardTitle;
+
+  /// No description provided for @noCareRecipientSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No care recipient selected.'**
+  String get noCareRecipientSelected;
+
+  /// No description provided for @activeTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeTabLabel;
+
+  /// No description provided for @completedTabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completedTabLabel;
+
+  /// No description provided for @newTaskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'New Task'**
+  String get newTaskButton;
+
+  /// No description provided for @noActiveTasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No active tasks'**
+  String get noActiveTasksTitle;
+
+  /// No description provided for @noActiveTasksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap New Task to delegate.'**
+  String get noActiveTasksSubtitle;
+
+  /// No description provided for @noCompletedTasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed tasks yet'**
+  String get noCompletedTasksTitle;
+
+  /// No description provided for @noCompletedTasksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed tasks will show here.'**
+  String get noCompletedTasksSubtitle;
+
+  /// No description provided for @actionFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Action failed: {error}'**
+  String actionFailedMessage(String error);
+
+  /// No description provided for @unassignedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unassigned'**
+  String get unassignedLabel;
+
+  /// No description provided for @createdByLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by {name}'**
+  String createdByLabel(String name);
+
+  /// No description provided for @completionNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: {note}'**
+  String completionNoteLabel(String note);
+
+  /// No description provided for @claimTaskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ll do it'**
+  String get claimTaskButton;
+
+  /// No description provided for @acceptTaskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get acceptTaskButton;
+
+  /// No description provided for @declineTaskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get declineTaskButton;
+
+  /// No description provided for @editButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editButton;
+
+  /// No description provided for @markTaskCompleteDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark task complete?'**
+  String get markTaskCompleteDialogTitle;
+
+  /// No description provided for @completionNoteInputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion note (optional)'**
+  String get completionNoteInputLabel;
+
+  /// No description provided for @completeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get completeButton;
+
+  /// No description provided for @deleteTaskDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete task?'**
+  String get deleteTaskDialogTitle;
+
+  /// No description provided for @cannotBeUndoneMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get cannotBeUndoneMessage;
+
+  /// No description provided for @editTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Task'**
+  String get editTaskTitle;
+
+  /// No description provided for @taskTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get taskTitleLabel;
+
+  /// No description provided for @taskTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Pick up prescriptions'**
+  String get taskTitleHint;
+
+  /// No description provided for @taskDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get taskDescriptionLabel;
+
+  /// No description provided for @categoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// No description provided for @assignToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign to'**
+  String get assignToLabel;
+
+  /// No description provided for @unassignedOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Unassigned'**
+  String get unassignedOption;
+
+  /// No description provided for @dueDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date'**
+  String get dueDateLabel;
+
+  /// No description provided for @noDueDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get noDueDateLabel;
+
+  /// No description provided for @createTaskButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Task'**
+  String get createTaskButton;
+
+  /// No description provided for @visitorFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Visitor'**
+  String get visitorFormTitle;
+
+  /// No description provided for @visitorFormNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Visitor Name'**
+  String get visitorFormNameLabel;
+
+  /// No description provided for @visitorFormNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Aunt Susan'**
+  String get visitorFormNameHint;
+
+  /// No description provided for @visitorFormRelationshipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Relationship'**
+  String get visitorFormRelationshipLabel;
+
+  /// No description provided for @visitorFormVisitTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Time'**
+  String get visitorFormVisitTimeLabel;
+
+  /// No description provided for @visitorFormDurationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get visitorFormDurationLabel;
+
+  /// No description provided for @visitorFormResponseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient\'s Response'**
+  String get visitorFormResponseLabel;
+
+  /// No description provided for @visitorFormActivitiesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get visitorFormActivitiesLabel;
+
+  /// No description provided for @visitorFormNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get visitorFormNotesLabel;
+
+  /// No description provided for @visitorFormNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any observations...'**
+  String get visitorFormNotesHint;
+
+  /// No description provided for @visitorFormCancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get visitorFormCancelButton;
+
+  /// No description provided for @visitorFormSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get visitorFormSaveButton;
+
+  /// No description provided for @visitorRelationshipFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get visitorRelationshipFamily;
+
+  /// No description provided for @visitorRelationshipFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend'**
+  String get visitorRelationshipFriend;
+
+  /// No description provided for @visitorRelationshipNeighbor.
+  ///
+  /// In en, this message translates to:
+  /// **'Neighbor'**
+  String get visitorRelationshipNeighbor;
+
+  /// No description provided for @visitorRelationshipHomeHealthAide.
+  ///
+  /// In en, this message translates to:
+  /// **'Home health aide'**
+  String get visitorRelationshipHomeHealthAide;
+
+  /// No description provided for @visitorRelationshipTherapist.
+  ///
+  /// In en, this message translates to:
+  /// **'Therapist'**
+  String get visitorRelationshipTherapist;
+
+  /// No description provided for @visitorRelationshipClergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Clergy / spiritual'**
+  String get visitorRelationshipClergy;
+
+  /// No description provided for @visitorRelationshipOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get visitorRelationshipOther;
+
+  /// No description provided for @visitorDurationUnder15Min.
+  ///
+  /// In en, this message translates to:
+  /// **'< 15 min'**
+  String get visitorDurationUnder15Min;
+
+  /// No description provided for @visitorDuration15To30Min.
+  ///
+  /// In en, this message translates to:
+  /// **'15–30 min'**
+  String get visitorDuration15To30Min;
+
+  /// No description provided for @visitorDuration30To60Min.
+  ///
+  /// In en, this message translates to:
+  /// **'30–60 min'**
+  String get visitorDuration30To60Min;
+
+  /// No description provided for @visitorDuration1To2Hours.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2 hours'**
+  String get visitorDuration1To2Hours;
+
+  /// No description provided for @visitorDuration2PlusHours.
+  ///
+  /// In en, this message translates to:
+  /// **'2+ hours'**
+  String get visitorDuration2PlusHours;
+
+  /// No description provided for @visitorResponsePositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Positive / engaged'**
+  String get visitorResponsePositive;
+
+  /// No description provided for @visitorResponsePositiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Smiled, talked, participated'**
+  String get visitorResponsePositiveHint;
+
+  /// No description provided for @visitorResponseNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral / calm'**
+  String get visitorResponseNeutral;
+
+  /// No description provided for @visitorResponseNeutralHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No change in demeanor'**
+  String get visitorResponseNeutralHint;
+
+  /// No description provided for @visitorResponseAgitated.
+  ///
+  /// In en, this message translates to:
+  /// **'Agitated / anxious'**
+  String get visitorResponseAgitated;
+
+  /// No description provided for @visitorResponseAgitatedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restless, irritable, raised voice'**
+  String get visitorResponseAgitatedHint;
+
+  /// No description provided for @visitorResponseWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn / unresponsive'**
+  String get visitorResponseWithdrawn;
+
+  /// No description provided for @visitorResponseWithdrawnHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shut down, would not engage'**
+  String get visitorResponseWithdrawnHint;
+
+  /// No description provided for @visitorResponseConfused.
+  ///
+  /// In en, this message translates to:
+  /// **'Confused / disoriented'**
+  String get visitorResponseConfused;
+
+  /// No description provided for @visitorResponseConfusedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Did not recognize visitor'**
+  String get visitorResponseConfusedHint;
+
+  /// No description provided for @visitorActivityConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get visitorActivityConversation;
+
+  /// No description provided for @visitorActivityWatchedTV.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched TV'**
+  String get visitorActivityWatchedTV;
+
+  /// No description provided for @visitorActivityPlayedGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Played games'**
+  String get visitorActivityPlayedGames;
+
+  /// No description provided for @visitorActivityLookedAtPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Looked at photos'**
+  String get visitorActivityLookedAtPhotos;
+
+  /// No description provided for @visitorActivityWentOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'Went outside'**
+  String get visitorActivityWentOutside;
+
+  /// No description provided for @visitorActivityAteTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'Ate together'**
+  String get visitorActivityAteTogether;
+
+  /// No description provided for @visitorActivityMusicSinging.
+  ///
+  /// In en, this message translates to:
+  /// **'Music / singing'**
+  String get visitorActivityMusicSinging;
+
+  /// No description provided for @visitorActivityJustSatTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'Just sat together'**
+  String get visitorActivityJustSatTogether;
+
+  /// No description provided for @visitorLogSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Visitor log saved.'**
+  String get visitorLogSaveSuccess;
+
+  /// No description provided for @visitorLogSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save. Please try again.'**
+  String get visitorLogSaveError;
+
+  /// No description provided for @hydrationFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Fluid Intake'**
+  String get hydrationFormTitle;
+
+  /// No description provided for @hydrationFormVolumeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get hydrationFormVolumeLabel;
+
+  /// No description provided for @hydrationUnitOz.
+  ///
+  /// In en, this message translates to:
+  /// **'oz'**
+  String get hydrationUnitOz;
+
+  /// No description provided for @hydrationUnitMl.
+  ///
+  /// In en, this message translates to:
+  /// **'ml'**
+  String get hydrationUnitMl;
+
+  /// No description provided for @hydrationFormFluidTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fluid Type'**
+  String get hydrationFormFluidTypeLabel;
+
+  /// No description provided for @hydrationFormNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get hydrationFormNotesLabel;
+
+  /// No description provided for @hydrationFormNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., refused after 2 sips, used thickener'**
+  String get hydrationFormNotesHint;
+
+  /// No description provided for @hydrationFormCancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get hydrationFormCancelButton;
+
+  /// No description provided for @hydrationFormSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get hydrationFormSaveButton;
+
+  /// No description provided for @hydrationFluidWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get hydrationFluidWater;
+
+  /// No description provided for @hydrationFluidJuice.
+  ///
+  /// In en, this message translates to:
+  /// **'Juice'**
+  String get hydrationFluidJuice;
+
+  /// No description provided for @hydrationFluidCoffeeTea.
+  ///
+  /// In en, this message translates to:
+  /// **'Coffee / Tea'**
+  String get hydrationFluidCoffeeTea;
+
+  /// No description provided for @hydrationFluidMilk.
+  ///
+  /// In en, this message translates to:
+  /// **'Milk'**
+  String get hydrationFluidMilk;
+
+  /// No description provided for @hydrationFluidBrothSoup.
+  ///
+  /// In en, this message translates to:
+  /// **'Broth / Soup'**
+  String get hydrationFluidBrothSoup;
+
+  /// No description provided for @hydrationFluidThickenedLiquid.
+  ///
+  /// In en, this message translates to:
+  /// **'Thickened liquid'**
+  String get hydrationFluidThickenedLiquid;
+
+  /// No description provided for @hydrationFluidIVFluids.
+  ///
+  /// In en, this message translates to:
+  /// **'IV fluids'**
+  String get hydrationFluidIVFluids;
+
+  /// No description provided for @hydrationFluidOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get hydrationFluidOther;
+
+  /// No description provided for @hydrationSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save.'**
+  String get hydrationSaveError;
+
+  /// No description provided for @nightWakingFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Night Waking'**
+  String get nightWakingFormTitle;
+
+  /// No description provided for @nightWakingTimeWokeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Woke'**
+  String get nightWakingTimeWokeLabel;
+
+  /// No description provided for @nightWakingDurationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration Awake'**
+  String get nightWakingDurationLabel;
+
+  /// No description provided for @nightWakingCauseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cause'**
+  String get nightWakingCauseLabel;
+
+  /// No description provided for @nightWakingInterventionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interventions'**
+  String get nightWakingInterventionsLabel;
+
+  /// No description provided for @nightWakingReturnedToSleepLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned to sleep'**
+  String get nightWakingReturnedToSleepLabel;
+
+  /// No description provided for @nightWakingNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get nightWakingNotesLabel;
+
+  /// No description provided for @nightWakingNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any observations...'**
+  String get nightWakingNotesHint;
+
+  /// No description provided for @nightWakingCancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get nightWakingCancelButton;
+
+  /// No description provided for @nightWakingSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get nightWakingSaveButton;
+
+  /// No description provided for @nightWakingDurationUnder15Min.
+  ///
+  /// In en, this message translates to:
+  /// **'< 15 min'**
+  String get nightWakingDurationUnder15Min;
+
+  /// No description provided for @nightWakingDuration15To30Min.
+  ///
+  /// In en, this message translates to:
+  /// **'15–30 min'**
+  String get nightWakingDuration15To30Min;
+
+  /// No description provided for @nightWakingDuration30To60Min.
+  ///
+  /// In en, this message translates to:
+  /// **'30–60 min'**
+  String get nightWakingDuration30To60Min;
+
+  /// No description provided for @nightWakingDuration1To2Hours.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2 hours'**
+  String get nightWakingDuration1To2Hours;
+
+  /// No description provided for @nightWakingDuration2PlusHours.
+  ///
+  /// In en, this message translates to:
+  /// **'2+ hours'**
+  String get nightWakingDuration2PlusHours;
+
+  /// No description provided for @nightWakingCauseConfusion.
+  ///
+  /// In en, this message translates to:
+  /// **'Confusion / disorientation'**
+  String get nightWakingCauseConfusion;
+
+  /// No description provided for @nightWakingCausePain.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain / discomfort'**
+  String get nightWakingCausePain;
+
+  /// No description provided for @nightWakingCauseBathroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bathroom'**
+  String get nightWakingCauseBathroom;
+
+  /// No description provided for @nightWakingCauseHungerThirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Hunger / thirst'**
+  String get nightWakingCauseHungerThirst;
+
+  /// No description provided for @nightWakingCauseNightmareAgitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightmare / agitation'**
+  String get nightWakingCauseNightmareAgitation;
+
+  /// No description provided for @nightWakingCauseNoiseEnvironment.
+  ///
+  /// In en, this message translates to:
+  /// **'Noise / environment'**
+  String get nightWakingCauseNoiseEnvironment;
+
+  /// No description provided for @nightWakingCauseUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get nightWakingCauseUnknown;
+
+  /// No description provided for @nightWakingInterventionVerbalReassurance.
+  ///
+  /// In en, this message translates to:
+  /// **'Verbal reassurance'**
+  String get nightWakingInterventionVerbalReassurance;
+
+  /// No description provided for @nightWakingInterventionBathroomAssist.
+  ///
+  /// In en, this message translates to:
+  /// **'Bathroom assist'**
+  String get nightWakingInterventionBathroomAssist;
+
+  /// No description provided for @nightWakingInterventionRepositioned.
+  ///
+  /// In en, this message translates to:
+  /// **'Repositioned'**
+  String get nightWakingInterventionRepositioned;
+
+  /// No description provided for @nightWakingInterventionMedicationGiven.
+  ///
+  /// In en, this message translates to:
+  /// **'Medication given'**
+  String get nightWakingInterventionMedicationGiven;
+
+  /// No description provided for @nightWakingInterventionWalkedWithThem.
+  ///
+  /// In en, this message translates to:
+  /// **'Walked with them'**
+  String get nightWakingInterventionWalkedWithThem;
+
+  /// No description provided for @nightWakingInterventionSatWithThem.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat with them'**
+  String get nightWakingInterventionSatWithThem;
+
+  /// No description provided for @nightWakingInterventionOfferedWaterSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Offered water / snack'**
+  String get nightWakingInterventionOfferedWaterSnack;
+
+  /// No description provided for @nightWakingInterventionNoneNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'None needed'**
+  String get nightWakingInterventionNoneNeeded;
+
+  /// No description provided for @nightWakingEntrySaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Night waking entry saved.'**
+  String get nightWakingEntrySaveSuccess;
+
+  /// No description provided for @nightWakingFormSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save. Please try again.'**
+  String get nightWakingFormSaveError;
+
+  /// No description provided for @errorNotAuthenticated.
+  ///
+  /// In en, this message translates to:
+  /// **'Not authenticated.'**
+  String get errorNotAuthenticated;
+
+  /// No description provided for @painHistoryScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain History'**
+  String get painHistoryScreenTitle;
+
+  /// No description provided for @painHistoryNoCareRecipient.
+  ///
+  /// In en, this message translates to:
+  /// **'No care recipient selected.'**
+  String get painHistoryNoCareRecipient;
+
+  /// No description provided for @painHistoryPeriod7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'7d'**
+  String get painHistoryPeriod7Days;
+
+  /// No description provided for @painHistoryPeriod30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'30d'**
+  String get painHistoryPeriod30Days;
+
+  /// No description provided for @painHistoryPeriod90Days.
+  ///
+  /// In en, this message translates to:
+  /// **'90d'**
+  String get painHistoryPeriod90Days;
+
+  /// No description provided for @painHistorySummaryPainEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain entries'**
+  String get painHistorySummaryPainEntries;
+
+  /// No description provided for @painHistorySummaryLocationsMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locations marked'**
+  String get painHistorySummaryLocationsMarked;
+
+  /// No description provided for @painHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No pain markers in this window'**
+  String get painHistoryEmptyTitle;
+
+  /// No description provided for @painHistoryEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain entries logged before the body map was added show only as text and won\'t appear here.'**
+  String get painHistoryEmptySubtitle;
+
+  /// No description provided for @painIntensityMildRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Mild 1–3'**
+  String get painIntensityMildRange;
+
+  /// No description provided for @painIntensityModerateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate 4–6'**
+  String get painIntensityModerateRange;
+
+  /// No description provided for @painIntensitySevereRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Severe 7–8'**
+  String get painIntensitySevereRange;
+
+  /// No description provided for @painIntensityExtremeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Extreme 9–10'**
+  String get painIntensityExtremeRange;
+
+  /// No description provided for @painHistoryRegionFrequencyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Region frequency'**
+  String get painHistoryRegionFrequencyLabel;
+
+  /// No description provided for @painHistoryTimelineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get painHistoryTimelineLabel;
+
+  /// No description provided for @painHistoryShowAllButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get painHistoryShowAllButton;
 }
 
 class _AppLocalizationsDelegate
@@ -5246,7 +6616,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'es', 'ja', 'ko', 'zh'].contains(locale.languageCode);
+      <String>['en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -5257,14 +6627,6 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
-    case 'es':
-      return AppLocalizationsEs();
-    case 'ja':
-      return AppLocalizationsJa();
-    case 'ko':
-      return AppLocalizationsKo();
-    case 'zh':
-      return AppLocalizationsZh();
   }
 
   throw FlutterError(

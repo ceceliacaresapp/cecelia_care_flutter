@@ -2,6 +2,7 @@
 //
 // CDC STEADI-based fall risk assessment. 15 risk factors + 5 protective
 // measures. Computes a risk score with level/color. History tracking.
+import 'package:cecelia_care_flutter/utils/save_helpers.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -119,12 +120,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
       }
     } catch (e) {
       debugPrint('Fall risk save error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to save.'), backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) showSaveError(context, e, label: 'Fall risk');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -176,7 +172,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
         // Score hero card
         Card(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusL)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -221,7 +217,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: latest.riskColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   child: Text(latest.steadiRecommendation,
                       style: TextStyle(
@@ -249,7 +245,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppTheme.tileOrange.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(
                   color: AppTheme.tileOrange.withValues(alpha: 0.3)),
             ),
@@ -343,7 +339,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
           decoration: BoxDecoration(
             color: previewColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -414,7 +410,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM)),
           ),
           child: _isSaving
               ? const SizedBox(
@@ -458,7 +454,7 @@ class _FallRiskScreenState extends State<FallRiskScreen> {
         title: Text(e.value, style: const TextStyle(fontSize: 14)),
         value: map[e.key]!,
         onChanged: (v) => setState(() => map[e.key] = v),
-        activeColor: activeColor,
+        activeThumbColor: activeColor,
       );
     }).toList();
   }

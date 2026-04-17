@@ -92,7 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.emailLabel,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   prefixIcon: const Icon(Icons.email_outlined),
                 ),

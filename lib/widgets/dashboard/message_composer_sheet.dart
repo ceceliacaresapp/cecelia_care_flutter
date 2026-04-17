@@ -201,17 +201,17 @@ class _MessageComposerSheetState extends State<MessageComposerSheet> {
               filled: true,
               fillColor: _kColor.withValues(alpha: 0.05),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 borderSide:
                     BorderSide(color: _kColor.withValues(alpha: 0.3)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 borderSide:
                     BorderSide(color: _kColor.withValues(alpha: 0.3)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 borderSide: const BorderSide(color: _kColor),
               ),
             ),
@@ -245,7 +245,7 @@ class _MessageComposerSheetState extends State<MessageComposerSheet> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                 ),
               ),
             ],

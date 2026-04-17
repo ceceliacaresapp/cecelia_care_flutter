@@ -161,7 +161,7 @@ class _DutyTimerCardState extends State<DutyTimerCard> {
       return Card(
         elevation: 1,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14)),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -229,7 +229,7 @@ class _DutyTimerCardState extends State<DutyTimerCard> {
     return Card(
       elevation: 1,
       shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       color: cardTint,
       child: Padding(
         padding: const EdgeInsets.all(16),

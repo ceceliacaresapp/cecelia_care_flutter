@@ -57,7 +57,7 @@ class _ProtocolStep {
   });
 }
 
-enum _StepActionType { call, share, navigate }
+enum _StepActionType { call, share }
 
 class _StepAction {
   final String label;
@@ -508,7 +508,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.warning_amber_rounded, size: 20),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text('MISSING PERSON PROTOCOL'),
             ],
           ),
@@ -612,7 +612,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
                             backgroundColor: _kStepDone,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusM),
                             ),
                           ),
                         ),
@@ -634,7 +634,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: _kEmergencyRed.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
@@ -753,7 +753,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
           color: isDone
               ? _kStepDone.withValues(alpha: 0.4)
@@ -897,12 +897,12 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
                   hintStyle: TextStyle(
                       fontSize: 12, color: AppTheme.textLight),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     borderSide: BorderSide(
                         color: AppTheme.textLight.withValues(alpha: 0.3)),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     borderSide: BorderSide(
                         color: AppTheme.textLight.withValues(alpha: 0.3)),
                   ),
@@ -951,7 +951,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           side: BorderSide(color: color.withValues(alpha: 0.3)),
         ),
       ),
@@ -971,7 +971,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radiusL),
             border: Border.all(color: _kStepDone.withValues(alpha: 0.3)),
           ),
           child: Column(
@@ -1082,7 +1082,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
               foregroundColor: _kStepDone,
               side: BorderSide(color: _kStepDone.withValues(alpha: 0.4)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
               ),
             ),
           ),
@@ -1100,7 +1100,7 @@ class _ElopementProtocolScreenState extends State<ElopementProtocolScreen> {
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
               ),
             ),
             child: const Text('Return to Care',

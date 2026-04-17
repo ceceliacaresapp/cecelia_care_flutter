@@ -380,7 +380,7 @@ class _PainFormState extends State<PainForm> {
                             color: selected
                                 ? AppTheme.primaryColor
                                 : AppTheme.backgroundGray,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                             border: Border.all(
                               color: selected
                                   ? AppTheme.primaryColor

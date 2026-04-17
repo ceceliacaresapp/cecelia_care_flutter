@@ -7,6 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:cecelia_care_flutter/models/entry_types.dart';
+import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/medication_entry.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
@@ -63,13 +67,13 @@ class _MedicationAdherenceScreenState
                         (e) => e.createdAt.toDate().isAfter(cutoff))
                     .toList();
 
-                return _buildContent(entries);
+                return _buildContent(entries, elderId);
               },
             ),
     );
   }
 
-  Widget _buildContent(List<MedicationEntry> entries) {
+  Widget _buildContent(List<MedicationEntry> entries, String elderId) {
     if (entries.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.medication_outlined,
@@ -168,7 +172,7 @@ class _MedicationAdherenceScreenState
         // ── Overall gauge ────────────────────────────────────
         Card(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusL)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -265,10 +269,14 @@ class _MedicationAdherenceScreenState
                 letterSpacing: 0.8,
                 color: AppTheme.textSecondary)),
         const SizedBox(height: 8),
+        // ── PRN Efficacy (from journal entries) ─────────────
+        _PrnEfficacySection(elderId: elderId, periodDays: _periodDays),
+        const SizedBox(height: 16),
+
         ...medStats.map((m) => Card(
               margin: const EdgeInsets.only(bottom: 8),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
@@ -407,4 +415,195 @@ class _GaugePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _GaugePainter oldDelegate) =>
       oldDelegate.pct != pct || oldDelegate.color != color;
+}
+
+// ---------------------------------------------------------------------------
+// PRN Efficacy Section — queries journal entries for PRN follow-up data
+// ---------------------------------------------------------------------------
+
+class _PrnEfficacySection extends StatefulWidget {
+  const _PrnEfficacySection({
+    required this.elderId,
+    required this.periodDays,
+  });
+  final String elderId;
+  final int periodDays;
+
+  @override
+  State<_PrnEfficacySection> createState() => _PrnEfficacySectionState();
+}
+
+class _PrnEfficacySectionState extends State<_PrnEfficacySection> {
+  Stream<List<JournalEntry>>? _stream;
+  String? _streamKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final key = '${widget.elderId}|$uid|${widget.periodDays}';
+    if (_stream == null || _streamKey != key) {
+      final start =
+          DateTime.now().subtract(Duration(days: widget.periodDays));
+      _stream = context.read<FirestoreService>().getJournalEntriesStream(
+            elderId: widget.elderId,
+            currentUserId: uid,
+            startDate: start,
+            type: EntryType.medication,
+          );
+      _streamKey = key;
+    }
+
+    return StreamBuilder<List<JournalEntry>>(
+      stream: _stream,
+      builder: (context, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final entries = snap.data!;
+
+        // Filter to PRN entries that have a follow-up response.
+        final prnEntries = entries
+            .where((e) => e.data?['prnFollowUp'] == true)
+            .toList();
+        if (prnEntries.isEmpty) return const SizedBox.shrink();
+
+        final responded = prnEntries
+            .where((e) => e.data?['prnFollowUpResponse'] != null)
+            .toList();
+        final responseRate = prnEntries.isNotEmpty
+            ? (responded.length / prnEntries.length * 100)
+            : 0.0;
+
+        // Aggregate responses per med.
+        final perMed = <String, Map<String, int>>{};
+        for (final e in responded) {
+          final name = e.data?['name'] as String? ?? 'Unknown';
+          final response =
+              e.data?['prnFollowUpResponse'] as String? ?? '';
+          perMed.putIfAbsent(name, () => {});
+          perMed[name]![response] =
+              (perMed[name]![response] ?? 0) + 1;
+        }
+
+        // Count per med total PRN doses.
+        final perMedTotal = <String, int>{};
+        for (final e in prnEntries) {
+          final name = e.data?['name'] as String? ?? 'Unknown';
+          perMedTotal[name] = (perMedTotal[name] ?? 0) + 1;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            const Text('PRN EFFICACY',
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                    color: AppTheme.textSecondary)),
+            const SizedBox(height: 4),
+            Text(
+              '${responded.length} of ${prnEntries.length} follow-ups answered (${responseRate.toStringAsFixed(0)}%)',
+              style: const TextStyle(
+                  fontSize: 12, color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 8),
+            ...perMed.entries.map((e) {
+              final name = e.key;
+              final responses = e.value;
+              final total = perMedTotal[name] ?? 0;
+              final respondedCount =
+                  responses.values.fold<int>(0, (s, v) => s + v);
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(name,
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.statusAmber
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text('PRN · $total doses',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.statusAmber,
+                                )),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _efficacyBar('Much better', responses['muchBetter'] ?? 0,
+                          respondedCount, AppTheme.statusGreen),
+                      _efficacyBar('Somewhat', responses['somewhat'] ?? 0,
+                          respondedCount, const Color(0xFF7CB342)),
+                      _efficacyBar('No change', responses['noChange'] ?? 0,
+                          respondedCount, AppTheme.statusAmber),
+                      _efficacyBar('Worse', responses['worse'] ?? 0,
+                          respondedCount, AppTheme.statusRed),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _efficacyBar(String label, int count, int total, Color color) {
+    final pct = total > 0 ? count / total : 0.0;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(label,
+                style: const TextStyle(
+                    fontSize: 11, color: AppTheme.textSecondary)),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: pct,
+                minHeight: 6,
+                backgroundColor: color.withValues(alpha: 0.1),
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 36,
+            child: Text(
+              total > 0 ? '${(pct * 100).toStringAsFixed(0)}%' : '—',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

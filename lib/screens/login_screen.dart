@@ -290,6 +290,43 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
                       ),
+
+                      // ─── Invite code hint ───
+                      // Lets a family member who was handed a code see a
+                      // direct path into the redemption flow once they
+                      // finish signing in. The redeem screen requires
+                      // auth, so we route through sign-in first but keep
+                      // the mental model "I have a code" one tap away.
+                      const SizedBox(height: 18),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.tileBlue.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                          border: Border.all(
+                              color:
+                                  AppTheme.tileBlue.withValues(alpha: 0.22)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.vpn_key_outlined,
+                                size: 18, color: AppTheme.tileBlueDark),
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Text(
+                                'Invited by a family member? '
+                                'Create an account first, then redeem your code from Settings.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textSecondary,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

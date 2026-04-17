@@ -87,7 +87,7 @@ class BurnoutScoreCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
@@ -98,7 +98,7 @@ class BurnoutScoreCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -168,7 +168,7 @@ class BurnoutScoreCard extends StatelessWidget {
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: _kRedColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS),
                             border: Border.all(
                                 color: _kRedColor.withValues(alpha: 0.2)),
                           ),
@@ -207,7 +207,7 @@ class BurnoutScoreCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.1),
                               borderRadius:
-                                  BorderRadius.circular(10),
+                                  BorderRadius.circular(AppTheme.radiusS),
                             ),
                             child: Row(
                               children: [

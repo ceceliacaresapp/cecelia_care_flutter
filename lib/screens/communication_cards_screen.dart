@@ -141,7 +141,7 @@ class _CommunicationCardsScreenState extends State<CommunicationCardsScreen> {
         selectedColor: color,
         backgroundColor: Colors.grey.shade100,
         onSelected: (_) => setState(() => _selectedCategory = key),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
         side: BorderSide.none,
         padding: const EdgeInsets.symmetric(horizontal: 4),
       ),
@@ -185,7 +185,7 @@ class _CommunicationCardsScreenState extends State<CommunicationCardsScreen> {
             : Matrix4.identity(),
         decoration: BoxDecoration(
           color: card.color.withValues(alpha: isTapped ? 0.25 : 0.08),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           border: Border.all(
             color: card.color.withValues(alpha: isTapped ? 0.6 : 0.2),
             width: isTapped ? 2 : 1,
@@ -225,9 +225,9 @@ class _CommunicationCardsScreenState extends State<CommunicationCardsScreen> {
     final isLearned = _learnedSigns.contains(card.id);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         onTap: () {
           if (!isLearned) _markLearned(card.id);
         },
@@ -269,7 +269,7 @@ class _CommunicationCardsScreenState extends State<CommunicationCardsScreen> {
                             decoration: BoxDecoration(
                               color: AppTheme.tileBlue
                                   .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusS),
                             ),
                             child: const Text('New',
                                 style: TextStyle(

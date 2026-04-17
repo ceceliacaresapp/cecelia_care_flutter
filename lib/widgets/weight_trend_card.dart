@@ -76,7 +76,7 @@ class _WeightTrendCardState extends State<WeightTrendCard> {
           return Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               side: BorderSide(
                   color: AppTheme.textLight.withValues(alpha: 0.4)),
             ),
@@ -125,7 +125,7 @@ class _WeightTrendCardState extends State<WeightTrendCard> {
           child: Card(
             elevation: 1,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               side: isAlert
                   ? BorderSide(color: AppTheme.statusRed.withValues(alpha: 0.4))
                   : BorderSide.none,

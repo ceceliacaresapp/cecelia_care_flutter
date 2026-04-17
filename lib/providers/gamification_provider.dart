@@ -95,8 +95,6 @@ class GamificationProvider with ChangeNotifier {
   Future<int> awardPoints(int amount, {String? reason}) async {
     if (_userId == null || amount <= 0) return totalPoints;
 
-    final oldLevel = level;
-
     await _ensurePointsDoc();
     try {
       await _db.collection(_pointsCollection).doc(_userId).update({
@@ -417,7 +415,7 @@ class GamificationProvider with ChangeNotifier {
 
           _previousLevel = _points?.level ?? 1;
           _points = CaregiverPoints.fromFirestore(
-            doc as DocumentSnapshot<Map<String, dynamic>>,
+            doc,
           );
 
           // Read lifetime counters (stored as extra fields on the doc).

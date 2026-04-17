@@ -159,7 +159,7 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   child: Icon(widget.typeDef.iconData,
                       color: color, size: 24),
@@ -196,7 +196,7 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
                   backgroundColor: color,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
                 ),
                 child: _isSaving
@@ -229,7 +229,7 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
           activeColor: color,
           contentPadding: EdgeInsets.zero,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusS)),
         );
 
       case 'dropdown':
@@ -290,15 +290,15 @@ class _CustomEntryFormState extends State<CustomEntryForm> {
       filled: true,
       fillColor: color.withValues(alpha: 0.04),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         borderSide: BorderSide(color: color.withValues(alpha: 0.2)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         borderSide: BorderSide(color: color.withValues(alpha: 0.2)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         borderSide: BorderSide(color: color),
       ),
     );

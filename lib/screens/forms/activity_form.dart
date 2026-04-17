@@ -98,7 +98,7 @@ class _ActivityFormState extends State<ActivityForm> {
   void _initializeFields() {
     final editing = widget.editingItem;
     if (editing != null) {
-      _activityTypeController.text = editing.activityType ?? '';
+      _activityTypeController.text = editing.activityType;
       _durationController.text = editing.duration ?? '';
       _noteController.text = editing.note ?? '';
     } else {
@@ -276,7 +276,7 @@ class _ActivityFormState extends State<ActivityForm> {
                             color: isSelected
                                 ? AppTheme.primaryColor
                                 : AppTheme.backgroundGray,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                             border: Border.all(
                               color: isSelected
                                   ? AppTheme.primaryColor

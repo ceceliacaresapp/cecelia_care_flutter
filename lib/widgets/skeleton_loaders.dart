@@ -19,6 +19,7 @@
 // on white. Detection via Theme.of(context).brightness.
 
 import 'package:flutter/material.dart';
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // ─────────────────────────────────────────────────────────────
 // Shared shimmer effect
@@ -110,7 +111,7 @@ class SkeletonCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
       ),
     );

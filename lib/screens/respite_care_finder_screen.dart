@@ -180,7 +180,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppTheme.backgroundGray,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 child: Column(
                   children: [
@@ -312,7 +312,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
                             color: selected
                                 ? color.withValues(alpha: 0.12)
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusL),
                             border: Border.all(
                               color: selected
                                   ? color
@@ -488,7 +488,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
                         backgroundColor: _kAccent,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                       ),
                     ),
                   ),
@@ -504,7 +504,7 @@ class _RespiteCareFinderScreenState extends State<RespiteCareFinderScreen> {
   InputDecoration _inputDeco(String label) => InputDecoration(
         labelText: label,
         isDense: true,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppTheme.radiusS)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       );
@@ -542,9 +542,9 @@ class _SearchBar extends StatelessWidget {
                   color: _RespiteCareFinderScreenState._kAccent),
               counterText: '',
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 borderSide: const BorderSide(
                     color: _RespiteCareFinderScreenState._kAccent,
                     width: 2),
@@ -563,7 +563,7 @@ class _SearchBar extends StatelessWidget {
               backgroundColor: _RespiteCareFinderScreenState._kAccent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
             child: isSearching
@@ -592,7 +592,7 @@ class _InfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: _RespiteCareFinderScreenState._kAccent.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color:
                 _RespiteCareFinderScreenState._kAccent.withValues(alpha: 0.15)),
@@ -704,7 +704,7 @@ class _ProviderCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
@@ -893,7 +893,7 @@ class _ActionChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(

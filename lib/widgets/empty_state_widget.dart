@@ -91,7 +91,7 @@ class EmptyStateWidget extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                 ),
               ),
             ],

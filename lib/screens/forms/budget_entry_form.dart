@@ -3,7 +3,6 @@
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/budget_entry.dart';
 import 'package:cecelia_care_flutter/models/insurance_plan.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -106,7 +105,6 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
     }
 
     setState(() => _isSaving = true);
-    final l10n = AppLocalizations.of(context)!;
 
     try {
       final firestoreService = context.read<FirestoreService>();
@@ -271,7 +269,7 @@ class _BudgetEntryFormState extends State<BudgetEntryForm> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppTheme.tileTeal.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                         color:
                             AppTheme.tileTeal.withValues(alpha: 0.3)),

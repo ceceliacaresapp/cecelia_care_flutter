@@ -21,6 +21,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 
 class DocumentVaultScreen extends StatefulWidget {
   const DocumentVaultScreen({super.key});
@@ -246,7 +247,6 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       return;
     }
 
-    if (filePath == null || fileName == null) return;
     if (!mounted) return;
 
     // Show upload form
@@ -255,7 +255,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
       elderId: elderId,
       filePath: filePath,
       fileName: fileName,
-      mimeType: mimeType ?? 'application/octet-stream',
+      mimeType: mimeType,
     );
   }
 
@@ -329,7 +329,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: AppTheme.backgroundGray,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   child: Row(
                     children: [
@@ -381,7 +381,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                     labelText: 'Document name',
                     hintText: "e.g., Mom's POA - 2024",
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -392,7 +392,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   decoration: InputDecoration(
                     labelText: 'Category',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                     prefixIcon:
                         Icon(cat.icon, color: cat.color, size: 20),
                   ),
@@ -419,7 +419,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                     hintText:
                         'e.g., Signed by attorney, expires 2027',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -494,7 +494,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                       backgroundColor: cat.color,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                     ),
                   ),
                 ),
@@ -562,14 +562,9 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
           appBar: AppBar(title: Text(doc.name)),
           body: Center(
             child: InteractiveViewer(
-              child: Image.network(
-                doc.fileUrl,
+              child: CachedImage(
+                imageUrl: doc.fileUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.broken_image_outlined,
-                  size: 48,
-                  color: AppTheme.textLight,
-                ),
               ),
             ),
           ),
@@ -725,7 +720,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   decoration: InputDecoration(
                     labelText: 'Document name',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -734,7 +729,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   decoration: InputDecoration(
                     labelText: 'Category',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                     prefixIcon:
                         Icon(cat.icon, color: cat.color, size: 20),
                   ),
@@ -758,7 +753,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                   decoration: InputDecoration(
                     labelText: 'Notes (optional)',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -797,7 +792,7 @@ class _DocumentVaultScreenState extends State<DocumentVaultScreen> {
                       backgroundColor: cat.color,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                     ),
                     child: const Text('Save Changes',
                         style: TextStyle(
@@ -962,7 +957,7 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           border: Border.all(
             color: isSelected ? color : AppTheme.textLight.withValues(alpha: 0.3),
           ),
@@ -1026,7 +1021,7 @@ class _DocCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: cat.color.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: cat.color.withValues(alpha: 0.15)),
         ),
         child: Row(
@@ -1039,15 +1034,13 @@ class _DocCard extends StatelessWidget {
                 color: doc.isImage
                     ? Colors.transparent
                     : cat.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               clipBehavior: Clip.antiAlias,
               child: doc.isImage
-                  ? Image.network(
-                      doc.fileUrl,
+                  ? CachedImage(
+                      imageUrl: doc.fileUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Icon(cat.icon, color: cat.color, size: 24),
                     )
                   : doc.isPdf
                       ? const Icon(Icons.picture_as_pdf,

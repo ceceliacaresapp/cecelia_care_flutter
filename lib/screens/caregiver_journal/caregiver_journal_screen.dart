@@ -382,7 +382,7 @@ class _GratitudePromptCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: _kPromptColor.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
           color: isActive ? _kPromptColor : _kPromptColor.withValues(alpha: 0.2),
           width: isActive ? 1.5 : 1,
@@ -455,7 +455,7 @@ class _GratitudePromptCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     side: BorderSide(
                         color: _kPromptColor.withValues(alpha: 0.3)),
                   ),
@@ -607,7 +607,7 @@ class _AllPromptsSheet extends StatelessWidget {
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: _kPromptColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           ),
                           child: const Text(
                             'Today',
@@ -684,7 +684,7 @@ class _ComposerCardState extends State<_ComposerCard> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
@@ -746,7 +746,7 @@ class _ComposerCardState extends State<_ComposerCard> {
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: _kPromptColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               child: Row(
                 children: [
@@ -786,15 +786,15 @@ class _ComposerCardState extends State<_ComposerCard> {
               fillColor: color.withValues(alpha: 0.04),
               counterText: '$charCount / $_kMaxChars',
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 borderSide: BorderSide(color: color.withValues(alpha: 0.25)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 borderSide: BorderSide(color: color.withValues(alpha: 0.25)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 borderSide: BorderSide(color: color, width: 1.5),
               ),
             ),
@@ -836,7 +836,7 @@ class _ComposerCardState extends State<_ComposerCard> {
                   backgroundColor: color,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 10),
                 ),
@@ -884,7 +884,7 @@ class _JournalCard extends StatelessWidget {
         color: isBeingEdited
             ? color.withValues(alpha: 0.06)
             : Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
           color: isBeingEdited
               ? color
@@ -900,7 +900,7 @@ class _JournalCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -933,7 +933,7 @@ class _JournalCard extends StatelessWidget {
                                   horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
                                 color: color.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                               ),
                               child: Text(
                                 'Editing',
@@ -955,7 +955,7 @@ class _JournalCard extends StatelessWidget {
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: _kPromptColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,

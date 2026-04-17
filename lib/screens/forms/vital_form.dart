@@ -112,7 +112,7 @@ class _VitalFormState extends State<VitalForm> {
   void _initializeFields() {
     final editing = widget.editingItem;
     if (editing != null) {
-      _selectedTypeKey = editing.vitalType ?? 'BP';
+      _selectedTypeKey = editing.vitalType;
       _valueController.text = editing.value ?? '';
       _noteController.text = editing.note ?? '';
     } else {
@@ -279,7 +279,7 @@ class _VitalFormState extends State<VitalForm> {
                             color: isSelected
                                 ? AppTheme.primaryColor
                                 : AppTheme.backgroundGray,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                             border: Border.all(
                               color: isSelected
                                   ? AppTheme.primaryColor

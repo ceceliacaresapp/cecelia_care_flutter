@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
@@ -37,6 +39,9 @@ class UserProfileProvider extends ChangeNotifier {
         FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
         _subscribeToUserProfile(user.uid);
+        if (!kIsWeb) {
+          FirebaseCrashlytics.instance.setUserIdentifier(user.uid);
+        }
       } else {
         _profileSubscription?.cancel();
         _profileSubscription = null;
@@ -44,6 +49,9 @@ class UserProfileProvider extends ChangeNotifier {
         _onboardingCompleted = null;
         _isLoading = false;
         _errorMessage = null;
+        if (!kIsWeb) {
+          FirebaseCrashlytics.instance.setUserIdentifier('');
+        }
         notifyListeners();
       }
     });

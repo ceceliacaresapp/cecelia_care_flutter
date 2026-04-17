@@ -211,7 +211,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               ),
               child: const Text("Let's get started",
                   style:
@@ -280,7 +280,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               ),
               child: _nameSaving
                   ? const SizedBox(
@@ -350,7 +350,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Enter their name to create their care profile.",
+            'Enter their name to create their care profile.',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14, color: AppTheme.textSecondary, height: 1.4),
@@ -382,7 +382,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               ),
               child: _elderSaving
                   ? const SizedBox(
@@ -465,7 +465,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           const SizedBox(height: 8),
           Text(
             elder != null
-                ? "Tap any tile to log something for ${elder.profileName}."
+                ? 'Tap any tile to log something for ${elder.profileName}.'
                 : 'Tap any tile to log your first care entry.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -566,7 +566,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Container(
             decoration: BoxDecoration(
               color: t.color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(color: t.color.withValues(alpha: 0.25)),
             ),
             child: Column(
@@ -676,7 +676,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               ),
               child: const Text('Continue',
                   style:
@@ -734,7 +734,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                 elevation: 2,
               ),
               child: const Text(

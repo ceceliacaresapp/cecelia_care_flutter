@@ -3,6 +3,8 @@
 // Cognitive screening hub: shows past results in a gauge + radar + trend
 // view, and runs an interactive 10-page wizard for new assessments.
 // Tests are based on validated clinical instruments (Mini-Cog, SLUMS,
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
+import 'package:cecelia_care_flutter/utils/save_helpers.dart';
 // Trail Making, MoCA components, MMSE orientation).
 
 import 'dart:math';
@@ -26,19 +28,20 @@ class CognitiveAssessmentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final prov = context.watch<CognitiveProvider>();
     final elder = context.watch<ActiveElderProvider>().activeElder;
 
     if (elder == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Cognitive Screen')),
-        body: const Center(child: Text('No care recipient selected.')),
+        appBar: AppBar(title: Text(l10n.cognitiveScreenTitle)),
+        body: Center(child: Text(l10n.noCareRecipientSelected)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cognitive Screen'),
+        title: Text(l10n.cognitiveScreenTitle),
         backgroundColor: AppTheme.entryMoodAccent,
         foregroundColor: Colors.white,
       ),
@@ -51,8 +54,8 @@ class CognitiveAssessmentScreen extends StatelessWidget {
         )),
         icon: const Icon(Icons.psychology_alt_outlined),
         label: Text(prov.history.isEmpty
-            ? 'Start First Assessment'
-            : 'New Assessment'),
+            ? l10n.startFirstAssessmentButton
+            : l10n.newAssessmentButton),
       ),
       body: prov.isLoading
           ? const SkeletonCard(height: 200)
@@ -63,36 +66,38 @@ class CognitiveAssessmentScreen extends StatelessWidget {
   }
 
   Widget _emptyState(BuildContext context) {
-    return const EmptyStateWidget(
+    final l10n = AppLocalizations.of(context)!;
+    return EmptyStateWidget(
       icon: Icons.psychology_alt_outlined,
-      title: 'No assessments yet',
-      subtitle: '7 brain games — about 10–15 minutes.\nTracks memory, attention, and executive function over time.',
-      color: Color(0xFF7B1FA2),
+      title: l10n.noAssessmentsYetTitle,
+      subtitle: l10n.noAssessmentsSubtitle,
+      color: const Color(0xFF7B1FA2),
     );
   }
 
   Widget _resultsView(BuildContext context, CognitiveProvider prov) {
+    final l10n = AppLocalizations.of(context)!;
     final latest = prov.latest!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       children: [
-        _heroCard(latest),
+        _heroCard(context, latest),
         const SizedBox(height: 16),
-        _domainBreakdown(latest),
+        _domainBreakdown(context, latest),
         const SizedBox(height: 16),
-        if (prov.scoreTrend.length >= 2) _trendChart(prov.scoreTrend),
+        if (prov.scoreTrend.length >= 2) _trendChart(context, prov.scoreTrend),
         const SizedBox(height: 16),
-        _historyList(prov.history),
+        _historyList(context, prov.history),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppTheme.backgroundGray,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
-          child: const Text(
-            'Educational screening only — not a clinical diagnosis. Always follow up with a doctor for cognitive concerns.',
-            style: TextStyle(
+          child: Text(
+            l10n.educationalScreeningDisclaimer,
+            style: const TextStyle(
                 fontSize: 11,
                 fontStyle: FontStyle.italic,
                 color: AppTheme.textSecondary),
@@ -102,7 +107,8 @@ class CognitiveAssessmentScreen extends StatelessWidget {
     );
   }
 
-  Widget _heroCard(CognitiveAssessment a) {
+  Widget _heroCard(BuildContext context, CognitiveAssessment a) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -114,7 +120,7 @@ class CognitiveAssessmentScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         border: Border.all(color: a.levelColor.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -196,7 +202,7 @@ class CognitiveAssessmentScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Weakest: ${a.weakestDomain}',
+                      l10n.weakestDomainLabel(a.weakestDomain!),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -213,11 +219,12 @@ class CognitiveAssessmentScreen extends StatelessWidget {
     );
   }
 
-  Widget _domainBreakdown(CognitiveAssessment a) {
+  Widget _domainBreakdown(BuildContext context, CognitiveAssessment a) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Padding(
@@ -225,8 +232,8 @@ class CognitiveAssessmentScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Domain breakdown',
-                style:
+            Text(l10n.domainBreakdownTitle,
+                style: const
                     TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
             ...a.domainScores.entries.map((e) {
@@ -246,7 +253,7 @@ class CognitiveAssessmentScreen extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700)),
                         Text(
-                          pct == null ? 'Skipped' : '$raw / $max',
+                          pct == null ? l10n.skippedLabel : '$raw / $max',
                           style: TextStyle(
                               fontSize: 11,
                               color: pct == null
@@ -285,11 +292,12 @@ class CognitiveAssessmentScreen extends StatelessWidget {
     );
   }
 
-  Widget _trendChart(List<double> scores) {
+  Widget _trendChart(BuildContext context, List<double> scores) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Padding(
@@ -300,10 +308,10 @@ class CognitiveAssessmentScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Trend',
-                    style: TextStyle(
+                Text(l10n.trendCardTitle,
+                    style: const TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w800)),
-                Text('${scores.length} assessments',
+                Text(l10n.assessmentCountLabel(scores.length.toString()),
                     style: const TextStyle(
                         fontSize: 11, color: AppTheme.textSecondary)),
               ],
@@ -322,11 +330,12 @@ class CognitiveAssessmentScreen extends StatelessWidget {
     );
   }
 
-  Widget _historyList(List<CognitiveAssessment> history) {
+  Widget _historyList(BuildContext context, List<CognitiveAssessment> history) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Padding(
@@ -334,8 +343,8 @@ class CognitiveAssessmentScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('History',
-                style:
+            Text(l10n.historyCardTitle,
+                style: const
                     TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
             ...history.map((a) => Padding(
@@ -566,19 +575,17 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
       await context.read<CognitiveProvider>().saveAssessment(assessment);
       HapticUtils.success();
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Assessment saved'),
+          SnackBar(
+              content: Text(l10n.assessmentSavedMessage),
               backgroundColor: Colors.green),
         );
         Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Save failed: $e')),
-        );
-      }
+      debugPrint('Cognitive save error: $e');
+      if (mounted) showSaveError(context, e, label: 'Cognitive');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -586,12 +593,13 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppTheme.backgroundGray,
       appBar: AppBar(
         backgroundColor: _accent,
         foregroundColor: Colors.white,
-        title: Text('Step ${_page + 1} of $_totalPages'),
+        title: Text(l10n.assessmentStepLabel((_page + 1).toString(), _totalPages.toString())),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () async {
@@ -599,15 +607,15 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             final ok = await showDialog<bool>(
               context: context,
               builder: (ctx) => AlertDialog(
-                title: const Text('Exit assessment?'),
-                content: const Text('Progress will be lost.'),
+                title: Text(l10n.exitAssessmentDialogTitle),
+                content: Text(l10n.exitAssessmentDialogContent),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('Stay')),
+                      child: Text(l10n.stayButton)),
                   TextButton(
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Exit')),
+                      child: Text(l10n.exitButton)),
                 ],
               ),
             );
@@ -652,12 +660,12 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                       OutlinedButton.icon(
                         onPressed: _prev,
                         icon: const Icon(Icons.arrow_back),
-                        label: const Text('Back'),
+                        label: Text(l10n.backButton),
                       ),
                     const Spacer(),
                     TextButton(
                       onPressed: _next,
-                      child: const Text('Skip'),
+                      child: Text(l10n.skipButton),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
@@ -667,7 +675,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                         foregroundColor: Colors.white,
                       ),
                       icon: const Icon(Icons.arrow_forward),
-                      label: const Text('Next'),
+                      label: Text(l10n.nextButton),
                     ),
                   ],
                 ),
@@ -678,6 +686,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 0: Welcome ─────────────────────────────────────────
   Widget _pageWelcome() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -686,15 +695,15 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
           const Icon(Icons.psychology_alt_outlined,
               size: 96, color: _accent),
           const SizedBox(height: 16),
-          const Text(
-            "Let's do some brain exercises!",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+          Text(
+            l10n.letsBrainExercisesTitle,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          const Text(
-            'This takes about 10–15 minutes. Sit together with the care recipient — you facilitate, they participate. You can skip any section.',
-            style: TextStyle(fontSize: 14, height: 1.5),
+          Text(
+            l10n.assessmentInstructionsText,
+            style: const TextStyle(fontSize: 14, height: 1.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -709,7 +718,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                   fontSize: 18, fontWeight: FontWeight.w700),
             ),
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text("Let's Begin"),
+            label: Text(l10n.letsBeginButton),
           ),
         ],
       ),
@@ -718,6 +727,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 1: Memorize words ──────────────────────────────────
   Widget _pageMemorize() {
+    final l10n = AppLocalizations.of(context)!;
     return StatefulBuilder(builder: (ctx, setLocal) {
       void show(int i) {
         setLocal(() => _wordRecallIdx = i);
@@ -734,14 +744,14 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Memory: Word List',
-                  style: TextStyle(
+              Text(l10n.memoryWordListTitle,
+                  style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              const Text(
-                'Read these 5 words OUT LOUD to the care recipient and ask them to remember them. We will test recall after the other exercises.',
+              Text(
+                l10n.wordListInstructionsText,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, height: 1.5),
+                style: const TextStyle(fontSize: 13, height: 1.5),
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
@@ -753,7 +763,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                       horizontal: 28, vertical: 16),
                 ),
                 icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Start word list'),
+                label: Text(l10n.startWordListButton),
               ),
             ],
           ),
@@ -785,10 +795,10 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: showingDone
-                  ? const Text(
-                      'All read!',
-                      key: ValueKey('done'),
-                      style: TextStyle(
+                  ? Text(
+                      l10n.allReadMessage,
+                      key: const ValueKey('done'),
+                      style: const TextStyle(
                           fontSize: 28, fontWeight: FontWeight.w700),
                     )
                   : Text(
@@ -813,7 +823,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                       horizontal: 24, vertical: 14),
                 ),
                 icon: const Icon(Icons.arrow_forward),
-                label: const Text("I've read them all"),
+                label: Text(l10n.readAllWordsButton),
               ),
           ],
         ),
@@ -823,18 +833,19 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 2: Clock drawing ───────────────────────────────────
   Widget _pageClock() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          const Text('Visuospatial: Clock Drawing',
-              style:
+          Text(l10n.clockDrawingTitle,
+              style: const
                   TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          const Text(
-            'Ask: "Please draw a clock showing 10 minutes past 11."',
+          Text(
+            l10n.clockDrawingInstructionsText,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 8),
@@ -843,16 +854,16 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             child: ClockDrawingCanvas(key: _clockKey),
           ),
           const SizedBox(height: 8),
-          const Text('Caregiver scoring',
-              style:
+          Text(l10n.caregiverScoringLabel,
+              style: const
                   TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           ..._clockRubric.entries.map((e) {
             final labels = {
-              'circle': 'Circle roughly correct?',
-              'numbers': 'All 12 numbers present?',
-              'positions': 'Numbers in correct positions?',
-              'hands': 'Hands showing correct time?',
+              'circle': l10n.clockCircleLabel,
+              'numbers': l10n.clockNumbersLabel,
+              'positions': l10n.clockPositionsLabel,
+              'hands': l10n.clockHandsLabel,
             };
             return CheckboxListTile(
               dense: true,
@@ -873,17 +884,18 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 3: Trail Making ────────────────────────────────────
   Widget _pageTrail() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
         children: [
-          const Text('Attention: Trail Making',
-              style:
+          Text(l10n.trailMakingTitle,
+              style: const
                   TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-          const Text(
-            'Tap the numbered circles in order, 1 through 15, as fast as you can.',
+          Text(
+            l10n.trailMakingInstructionsText,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 8),
@@ -902,17 +914,18 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 4: Digit Span ──────────────────────────────────────
   Widget _pageDigitSpan() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          const Text('Working Memory: Digit Span',
-              style:
+          Text(l10n.digitSpanTitle,
+              style: const
                   TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-          const Text(
-            'Read each number out loud as it appears, then ask the recipient to repeat.',
+          Text(
+            l10n.digitSpanInstructionsText,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 8),
@@ -929,18 +942,19 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 5: Category Fluency ───────────────────────────────
   Widget _pageFluency() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          const Text('Language: Category Fluency',
-              style:
+          Text(l10n.categoryFluencyTitle,
+              style: const
                   TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          const Text(
-            'Tap "+" for each valid answer the recipient names.',
+          Text(
+            l10n.categoryFluencyInstructionsText,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
@@ -960,18 +974,19 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 6: Delayed Recall ──────────────────────────────────
   Widget _pageRecall() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          const Text('Memory: Delayed Word Recall',
-              style:
+          Text(l10n.delayedWordRecallTitle,
+              style: const
                   TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
-          const Text(
-            'Ask: "What were the 5 words I showed you earlier?" Tap each word the recipient correctly recalls.',
+          Text(
+            l10n.delayedWordRecallInstructionsText,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, height: 1.5),
+            style: const TextStyle(fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 20),
           Wrap(
@@ -997,7 +1012,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                     color: selected
                         ? _accent.withValues(alpha: 0.18)
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                       color: selected ? _accent : Colors.grey.shade300,
                       width: selected ? 2 : 1,
@@ -1029,7 +1044,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             }).toList(),
           ),
           const SizedBox(height: 14),
-          Text('${_recalledWords.length} of ${_wordsShown.length} recalled',
+          Text(l10n.wordsRecalledCountLabel(_recalledWords.length.toString(), _wordsShown.length.toString()),
               style: const TextStyle(
                   fontSize: 13, color: AppTheme.textSecondary)),
         ],
@@ -1039,6 +1054,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 7: Orientation ─────────────────────────────────────
   Widget _pageOrientation() {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final months = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -1063,12 +1079,12 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('Orientation',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(l10n.orientationTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
         const SizedBox(height: 4),
-        const Text(
-          'Ask each question and tap whether they answered correctly.',
-          style: TextStyle(
+        Text(
+          l10n.orientationInstructionsText,
+          style: const TextStyle(
               fontSize: 12, color: AppTheme.textSecondary),
         ),
         const SizedBox(height: 12),
@@ -1089,7 +1105,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                             style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700)),
-                        Text('Correct: ${q['a']}',
+                        Text(l10n.correctAnswerLabel(q['a'] as String),
                             style: const TextStyle(
                                 fontSize: 11,
                                 color: AppTheme.textSecondary)),
@@ -1125,17 +1141,18 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 8: Pattern Sequence ────────────────────────────────
   Widget _pagePattern() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          const Text('Executive: Pattern Sequence',
-              style:
+          Text(l10n.patternSequenceTitle,
+              style: const
                   TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          const Text(
-            'Ask: "What comes next in the pattern?"',
-            style: TextStyle(
+          Text(
+            l10n.patternSequenceInstructionsText,
+            style: const TextStyle(
                 fontSize: 12, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 16),
@@ -1154,6 +1171,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
 
   // ── Page 9: Results ─────────────────────────────────────────
   Widget _pageResults() {
+    final l10n = AppLocalizations.of(context)!;
     final preview = CognitiveAssessment(
       elderId: '',
       assessedBy: '',
@@ -1236,8 +1254,8 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Domain breakdown',
-                    style: TextStyle(
+                Text(l10n.domainBreakdownTitle,
+                    style: const TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
                 ...preview.domainScores.entries.map((e) {
@@ -1292,7 +1310,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: preview.levelColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
               border: Border.all(
                   color: preview.levelColor.withValues(alpha: 0.3)),
             ),
@@ -1306,7 +1324,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Weakest: ${preview.weakestDomain}',
+                      Text(l10n.weakestDomainLabel(preview.weakestDomain!),
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
@@ -1331,10 +1349,10 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
         TextField(
           controller: _notesCtrl,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'Notes (optional)',
-            border: OutlineInputBorder(),
-            hintText: 'Anything to remember about this session...',
+          decoration: InputDecoration(
+            labelText: l10n.notesOptionalLabel,
+            border: const OutlineInputBorder(),
+            hintText: l10n.sessionNotesHint,
           ),
         ),
         const SizedBox(height: 18),
@@ -1352,7 +1370,7 @@ class _AssessmentWizardState extends State<_AssessmentWizard> {
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
               : const Icon(Icons.save_outlined),
-          label: const Text('Save Assessment'),
+          label: Text(l10n.saveAssessmentButton),
         ),
       ],
     );

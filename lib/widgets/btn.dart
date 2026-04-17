@@ -41,7 +41,6 @@ class Btn extends StatelessWidget {
         fontSize = 18;
         break;
       case BtnSize.medium:
-      default:
         fontSize = 14;
         break;
     }
@@ -102,7 +101,7 @@ class Btn extends StatelessWidget {
           backgroundColor: backgroundColor,
           padding: padding ?? defaultPadding,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0), // Consistent shape
+            borderRadius: BorderRadius.circular(AppTheme.radiusS), // Consistent shape
           ),
         ),
         child: Text(

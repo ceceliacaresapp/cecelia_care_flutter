@@ -34,7 +34,7 @@ class StreamErrorCard extends StatelessWidget {
       padding: EdgeInsets.all(compact ? 10 : 14),
       decoration: BoxDecoration(
         color: AppTheme.dangerColor.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: AppTheme.dangerColor.withValues(alpha: 0.3)),
       ),

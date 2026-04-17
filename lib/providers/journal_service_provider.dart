@@ -134,7 +134,7 @@ class JournalServiceProvider extends ChangeNotifier {
     if (_activeElder == null || _activeElder!.id.isEmpty) {
       debugPrint(
           'JournalServiceProvider: No active elder set for addJournalEntry.');
-      _errorMessage = 'Cannot add entry: No active elder selected.';
+      _errorMessage = 'Cannot add entry: No active care recipient selected.';
       notifyListeners();
       return null;
     }
@@ -255,7 +255,7 @@ class JournalServiceProvider extends ChangeNotifier {
     if (_activeElder == null || _activeElder!.id.isEmpty) {
       debugPrint(
           'JournalServiceProvider: No active elder set for updateJournalEntry.');
-      _errorMessage = 'Cannot update entry: No active elder selected.';
+      _errorMessage = 'Cannot update entry: No active care recipient selected.';
       notifyListeners();
       return null;
     }
@@ -432,7 +432,7 @@ class JournalServiceProvider extends ChangeNotifier {
       debugPrint(
           'JournalServiceProvider: No active elder set for '
           'deleteJournalEntry.');
-      _errorMessage = 'Cannot delete entry: No active elder selected.';
+      _errorMessage = 'Cannot delete entry: No active care recipient selected.';
       notifyListeners();
       return false;
     }

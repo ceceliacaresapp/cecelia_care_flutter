@@ -137,7 +137,7 @@ class SymptomAnalyticsScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppTheme.backgroundGray,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +183,7 @@ class _PeriodHeader extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppTheme.entryVitalAccent.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: AppTheme.entryVitalAccent.withValues(alpha: 0.15)),
       ),
@@ -314,7 +314,7 @@ class _TrendCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -402,7 +402,7 @@ class _DailyBarChart extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           decoration: BoxDecoration(
             color: AppTheme.backgroundGray,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -487,7 +487,7 @@ class _InsightCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8E1),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         border:
             Border.all(color: AppTheme.tileGold.withValues(alpha: 0.3)),
       ),
@@ -543,7 +543,7 @@ class _NotableEventTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: eventColor.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         border: Border.all(color: eventColor.withValues(alpha: 0.2)),
       ),
       child: Row(

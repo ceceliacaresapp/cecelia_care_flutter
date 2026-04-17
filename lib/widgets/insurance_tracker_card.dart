@@ -37,7 +37,7 @@ class InsuranceTrackerCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.tileBlueDark.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(
               color: AppTheme.tileBlueDark.withValues(alpha: 0.25)),
         ),
@@ -107,7 +107,7 @@ class InsuranceTrackerCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: AppTheme.tileBlueDark.withValues(alpha: 0.25)),
         boxShadow: [

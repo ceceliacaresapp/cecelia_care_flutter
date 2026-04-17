@@ -53,8 +53,8 @@ class BurnoutStatus {
         score: burnoutRisk,
         level: BurnoutRiskLevel.yellow,
         message:
-            "Your wellbeing has dipped recently. A short break could help.",
-        nudge: "Try a breathing exercise or write in your journal.",
+            'Your wellbeing has dipped recently. A short break could help.',
+        nudge: 'Try a breathing exercise or write in your journal.',
       );
     }
     return BurnoutStatus(
@@ -62,7 +62,7 @@ class BurnoutStatus {
       level: BurnoutRiskLevel.red,
       message:
           "You're showing signs of burnout. Please take care of yourself.",
-      nudge: "Consider taking 5 minutes for yourself right now.",
+      nudge: 'Consider taking 5 minutes for yourself right now.',
     );
   }
 }
@@ -153,8 +153,8 @@ class WellnessProvider with ChangeNotifier {
       negativeDays: count,
       alert: count >= 3,
       message: count >= 3
-          ? "Your mood has been low for $count days in a row. "
-              "Please consider reaching out to someone you trust."
+          ? 'Your mood has been low for $count days in a row. '
+              'Please consider reaching out to someone you trust.'
           : null,
     );
   }

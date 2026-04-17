@@ -248,6 +248,163 @@ extension FinancialFirestoreOps on FirestoreService {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Insurance Policies
+  //
+  // Owner-only records at top-level `insurancePolicies/{id}`. Benefit
+  // counters live as a subcollection under each policy.
+  // ---------------------------------------------------------------------------
+
+  CollectionReference<Map<String, dynamic>> _insurancePoliciesRef() =>
+      FirestoreService._db.collection('insurancePolicies');
+
+  Stream<List<InsurancePolicy>> getInsurancePoliciesStream({
+    required String userId,
+    String? careRecipientId,
+  }) {
+    if (userId.isEmpty) return Stream.value(const []);
+    Query<Map<String, dynamic>> query =
+        _insurancePoliciesRef().where('userId', isEqualTo: userId);
+    if (careRecipientId != null && careRecipientId.isNotEmpty) {
+      query = query.where('careRecipientId', isEqualTo: careRecipientId);
+    }
+    return query
+        .orderBy('startDate', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => InsurancePolicy.fromFirestore(d))
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getInsurancePoliciesStream error: $e');
+      return <InsurancePolicy>[];
+    });
+  }
+
+  Future<String> addInsurancePolicy(InsurancePolicy policy) async {
+    final ref = await _insurancePoliciesRef().add(policy.toFirestore());
+    return ref.id;
+  }
+
+  Future<void> updateInsurancePolicy(InsurancePolicy policy) async {
+    final id = policy.id;
+    if (id == null || id.isEmpty) {
+      throw ArgumentError('Policy id is required for update');
+    }
+    await _insurancePoliciesRef().doc(id).update(policy.toFirestore());
+  }
+
+  Future<void> deleteInsurancePolicy(String policyId) async {
+    if (policyId.isEmpty) return;
+    await _insurancePoliciesRef().doc(policyId).delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Benefit Counters (subcollection of a policy)
+  // ---------------------------------------------------------------------------
+
+  CollectionReference<Map<String, dynamic>> _benefitCountersRef(
+          String policyId) =>
+      _insurancePoliciesRef().doc(policyId).collection('benefitCounters');
+
+  Stream<List<BenefitCounter>> getBenefitCountersStream(String policyId) {
+    if (policyId.isEmpty) return Stream.value(const []);
+    return _benefitCountersRef(policyId)
+        .orderBy('benefitName')
+        .limit(50)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => BenefitCounter.fromFirestore(d, policyId))
+            .toList())
+        .handleError((e) {
+      debugPrint(
+          'FirestoreService.getBenefitCountersStream error ($policyId): $e');
+      return <BenefitCounter>[];
+    });
+  }
+
+  Future<String> addBenefitCounter(BenefitCounter counter) async {
+    if (counter.policyId.isEmpty) {
+      throw ArgumentError('policyId is required for a benefit counter');
+    }
+    final ref = await _benefitCountersRef(counter.policyId)
+        .add(counter.toFirestore());
+    return ref.id;
+  }
+
+  Future<void> updateBenefitCounter(BenefitCounter counter) async {
+    final id = counter.id;
+    if (id == null || id.isEmpty || counter.policyId.isEmpty) {
+      throw ArgumentError('counter id and policyId are required');
+    }
+    await _benefitCountersRef(counter.policyId)
+        .doc(id)
+        .update(counter.toFirestore());
+  }
+
+  Future<void> deleteBenefitCounter({
+    required String policyId,
+    required String counterId,
+  }) async {
+    if (policyId.isEmpty || counterId.isEmpty) return;
+    await _benefitCountersRef(policyId).doc(counterId).delete();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Insurance Claims
+  // ---------------------------------------------------------------------------
+
+  CollectionReference<Map<String, dynamic>> _insuranceClaimsRef() =>
+      FirestoreService._db.collection('insuranceClaims');
+
+  Stream<List<InsuranceClaim>> getInsuranceClaimsStream({
+    required String userId,
+    String? careRecipientId,
+    String? policyId,
+    int limit = 200,
+  }) {
+    if (userId.isEmpty) return Stream.value(const []);
+    Query<Map<String, dynamic>> query =
+        _insuranceClaimsRef().where('userId', isEqualTo: userId);
+    if (careRecipientId != null && careRecipientId.isNotEmpty) {
+      query = query.where('careRecipientId', isEqualTo: careRecipientId);
+    }
+    if (policyId != null && policyId.isNotEmpty) {
+      query = query.where('policyId', isEqualTo: policyId);
+    }
+    return query
+        .orderBy('dateOfService', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((d) => InsuranceClaim.fromFirestore(d))
+            .toList())
+        .handleError((e) {
+      debugPrint('FirestoreService.getInsuranceClaimsStream error: $e');
+      return <InsuranceClaim>[];
+    });
+  }
+
+  Future<String> addInsuranceClaim(InsuranceClaim claim) async {
+    final ref = await _insuranceClaimsRef().add(claim.toFirestore());
+    return ref.id;
+  }
+
+  Future<void> updateInsuranceClaim(InsuranceClaim claim) async {
+    final id = claim.id;
+    if (id == null || id.isEmpty) {
+      throw ArgumentError('claim id is required for update');
+    }
+    await _insuranceClaimsRef().doc(id).update(claim.toFirestore());
+  }
+
+  Future<void> deleteInsuranceClaim(String claimId) async {
+    if (claimId.isEmpty) return;
+    await _insuranceClaimsRef().doc(claimId).delete();
+  }
+
+  // ---------------------------------------------------------------------------
+
   Stream<Map<String, double>> getCategoryBudgetsStream({
     required String elderId,
     required DateTime month,

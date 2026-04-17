@@ -244,7 +244,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: template.color.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   border: Border.all(
                       color: template.color.withValues(alpha: 0.2)),
                 ),
@@ -300,7 +300,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppTheme.backgroundGray,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           border: Border.all(
                               color: Colors.grey.withValues(alpha: 0.2)),
                         ),
@@ -346,7 +346,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppTheme.backgroundGray,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         border: Border.all(
                             color: Colors.grey.withValues(alpha: 0.2)),
                       ),
@@ -454,7 +454,7 @@ class _CarePlanTemplatesScreenState extends State<CarePlanTemplatesScreen> {
                 backgroundColor: template.color,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 elevation: 2,
               ),
@@ -486,7 +486,7 @@ class _TemplateCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: template.color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: template.color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
@@ -502,7 +502,7 @@ class _TemplateCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: template.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
               ),
               child: Icon(template.icon,
                   size: 28, color: template.color),

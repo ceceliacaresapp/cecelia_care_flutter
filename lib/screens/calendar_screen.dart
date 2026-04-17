@@ -68,14 +68,29 @@ class _HealthReminder {
 
 enum _DeleteChoice { thisOnly, allInSeries }
 
+// Color palette for multi-elder dots.
+const List<Color> _kElderPalette = [
+  AppTheme.tileBlue,
+  AppTheme.statusRed,
+  AppTheme.statusGreen,
+  AppTheme.tileOrange,
+  AppTheme.tilePurple,
+  AppTheme.tileTeal,
+];
+
 class CalendarScreen extends StatefulWidget {
   final ElderProfile activeElder;
   final String? currentUserId;
+
+  /// When non-null and length >= 2, the calendar shows a merged overlay
+  /// of all care recipients' events with per-recipient color coding.
+  final List<ElderProfile>? allElders;
 
   const CalendarScreen({
     super.key,
     required this.activeElder,
     required this.currentUserId,
+    this.allElders,
   });
 
   @override
@@ -116,7 +131,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void didUpdateWidget(covariant CalendarScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.activeElder.id != widget.activeElder.id) {
+    final oldMulti = oldWidget.allElders?.length ?? 0;
+    final newMulti = widget.allElders?.length ?? 0;
+    if (oldWidget.activeElder.id != widget.activeElder.id ||
+        oldMulti != newMulti) {
       _eventsSub?.cancel();
       _healthRemindersSub?.cancel();
       setState(() {
@@ -164,6 +182,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  bool get _isMultiElder =>
+      widget.allElders != null && widget.allElders!.length >= 2;
+
+  Color _elderColor(String elderId) {
+    if (!_isMultiElder) return _kCalendarColor;
+    final idx = widget.allElders!.indexWhere((e) => e.id == elderId);
+    return _kElderPalette[idx < 0 ? 0 : idx % _kElderPalette.length];
+  }
+
   void _subscribeToCalendarEvents() {
     final elderId = widget.activeElder.id;
     if (elderId.isEmpty) {
@@ -173,12 +200,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
       });
       return;
     }
-    _eventsSub = FirebaseFirestore.instance
-        .collection('calendarEvents')
-        .where('elderId', isEqualTo: elderId)
-        .orderBy('startDateTime', descending: false)
-        .snapshots()
-        .listen(
+
+    // In multi-elder mode use a single whereIn query for all care recipients.
+    Query query;
+    if (_isMultiElder) {
+      final ids = widget.allElders!.map((e) => e.id).toList();
+      query = FirebaseFirestore.instance
+          .collection('calendarEvents')
+          .where('elderId', whereIn: ids)
+          .orderBy('startDateTime', descending: false);
+    } else {
+      query = FirebaseFirestore.instance
+          .collection('calendarEvents')
+          .where('elderId', isEqualTo: elderId)
+          .orderBy('startDateTime', descending: false);
+    }
+
+    _eventsSub = query.snapshots().listen(
       (snapshot) {
         final events = snapshot.docs
             .map((doc) => CalendarEvent.fromFirestore(
@@ -605,7 +643,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                   onPressed: _onAddNewEvent,
                 ),
@@ -616,7 +654,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusL),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -626,7 +664,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusL),
                   child: TableCalendar<CalendarEvent>(
                     locale: _l10n.localeName,
                     firstDay:
@@ -641,8 +679,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           DateTime.utc(day.year, day.month, day.day);
                       return _eventsMap[dateOnly] ?? [];
                     },
+                    calendarBuilders: _isMultiElder
+                        ? CalendarBuilders<CalendarEvent>(
+                            markerBuilder: (ctx, day, events) {
+                              if (events.isEmpty) return null;
+                              // Collect unique elder IDs for this day's events.
+                              final elderIds = events
+                                  .map((e) => e.elderId)
+                                  .toSet()
+                                  .toList();
+                              return Positioned(
+                                bottom: 1,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: elderIds.take(5).map((id) {
+                                    return Container(
+                                      width: 6,
+                                      height: 6,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 0.5),
+                                      decoration: BoxDecoration(
+                                        color: _elderColor(id),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              );
+                            },
+                          )
+                        : const CalendarBuilders<CalendarEvent>(),
                     calendarStyle: CalendarStyle(
-                      markersMaxCount: 3,
+                      markersMaxCount: _isMultiElder ? 0 : 3,
                       markerDecoration: const BoxDecoration(
                           color: _kCalendarColor,
                           shape: BoxShape.circle),
@@ -694,6 +762,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         style: AppStyles.emptyStateText),
                   ),
                 )
+              else if (_isMultiElder)
+                _buildMultiElderEventList(_eventsForSelectedDate)
               else
                 ListView.builder(
                   shrinkWrap: true,
@@ -761,16 +831,68 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Event card — left teal border strip, soft shadow
+  // Multi-elder event list — groups events by care recipient with colored headers
   // ---------------------------------------------------------------------------
-  Widget _buildEventCard(CalendarEvent event) {
+  Widget _buildMultiElderEventList(List<CalendarEvent> events) {
+    // Group by elderId, preserving the allElders order.
+    final grouped = <String, List<CalendarEvent>>{};
+    for (final e in events) {
+      grouped.putIfAbsent(e.elderId, () => []).add(e);
+    }
+
+    final elders = widget.allElders!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final elder in elders)
+          if (grouped.containsKey(elder.id)) ...[
+            // Elder name header with color dot
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: _elderColor(elder.id),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    elder.preferredName?.isNotEmpty == true
+                        ? elder.preferredName!
+                        : elder.profileName,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _elderColor(elder.id),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Events for this elder with colored left border
+            ...grouped[elder.id]!.map((event) =>
+                _buildEventCard(event, accentColor: _elderColor(elder.id))),
+          ],
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Event card — left border strip, soft shadow
+  // ---------------------------------------------------------------------------
+  Widget _buildEventCard(CalendarEvent event, {Color? accentColor}) {
     final canEditDelete = _canEditDeleteEvent(event);
+    final cardColor = accentColor ?? _kCalendarColor;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: _kCalendarColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _kCalendarColor.withValues(alpha: 0.2)),
+        color: cardColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+        border: Border.all(color: cardColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -780,12 +902,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(width: 4, color: _kCalendarColor),
+              Container(width: 4, color: cardColor),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -932,7 +1054,7 @@ class _ReminderRow extends StatelessWidget {
         color: isSet
             ? _kCalendarColor.withValues(alpha: 0.06)
             : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
           color: isSet
               ? _kCalendarColor.withValues(alpha: 0.25)

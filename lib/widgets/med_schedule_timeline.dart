@@ -117,7 +117,7 @@ class MedScheduleTimeline extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.tileBlue.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(
               color: AppTheme.tileBlue.withValues(alpha: 0.15)),
           boxShadow: [
@@ -138,7 +138,7 @@ class MedScheduleTimeline extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: AppTheme.tileBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   child: const Icon(Icons.schedule_outlined,
                       color: AppTheme.tileBlue, size: 18),
@@ -312,7 +312,7 @@ class _BandSection extends StatelessWidget {
                     color: isActive
                         ? band.color.withValues(alpha: 0.15)
                         : band.color.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: isActive
                         ? Border.all(
                             color: band.color.withValues(alpha: 0.4),
@@ -402,7 +402,7 @@ class _MedChip extends StatelessWidget {
           color: isActive
               ? color.withValues(alpha: 0.08)
               : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: isActive
                 ? color.withValues(alpha: 0.25)
@@ -513,7 +513,7 @@ class _UnscheduledSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         border: Border.all(
           color: AppTheme.textLight.withValues(alpha: 0.2),
           style: BorderStyle.solid,
@@ -548,7 +548,7 @@ class _UnscheduledSection extends StatelessWidget {
                     horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppTheme.backgroundGray,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -599,7 +599,7 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
         child: Row(
           children: [

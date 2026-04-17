@@ -25,6 +25,8 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
+import 'package:cecelia_care_flutter/models/elder_profile.dart';
+import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/utils/string_extensions.dart';
@@ -79,6 +81,37 @@ class _MedSummary {
   });
 }
 
+class _PrnMedEfficacy {
+  final String name;
+  final int totalDoses;
+  final Map<String, int> responses; // 'muchBetter' → 5, etc.
+
+  const _PrnMedEfficacy({
+    required this.name,
+    required this.totalDoses,
+    required this.responses,
+  });
+
+  String get summary {
+    if (responses.isEmpty) return '$totalDoses PRN doses, no follow-up data';
+    final total = responses.values.fold<int>(0, (s, v) => s + v);
+    final parts = <String>[];
+    for (final key in ['muchBetter', 'somewhat', 'noChange', 'worse']) {
+      final count = responses[key] ?? 0;
+      if (count > 0) {
+        final pct = (count / total * 100).toStringAsFixed(0);
+        final label = key == 'muchBetter'
+            ? 'much better'
+            : key == 'noChange'
+                ? 'no change'
+                : key;
+        parts.add('$pct% $label');
+      }
+    }
+    return '$totalDoses PRN doses, efficacy: ${parts.join(', ')}';
+  }
+}
+
 class _NotableEvent {
   final DateTime date;
   final String description;
@@ -119,6 +152,19 @@ class _PrepData {
   final Map<String, int> visitorResponseCounts; // 'positive' → 5, etc.
   final String? visitorTopName;
 
+  // PRN medication efficacy.
+  final List<_PrnMedEfficacy> prnEfficacy;
+
+  // Incontinence aggregation.
+  final int incontinenceCount;
+  final Map<String, int> incontinenceTypeCounts; // urinary/bowel/both
+  final Map<String, int> severityCounts; // light/moderate/heavy
+  final Map<int, int> bristolDistribution; // 1-7
+  final Map<String, int> urineColorCounts;
+  final List<String> urineColorFlags; // concerning colors
+  final List<String> skinConditionFlags; // broken/sore
+  final String incontinenceSeverityTrend;
+
   const _PrepData({
     required this.vitals,
     required this.medications,
@@ -141,6 +187,15 @@ class _PrepData {
     this.visitorCount = 0,
     this.visitorResponseCounts = const {},
     this.visitorTopName,
+    this.prnEfficacy = const [],
+    this.incontinenceCount = 0,
+    this.incontinenceTypeCounts = const {},
+    this.severityCounts = const {},
+    this.bristolDistribution = const {},
+    this.urineColorCounts = const {},
+    this.urineColorFlags = const [],
+    this.skinConditionFlags = const [],
+    this.incontinenceSeverityTrend = 'stable',
   });
 
   factory _PrepData.from(
@@ -394,6 +449,80 @@ class _PrepData {
             .first
             .key;
 
+    // ── PRN medication efficacy ────────────────────────────────────────
+    final allMedEntries =
+        entries.where((e) => e.type == EntryType.medication).toList();
+    final prnEntries =
+        allMedEntries.where((e) => e.data?['prnFollowUp'] == true).toList();
+    final prnByMed = <String, _PrnMedEfficacy>{};
+    for (final e in prnEntries) {
+      final name = e.data?['name'] as String? ?? 'Unknown';
+      final existing = prnByMed[name];
+      final responses =
+          Map<String, int>.from(existing?.responses ?? const {});
+      final response = e.data?['prnFollowUpResponse'] as String?;
+      if (response != null && response.isNotEmpty) {
+        responses[response] = (responses[response] ?? 0) + 1;
+      }
+      prnByMed[name] = _PrnMedEfficacy(
+        name: name,
+        totalDoses: (existing?.totalDoses ?? 0) + 1,
+        responses: responses,
+      );
+    }
+
+    // ── Incontinence aggregation ─────────────────────────────────────
+    final incEntries =
+        entries.where((e) => e.type == EntryType.incontinence).toList();
+    final incTypeCounts = <String, int>{};
+    final incSeverityCounts = <String, int>{};
+    final bristolDist = <int, int>{};
+    final urineColorCounts = <String, int>{};
+    final urineFlags = <String>[];
+    final skinFlags = <String>[];
+    final severityValues = <double>[];
+
+    for (final e in incEntries) {
+      final d = e.data ?? {};
+      // Type: urinary / bowel / both
+      final type = d['incontinenceType'] as String? ?? '';
+      if (type.isNotEmpty) {
+        incTypeCounts[type] = (incTypeCounts[type] ?? 0) + 1;
+      }
+      // Severity
+      final sev = d['severity'] as String? ?? '';
+      if (sev.isNotEmpty) {
+        incSeverityCounts[sev] = (incSeverityCounts[sev] ?? 0) + 1;
+        severityValues.add(sev == 'light' ? 1 : sev == 'moderate' ? 2 : 3);
+      }
+      // Bristol scale
+      final bristol = d['bristolType'];
+      final bristolInt = bristol is int
+          ? bristol
+          : int.tryParse(bristol?.toString() ?? '');
+      if (bristolInt != null && bristolInt >= 1 && bristolInt <= 7) {
+        bristolDist[bristolInt] = (bristolDist[bristolInt] ?? 0) + 1;
+      }
+      // Urine color
+      final color = d['urineColor'] as String? ?? '';
+      if (color.isNotEmpty) {
+        urineColorCounts[color] = (urineColorCounts[color] ?? 0) + 1;
+        if (color == 'pink' || color == 'brown') {
+          final dateStr = d['date'] as String? ?? '';
+          urineFlags.add('$color urine on $dateStr');
+        }
+      }
+      // Skin condition
+      final skin = d['skinCondition'] as String? ?? '';
+      if (skin == 'broken' || skin == 'irritated') {
+        final dateStr = d['date'] as String? ?? '';
+        skinFlags.add('$skin skin on $dateStr');
+      }
+    }
+
+    final incSeverityTrend =
+        _computeTrend(severityValues, higherIsWorse: true);
+
     return _PrepData(
       vitals: vitals,
       medications: medications,
@@ -416,6 +545,15 @@ class _PrepData {
       visitorCount: visitorEntries.length,
       visitorResponseCounts: visitorResponseCounts,
       visitorTopName: visitorTopName,
+      prnEfficacy: prnByMed.values.toList(),
+      incontinenceCount: incEntries.length,
+      incontinenceTypeCounts: incTypeCounts,
+      severityCounts: incSeverityCounts,
+      bristolDistribution: bristolDist,
+      urineColorCounts: urineColorCounts,
+      urineColorFlags: urineFlags,
+      skinConditionFlags: skinFlags,
+      incontinenceSeverityTrend: incSeverityTrend,
     );
   }
 }
@@ -734,6 +872,22 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
             widgets.add(pw.SizedBox(height: 16));
           }
 
+          // PRN Medication Efficacy
+          if (d.prnEfficacy.isNotEmpty) {
+            widgets.add(_pdfSectionHeader('PRN Medication Efficacy'));
+            widgets.add(pw.SizedBox(height: 6));
+            for (final prn in d.prnEfficacy) {
+              widgets.add(pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 4),
+                child: pw.Text(
+                  '\u2022 ${prn.name}: ${prn.summary}',
+                  style: const pw.TextStyle(fontSize: 10),
+                ),
+              ));
+            }
+            widgets.add(pw.SizedBox(height: 16));
+          }
+
           // Symptoms
           widgets.add(_pdfSectionHeader('Symptom Patterns'));
           widgets.add(pw.SizedBox(height: 6));
@@ -765,6 +919,101 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                 style: const pw.TextStyle(fontSize: 10)));
           }
           widgets.add(pw.SizedBox(height: 16));
+
+          // Bowel / Bladder Summary
+          if (d.incontinenceCount > 0) {
+            widgets.add(_pdfSectionHeader('Bowel / Bladder Summary'));
+            widgets.add(pw.SizedBox(height: 6));
+            // Type breakdown
+            final typeStr = d.incontinenceTypeCounts.entries
+                .map((e) => '${e.key}: ${e.value}')
+                .join(', ');
+            widgets.add(pw.Text(
+              '${d.incontinenceCount} episode${d.incontinenceCount == 1 ? '' : 's'} \u2014 $typeStr',
+              style: pw.TextStyle(
+                  fontSize: 11, fontWeight: pw.FontWeight.bold),
+            ));
+            // Severity breakdown
+            if (d.severityCounts.isNotEmpty) {
+              final sevStr = d.severityCounts.entries
+                  .map((e) => '${e.key}: ${e.value}')
+                  .join(', ');
+              widgets.add(pw.Text(
+                'Severity: $sevStr. Trend: ${d.incontinenceSeverityTrend}.',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+            }
+            // Bristol scale distribution
+            if (d.bristolDistribution.isNotEmpty) {
+              widgets.add(pw.SizedBox(height: 4));
+              final sorted = d.bristolDistribution.entries.toList()
+                ..sort((a, b) => a.key.compareTo(b.key));
+              final bristolStr =
+                  sorted.map((e) => 'Type ${e.key}: ${e.value}').join(', ');
+              // Determine predominant pattern
+              final looseCount = (d.bristolDistribution[5] ?? 0) +
+                  (d.bristolDistribution[6] ?? 0) +
+                  (d.bristolDistribution[7] ?? 0);
+              final constCount = (d.bristolDistribution[1] ?? 0) +
+                  (d.bristolDistribution[2] ?? 0);
+              final totalBristol =
+                  d.bristolDistribution.values.fold<int>(0, (s, v) => s + v);
+              String? pattern;
+              if (totalBristol > 0 && looseCount > totalBristol / 2) {
+                pattern = 'Predominantly loose stools';
+              } else if (totalBristol > 0 && constCount > totalBristol / 2) {
+                pattern = 'Predominantly constipated';
+              }
+              widgets.add(pw.Text(
+                'Bristol Scale: $bristolStr',
+                style: const pw.TextStyle(fontSize: 9),
+              ));
+              if (pattern != null) {
+                widgets.add(pw.Text(
+                  '\u26A0 $pattern',
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.orange800,
+                  ),
+                ));
+              }
+            }
+            // Urine color flags
+            if (d.urineColorFlags.isNotEmpty) {
+              widgets.add(pw.SizedBox(height: 4));
+              widgets.add(pw.Text(
+                '\u26A0 CONTACT DOCTOR \u2014 Concerning urine color:',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.red800,
+                ),
+              ));
+              for (final flag in d.urineColorFlags) {
+                widgets.add(pw.Text('  \u2022 $flag',
+                    style: const pw.TextStyle(
+                        fontSize: 9, color: PdfColors.red700)));
+              }
+            }
+            // Skin condition flags
+            if (d.skinConditionFlags.isNotEmpty) {
+              widgets.add(pw.SizedBox(height: 4));
+              widgets.add(pw.Text(
+                '\u26A0 Skin integrity concerns during continence care:',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.orange800,
+                ),
+              ));
+              for (final flag in d.skinConditionFlags) {
+                widgets.add(pw.Text('  \u2022 $flag',
+                    style: const pw.TextStyle(fontSize: 9)));
+              }
+            }
+            widgets.add(pw.SizedBox(height: 16));
+          }
 
           // Sleep
           widgets.add(_pdfSectionHeader('Sleep Overview'));
@@ -1318,11 +1567,11 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
   @override
   Widget build(BuildContext context) {
     final activeElder =
-        context.watch<ActiveElderProvider>().activeElder;
+        context.select<ActiveElderProvider, ElderProfile?>((p) => p.activeElder);
     final userProfile =
-        context.watch<UserProfileProvider>().userProfile;
+        context.select<UserProfileProvider, UserProfile?>((p) => p.userProfile);
     final meds =
-        context.watch<MedicationDefinitionsProvider>().medDefinitions;
+        context.select<MedicationDefinitionsProvider, List<MedicationDefinition>>((p) => p.medDefinitions);
     final currentUserId =
         FirebaseAuth.instance.currentUser?.uid;
 
@@ -1413,6 +1662,17 @@ class _AppointmentPrepScreenState extends State<AppointmentPrepScreen> {
                         child: _SymptomsSection(data: prepData),
                       ),
                       const SizedBox(height: 14),
+
+                      // Bowel / Bladder
+                      if (prepData.incontinenceCount > 0) ...[
+                        _SectionCard(
+                          title: 'Bowel / Bladder Summary',
+                          icon: Icons.water_drop_outlined,
+                          color: AppTheme.tileTeal,
+                          child: _IncontinenceSection(data: prepData),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
 
                       // Sleep
                       _SectionCard(
@@ -1574,7 +1834,7 @@ class _PrepHeader extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _kColor.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: _kColor.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -1586,7 +1846,7 @@ class _PrepHeader extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: _kColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: const Icon(Icons.checklist_outlined,
                     size: 22, color: _kColor),
@@ -1645,7 +1905,7 @@ class _SectionCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
@@ -1830,7 +2090,7 @@ class _MedsSection extends StatelessWidget {
                       horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: adherenceColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                         color: adherenceColor.withValues(alpha: 0.3)),
                   ),
@@ -1959,6 +2219,91 @@ class _SymptomRow extends StatelessWidget {
   }
 }
 
+class _IncontinenceSection extends StatelessWidget {
+  const _IncontinenceSection({required this.data});
+  final _PrepData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final typeStr = data.incontinenceTypeCounts.entries
+        .map((e) => '${e.key}: ${e.value}')
+        .join(', ');
+    final sevStr = data.severityCounts.entries
+        .map((e) => '${e.key}: ${e.value}')
+        .join(', ');
+
+    // Bristol pattern detection
+    final looseCount = (data.bristolDistribution[5] ?? 0) +
+        (data.bristolDistribution[6] ?? 0) +
+        (data.bristolDistribution[7] ?? 0);
+    final constCount = (data.bristolDistribution[1] ?? 0) +
+        (data.bristolDistribution[2] ?? 0);
+    final totalBristol =
+        data.bristolDistribution.values.fold<int>(0, (s, v) => s + v);
+    String? pattern;
+    if (totalBristol > 0 && looseCount > totalBristol / 2) {
+      pattern = 'Predominantly loose stools';
+    } else if (totalBristol > 0 && constCount > totalBristol / 2) {
+      pattern = 'Predominantly constipated';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${data.incontinenceCount} episode${data.incontinenceCount == 1 ? '' : 's'} \u2014 $typeStr',
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        if (sevStr.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text('Severity: $sevStr. Trend: ${data.incontinenceSeverityTrend}.',
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        ],
+        if (data.bristolDistribution.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: (data.bristolDistribution.entries.toList()
+                  ..sort((a, b) => a.key.compareTo(b.key)))
+                .map((e) => _VitalChip(
+                    label: 'Bristol ${e.key}', value: '${e.value}'))
+                .toList(),
+          ),
+          if (pattern != null) ...[
+            const SizedBox(height: 4),
+            Text('\u26A0 $pattern',
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.tileOrange)),
+          ],
+        ],
+        if (data.urineColorFlags.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text('\u26A0 Concerning urine color — contact doctor',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.dangerColor)),
+          ...data.urineColorFlags.map((f) => Text('  \u2022 $f',
+              style: TextStyle(fontSize: 12, color: AppTheme.dangerColor))),
+        ],
+        if (data.skinConditionFlags.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text('\u26A0 Skin concerns during continence care',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.tileOrange)),
+          ...data.skinConditionFlags.map((f) => Text('  \u2022 $f',
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary))),
+        ],
+      ],
+    );
+  }
+}
+
 class _SleepSection extends StatelessWidget {
   const _SleepSection({required this.data});
   final _PrepData data;
@@ -2080,7 +2425,7 @@ class _ShareBar extends StatelessWidget {
           backgroundColor: _kColor,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM)),
         ),
         onPressed: isGenerating ? null : onShare,
       ),

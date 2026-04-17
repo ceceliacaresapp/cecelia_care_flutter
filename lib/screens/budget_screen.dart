@@ -19,6 +19,7 @@ import 'package:cecelia_care_flutter/screens/forms/set_budgets_form.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/expense_breakdown_chart.dart';
 import 'package:cecelia_care_flutter/widgets/insurance_tracker_card.dart';
+import 'package:cecelia_care_flutter/screens/insurance/insurance_dashboard_screen.dart';
 import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/widgets/stream_error_card.dart';
 import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
@@ -365,12 +366,60 @@ class _BudgetScreenState extends State<BudgetScreen> {
         final monthsElapsed = DateTime.now().month;
         final monthlyAvg =
             monthsElapsed > 0 ? ytdMedicalSpend / monthsElapsed : 0.0;
-        return InsuranceTrackerCard(
-          plan: _insurancePlan,
-          ytdMedicalSpend: ytdMedicalSpend,
-          ytdTaxDeductible: ytdTaxDeductible,
-          monthlyAverage: monthlyAvg,
-          onSetup: _showInsuranceSetupSheet,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            InsuranceTrackerCard(
+              plan: _insurancePlan,
+              ytdMedicalSpend: ytdMedicalSpend,
+              ytdTaxDeductible: ytdTaxDeductible,
+              monthlyAverage: monthlyAvg,
+              onSetup: _showInsuranceSetupSheet,
+            ),
+            const SizedBox(height: 10),
+            // Secondary entry point into the full insurance + claims
+            // dashboard. The OOP tracker above is fast glanceable state;
+            // this is for claim-by-claim work + denial appeals.
+            InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const InsuranceDashboardScreen(),
+                ),
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.tileBlueDark.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
+                  border: Border.all(
+                      color: AppTheme.tileBlueDark
+                          .withValues(alpha: 0.22)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.receipt_long_outlined,
+                        size: 18, color: AppTheme.tileBlueDark),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Track claims, policies, and denials',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.tileBlueDark,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward,
+                        size: 14, color: AppTheme.tileBlueDark),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -543,7 +592,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
             border: Border.all(
                 color: AppTheme.entryMoodAccent.withValues(alpha: 0.25)),
           ),
@@ -974,7 +1023,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   border: Border.all(
                       color: entryColor.withValues(alpha: 0.2)),
                   boxShadow: [
@@ -985,7 +1034,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   child: IntrinsicHeight(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1079,7 +1128,7 @@ class _StyledCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(

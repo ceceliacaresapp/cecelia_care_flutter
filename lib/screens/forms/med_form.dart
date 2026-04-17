@@ -10,6 +10,7 @@ import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
 import 'package:cecelia_care_flutter/widgets/btn.dart';
 import 'package:cecelia_care_flutter/widgets/form_sheet_header.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
+import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/models/medication_definition.dart';
 import 'package:cecelia_care_flutter/providers/day_entries_provider.dart';
@@ -76,7 +77,7 @@ class _MedFormState extends State<MedForm> {
     final editing = widget.editingItem;
     if (editing != null) {
       _nameController.text = editing.name;
-      _doseController.text = editing.dose ?? '';
+      _doseController.text = editing.dose;
       _isTaken = editing.taken;
       _currentSelectedRxcui = editing.rxCui;
       _fetchAndSetInteractions(_currentSelectedRxcui);
@@ -203,8 +204,46 @@ class _MedFormState extends State<MedForm> {
         _showSnackBar(_l10n.formSuccessMedUpdated, Colors.green);
       } else {
         payload['createdAt'] = FieldValue.serverTimestamp();
-        await journal.addJournalEntry(
+
+        // Check if this is a PRN med with follow-up enabled.
+        final medName = _nameController.text.trim();
+        final medDefs =
+            context.read<MedicationDefinitionsProvider>().medDefinitions;
+        final matchingDef = medDefs
+            .where((d) =>
+                d.name.toLowerCase() == medName.toLowerCase() && d.isPRN)
+            .firstOrNull;
+        final followUpMin = matchingDef?.prnFollowUpMinutes;
+
+        if (followUpMin != null && _isTaken) {
+          payload['prnFollowUp'] = true;
+          payload['prnFollowUpMinutes'] = followUpMin;
+        }
+
+        final result = await journal.addJournalEntry(
             'medication', payload, user.uid);
+
+        // Schedule PRN follow-up notification if applicable.
+        if (followUpMin != null && _isTaken && result != null) {
+          final entryId = result['firestoreId'] as String? ?? '';
+          if (entryId.isNotEmpty) {
+            try {
+              await NotificationService.instance.scheduleOneTimeNotification(
+                id: entryId.hashCode.toUnsigned(31),
+                title: 'How did $medName work?',
+                body: 'Tap to record if $medName helped.',
+                payload:
+                    'prn_followup|$entryId|$medName|${widget.activeElder.id}',
+                scheduledTime:
+                    DateTime.now().add(Duration(minutes: followUpMin)),
+                channelKey: 'med_reminders',
+              );
+            } catch (e) {
+              debugPrint('PRN follow-up scheduling failed: $e');
+            }
+          }
+        }
+
         _showSnackBar(_l10n.formSuccessMedSaved, Colors.green);
       }
       HapticUtils.success();
@@ -324,7 +363,7 @@ class _MedFormState extends State<MedForm> {
                                   ? AppTheme.primaryColor
                                   : AppTheme.backgroundGray,
                               borderRadius:
-                                  BorderRadius.circular(20),
+                                  BorderRadius.circular(AppTheme.radiusXL),
                               border: Border.all(
                                 color: isSel
                                     ? AppTheme.primaryColor
@@ -389,7 +428,7 @@ class _MedFormState extends State<MedForm> {
                         border: Border.all(
                             color:
                                 AppTheme.textLight.withValues(alpha: 0.5)),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       ),
                       child: Text(
                         _time,
@@ -429,7 +468,7 @@ class _MedFormState extends State<MedForm> {
                       decoration: BoxDecoration(
                         color:
                             AppTheme.warningColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         border: Border.all(
                             color: AppTheme.warningColor),
                       ),

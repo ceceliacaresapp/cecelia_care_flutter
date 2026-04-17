@@ -185,7 +185,7 @@ class _WeightTrendScreenState extends State<WeightTrendScreen> {
         // ── Current weight hero ───────────────────────────────────
         Card(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusL)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -225,7 +225,7 @@ class _WeightTrendScreenState extends State<WeightTrendScreen> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: AppTheme.statusRed.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       border: Border.all(
                           color: AppTheme.statusRed.withValues(alpha: 0.3)),
                     ),
@@ -272,7 +272,7 @@ class _WeightTrendScreenState extends State<WeightTrendScreen> {
         // ── Quick entry ───────────────────────────────────────────
         Card(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM)),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -309,7 +309,7 @@ class _WeightTrendScreenState extends State<WeightTrendScreen> {
                     backgroundColor: AppTheme.entryActivityAccent,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                   child: _isSaving
                       ? const SizedBox(

@@ -309,7 +309,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                           color: selected
                               ? p.color.withValues(alpha: 0.12)
                               : AppTheme.backgroundGray,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                           border: Border.all(
                             color: selected
                                 ? p.color
@@ -455,7 +455,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                             side: const BorderSide(
                                 color: AppTheme.dangerColor),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusM),
                             ),
                           ),
                           child: const Text('Stop',
@@ -479,7 +479,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                             backgroundColor: _pattern.color,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusM),
                             ),
                             elevation: 2,
                           ),
@@ -557,7 +557,7 @@ class _CompletionView extends StatelessWidget {
                 foregroundColor: color,
                 side: BorderSide(color: color),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -571,7 +571,7 @@ class _CompletionView extends StatelessWidget {
                 backgroundColor: color,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

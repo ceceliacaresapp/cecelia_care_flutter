@@ -143,7 +143,7 @@ class _UserSelectorWidgetState extends State<UserSelectorWidget> {
             constraints: const BoxConstraints(maxHeight: 160),
             decoration: BoxDecoration(
               color: _kMsgColor.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
               border: Border.all(color: _kMsgColor.withValues(alpha: 0.2)),
             ),
             child: widget.isLoadingUsers

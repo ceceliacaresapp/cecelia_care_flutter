@@ -1,7 +1,7 @@
 // lib/widgets/multi_elder_timeline_badge.dart
 //
-// Small colored chip showing which elder a timeline entry belongs to.
-// Only displayed in multi-elder view mode.
+// Small colored chip showing which care recipient a timeline entry belongs to.
+// Only displayed in multi-recipient view mode.
 
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:flutter/material.dart';

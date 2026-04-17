@@ -2,6 +2,7 @@
 //
 // Skin integrity tracker: Braden-inspired assessment + turning/repositioning
 // log with time-since-last-turn indicator.
+import 'package:cecelia_care_flutter/utils/save_helpers.dart';
 
 import 'dart:async';
 
@@ -156,12 +157,7 @@ class _AssessmentTabState extends State<_AssessmentTab> {
       }
     } catch (e) {
       debugPrint('Skin assessment save error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save.'),
-              backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) showSaveError(context, e, label: 'Skin assessment');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -199,7 +195,7 @@ class _AssessmentTabState extends State<_AssessmentTab> {
       children: [
         // Score hero
         Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusL)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -318,7 +314,7 @@ class _AssessmentTabState extends State<_AssessmentTab> {
             backgroundColor: AppTheme.entryVitalAccent,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM))),
           child: _isSaving
               ? const SizedBox(width: 20, height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -351,7 +347,7 @@ class _AssessmentTabState extends State<_AssessmentTab> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: sel ? AppTheme.tileTeal.withValues(alpha: 0.15) : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 border: Border.all(color: sel ? AppTheme.tileTeal : Colors.grey.shade300)),
               alignment: Alignment.center,
               child: Text('$score', style: TextStyle(fontSize: 14,
@@ -443,7 +439,7 @@ class _TurningLogTab extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12))),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM))),
                 child: const Text('Save'),
               ),
             ],
@@ -556,7 +552,7 @@ class _TurningLogTab extends StatelessWidget {
     final time = DateFormat('h:mm a').format(log.timestamp.toDate());
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusS)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(

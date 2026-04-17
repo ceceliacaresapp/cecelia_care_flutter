@@ -256,7 +256,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
                     side: BorderSide(color: Colors.grey.shade400),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
                   child: const Text('Cancel',
                       style: TextStyle(
@@ -272,7 +272,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
                   child: _isSaving
                       ? const SizedBox(
@@ -304,7 +304,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.12) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: isSelected ? color : Colors.grey.shade300,
             width: isSelected ? 1.5 : 1,
@@ -336,7 +336,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.12) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: isSelected ? color : Colors.grey.shade300,
             width: isSelected ? 1.5 : 1,
@@ -369,7 +369,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.12) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: isSelected ? color : Colors.grey.shade300,
             width: isSelected ? 1.5 : 1,
@@ -418,7 +418,7 @@ class _IncontinenceFormState extends State<IncontinenceForm> {
           color: isSelected
               ? e.color.withValues(alpha: 0.12)
               : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: isSelected ? e.color : Colors.grey.shade300,
             width: isSelected ? 1.5 : 1,

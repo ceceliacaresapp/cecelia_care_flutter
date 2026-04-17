@@ -66,7 +66,7 @@ class _CorrelationInsightsCardState extends State<CorrelationInsightsCard> {
         return Card(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
             side: BorderSide(
                 color: AppTheme.tileIndigo.withValues(alpha: 0.3)),
           ),

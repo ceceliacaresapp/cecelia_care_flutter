@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 // Local constants — consider moving to AppTheme if used globally.
 const Color kPrimaryColor = Color(0xFF3366FF);
@@ -380,13 +382,13 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
             child: Material(
               elevation: 8.0,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.9,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -410,26 +412,21 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
-                            CircleAvatar(
+                            CachedAvatar(
+                              imageUrl: _photoUrl,
                               radius: 48,
                               backgroundColor:
                                   kPrimaryColor.withValues(alpha: 0.12),
-                              backgroundImage:
-                                  _photoUrl != null
-                                      ? NetworkImage(_photoUrl!)
-                                      : null,
-                              child: _isUploadingPhoto
+                              fallbackChild: _isUploadingPhoto
                                   ? const CircularProgressIndicator()
-                                  : (_photoUrl == null
-                                      ? Text(
-                                          nameInitial,
-                                          style: const TextStyle(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.bold,
-                                            color: kPrimaryColor,
-                                          ),
-                                        )
-                                      : null),
+                                  : Text(
+                                      nameInitial,
+                                      style: const TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        color: kPrimaryColor,
+                                      ),
+                                    ),
                             ),
                             Container(
                               padding: const EdgeInsets.all(4),
@@ -673,7 +670,7 @@ class _ElderProfileFormModalState extends State<ElderProfileFormModal> {
                                 fontWeight: FontWeight.bold),
                             shape: RoundedRectangleBorder(
                                 borderRadius:
-                                    BorderRadius.circular(8)),
+                                    BorderRadius.circular(AppTheme.radiusS)),
                           ),
                           child: _isSubmitting
                               ? const SizedBox(

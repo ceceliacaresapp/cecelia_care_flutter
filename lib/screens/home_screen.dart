@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,9 +24,14 @@ import 'self_care_screen.dart';
 import 'manage_care_recipient_profiles_screen.dart';
 import 'onboarding_screen.dart';
 import 'package:cecelia_care_flutter/widgets/elder_view_toggle.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
 import 'package:cecelia_care_flutter/screens/burnout_intervention_screen.dart';
+import 'package:cecelia_care_flutter/screens/prn_followup_screen.dart';
+import 'package:cecelia_care_flutter/services/notification_service.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
+import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
  
 // ---------------------------------------------------------------------------
 // Tab accent colors — 6 tabs. Settings lives in the AppBar gear icon.
@@ -53,16 +60,47 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _greetingShown = false;
   bool _onboardingChecked = false;
   bool _burnoutCheckDone = false;
- 
+  bool _missedDoseCheckDone = false;
+  bool _selfCareNudgeCheckDone = false;
+
+  // PRN follow-up deep link listener.
+  StreamSubscription<PrnFollowUpPayload>? _prnSub;
+
   // One navigator per tab — pushes stay scoped inside the tab so the
   // bottom nav remains visible on every sub-screen.
   final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
     _kTabCount,
     (_) => GlobalKey<NavigatorState>(),
   );
- 
+
   late AppLocalizations _l10n;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cancel any pending self-care nudge — user opened the app.
+    NotificationService.instance.cancelSelfCareNudge();
+
+    _prnSub = NotificationService.prnFollowUpStream.listen((payload) {
+      if (!mounted) return;
+      Navigator.of(context).push(
+        FadeSlideRoute(
+          page: PrnFollowupScreen(
+            entryId: payload.entryId,
+            medName: payload.medName,
+            elderId: payload.elderId,
+          ),
+        ),
+      );
+    });
+  }
  
+  @override
+  void dispose() {
+    _prnSub?.cancel();
+    super.dispose();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -113,6 +151,63 @@ class _HomeScreenState extends State<HomeScreen> {
         fullscreenDialog: true,
         page: const BurnoutInterventionScreen(),
       ));
+    });
+  }
+
+  void _maybeCheckMissedDoses() {
+    if (_missedDoseCheckDone) return;
+    final elderProv =
+        Provider.of<ActiveElderProvider>(context, listen: false);
+    final elder = elderProv.activeElder;
+    if (elder == null) return;
+    final medDefs =
+        Provider.of<MedicationDefinitionsProvider>(context, listen: false)
+            .medDefinitions;
+    if (medDefs.isEmpty) return;
+
+    _missedDoseCheckDone = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // Fetch last 4 days of medication journal entries.
+      final now = DateTime.now();
+      final fourDaysAgo = now.subtract(const Duration(days: 4));
+      final journalProv =
+          Provider.of<JournalServiceProvider>(context, listen: false);
+      final entries = await journalProv
+          .getJournalEntriesStream(
+            elderId: elder.id,
+            currentUserId: user.uid,
+            startDate: fourDaysAgo,
+            endDate: now,
+            entryTypeFilter: 'medication',
+          )
+          .first;
+
+      if (!mounted) return;
+      await NotificationService.instance.checkMissedDoses(
+        medDefinitions: medDefs,
+        recentMedEntries: entries,
+        elderName: elder.profileName,
+        elderId: elder.id,
+      );
+    });
+  }
+
+  void _maybeScheduleSelfCareNudge() {
+    if (_selfCareNudgeCheckDone) return;
+    final wellProv =
+        Provider.of<WellnessProvider>(context, listen: false);
+    if (wellProv.recentCheckins.isEmpty) return;
+
+    _selfCareNudgeCheckDone = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await NotificationService.instance.maybeScheduleSelfCareNudge(
+        recentCheckins: wellProv.recentCheckins,
+      );
     });
   }
 
@@ -198,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
               color: AppTheme.dangerColor,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
               border: Border.all(color: Colors.white, width: 1.5),
             ),
             constraints:
@@ -242,6 +337,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // delivers a new-user profile with onboardingCompleted == false.
     _maybeShowOnboarding(userProfileProvider);
     _maybeShowBurnoutIntervention();
+    _maybeCheckMissedDoses();
+    _maybeScheduleSelfCareNudge();
 
     final activeElderProvider =
         Provider.of<ActiveElderProvider>(context);
@@ -472,24 +569,18 @@ class _TabScaffold extends StatelessWidget {
                         },
                         child: Tooltip(
                           message: 'Manage care recipients',
-                          child: CircleAvatar(
+                          child: CachedAvatar(
+                            imageUrl: activeElder.photoUrl,
                             radius: 16,
                             backgroundColor: Colors.white.withValues(alpha: 0.25),
-                            backgroundImage:
-                                (activeElder.photoUrl?.isNotEmpty == true)
-                                    ? NetworkImage(activeElder.photoUrl!)
-                                    : null,
-                            child: (activeElder.photoUrl == null ||
-                                    activeElder.photoUrl!.isEmpty)
-                                ? Text(
+                            fallbackChild: Text(
                                     activeElder.profileName[0].toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
-                                  )
-                                : null,
+                                  ),
                           ),
                         ),
                       ),
@@ -606,9 +697,11 @@ class _CalendarTabBody extends StatelessWidget {
       );
     }
  
+    final elderProv = context.watch<ActiveElderProvider>();
     return CalendarScreen(
       activeElder: activeElder,
       currentUserId: currentUser?.uid,
+      allElders: elderProv.isMultiView ? elderProv.allElders : null,
     );
   }
 }

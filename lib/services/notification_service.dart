@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -23,9 +25,28 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
+/// Payload data parsed from a PRN follow-up notification tap.
+class PrnFollowUpPayload {
+  final String entryId;
+  final String medName;
+  final String elderId;
+  const PrnFollowUpPayload({
+    required this.entryId,
+    required this.medName,
+    required this.elderId,
+  });
+}
+
 class NotificationService {
   NotificationService._internal();
   static final NotificationService instance = NotificationService._internal();
+
+  /// Stream that emits when a PRN follow-up notification is tapped.
+  /// HomeScreen listens to this and pushes PrnFollowupScreen.
+  static final _prnFollowUpCtrl =
+      StreamController<PrnFollowUpPayload>.broadcast();
+  static Stream<PrnFollowUpPayload> get prnFollowUpStream =>
+      _prnFollowUpCtrl.stream;
 
   final FlutterLocalNotificationsPlugin _fln =
       FlutterLocalNotificationsPlugin();
@@ -75,7 +96,17 @@ class NotificationService {
         final String? payload = notificationResponse.payload;
         if (payload != null) {
           debugPrint('FLN: Notification tapped with payload: $payload');
-          // TODO: Implement deep-linking
+          // PRN follow-up deep link
+          if (payload.startsWith('prn_followup|')) {
+            final parts = payload.split('|');
+            if (parts.length >= 4) {
+              _prnFollowUpCtrl.add(PrnFollowUpPayload(
+                entryId: parts[1],
+                medName: parts[2],
+                elderId: parts[3],
+              ));
+            }
+          }
         }
       },
     );
@@ -560,6 +591,76 @@ class NotificationService {
   }
 
   // ---------------------------------------------------------------------------
+  // Self-Care Nudge — schedules a gentle 7 PM push if wellbeing has been
+  // in the "red" zone (≤30) for 3+ consecutive check-in days.
+  //
+  // Debounced to max once every 3 days via SharedPreferences.
+  // Cancelled automatically if the user opens the app before 7 PM.
+  // ---------------------------------------------------------------------------
+
+  static const int _selfCareNudgeId = 999777;
+
+  /// Check wellbeing history and maybe schedule a 7 PM nudge for today.
+  Future<void> maybeScheduleSelfCareNudge({
+    required List<dynamic> recentCheckins,
+  }) async {
+    // Respect the self_care channel toggle.
+    if (_notificationPrefsProvider != null &&
+        !_notificationPrefsProvider!.prefs.selfCare) {
+      return;
+    }
+
+    // Need 3+ check-ins to evaluate.
+    if (recentCheckins.length < 3) return;
+
+    // Check if the last 3 check-ins all have wellbeingScore <= 30.
+    bool allLow = true;
+    for (int i = 0; i < 3 && i < recentCheckins.length; i++) {
+      final checkin = recentCheckins[i];
+      final score = (checkin.wellbeingScore as num?)?.toDouble() ?? 100;
+      if (score > 30) {
+        allLow = false;
+        break;
+      }
+    }
+    if (!allLow) return;
+
+    // Debounce: max once every 3 days.
+    final sp = await SharedPreferences.getInstance();
+    final lastNudge = sp.getString('self_care_nudge_last');
+    if (lastNudge != null) {
+      final lastDate = DateTime.tryParse(lastNudge);
+      if (lastDate != null &&
+          DateTime.now().difference(lastDate).inDays < 3) {
+        return;
+      }
+    }
+
+    // Schedule for 7 PM today (or skip if it's already past 7 PM).
+    final now = DateTime.now();
+    final sevenPm = DateTime(now.year, now.month, now.day, 19);
+    if (now.isAfter(sevenPm)) return;
+
+    await scheduleOneTimeNotification(
+      id: _selfCareNudgeId,
+      title: "You've been giving a lot this week",
+      body: 'How are you doing today? Take a moment to check in with yourself.',
+      payload: 'self_care_nudge',
+      scheduledTime: sevenPm,
+      channelKey: 'self_care',
+    );
+
+    await sp.setString(
+        'self_care_nudge_last', now.toIso8601String());
+    debugPrint('NotificationService: Self-care nudge scheduled for 7 PM.');
+  }
+
+  /// Cancel the pending self-care nudge (called on app open / resume).
+  Future<void> cancelSelfCareNudge() async {
+    await cancel(_selfCareNudgeId);
+  }
+
+  // ---------------------------------------------------------------------------
   // Weight Loss Alert — fires once when >5% loss detected in 30 days
   // ---------------------------------------------------------------------------
 
@@ -589,6 +690,279 @@ class NotificationService {
 
     await sp.setBool(key, true);
     debugPrint('NotificationService: Weight loss alert fired for $elderName.');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Missed Dose Alert
+  //
+  // Runs once per app open. For each non-PRN medication with reminders
+  // enabled, checks if 3+ consecutive days have zero "taken" journal
+  // entries. Fires one notification per medication, debounced to once
+  // per day per med via SharedPreferences.
+  // ---------------------------------------------------------------------------
+
+  Future<void> checkMissedDoses({
+    required List<dynamic> medDefinitions,
+    required List<dynamic> recentMedEntries,
+    required String elderName,
+    required String elderId,
+  }) async {
+    if (elderId.isEmpty || medDefinitions.isEmpty) return;
+
+    // Respect the med_reminders channel toggle.
+    if (_notificationPrefsProvider != null &&
+        !_notificationPrefsProvider!.prefs.meds) {
+      return;
+    }
+
+    final sp = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+
+    // Build a set of (medName, dateString) pairs where a dose was taken.
+    final takenSet = <String>{};
+    for (final entry in recentMedEntries) {
+      final data = entry.data as Map<String, dynamic>?;
+      if (data == null) continue;
+      final name = (data['name'] as String?)?.toLowerCase() ?? '';
+      final taken = data['taken'] == true;
+      final dateStr = data['date'] as String? ?? '';
+      if (taken && name.isNotEmpty && dateStr.isNotEmpty) {
+        takenSet.add('$name|$dateStr');
+      }
+    }
+
+    // Check each non-PRN med with reminders enabled.
+    for (final med in medDefinitions) {
+      if (med.isPRN) continue;
+      if (!med.reminderEnabled) continue;
+
+      final medName = med.name as String;
+      final medNameLower = medName.toLowerCase();
+
+      // Debounce: once per day per med.
+      final debounceKey = 'missed_dose_alert_${elderId}_${medNameLower}_$todayKey';
+      if (sp.getBool(debounceKey) == true) continue;
+
+      // Check last 3 days (not including today — today's dose may not be due yet).
+      int consecutiveMissed = 0;
+      for (int daysAgo = 1; daysAgo <= 3; daysAgo++) {
+        final date = today.subtract(Duration(days: daysAgo));
+        final dateStr =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        final key = '$medNameLower|$dateStr';
+        if (!takenSet.contains(key)) {
+          consecutiveMissed++;
+        } else {
+          break; // Streak broken.
+        }
+      }
+
+      if (consecutiveMissed >= 3) {
+        await showInstant(
+          _androidMedRemindersChannelId,
+          '$medName missed 3 days in a row',
+          '$medName has not been logged for $elderName in 3 consecutive days. '
+              'Is the prescription still active?',
+          'missed_dose|$elderId|$medNameLower',
+        );
+        await sp.setBool(debounceKey, true);
+        debugPrint(
+            'NotificationService: Missed dose alert fired for $medName ($elderName).');
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Zarit Burden Interview — monthly reminder
+  //
+  // Fires once a month at the user's local 10 AM. The assessment takes
+  // about 3 minutes and the cadence matches the validated ZBI-12
+  // follow-up interval. Uses a one-time notification that gets
+  // re-scheduled each time the user completes (or dismisses past) the
+  // assessment — the Self Care screen calls this after a successful
+  // save so the next fire date is always ~30 days out.
+  // ---------------------------------------------------------------------------
+
+  static const int _zaritMonthlyId = 99500;
+
+  Future<void> scheduleZaritMonthlyReminder({
+    DateTime? scheduledFor,
+  }) async {
+    // Respect the self-care channel toggle so users who disabled
+    // self-care nudges don't get badgered.
+    if (_notificationPrefsProvider != null &&
+        !_notificationPrefsProvider!.prefs.selfCare) {
+      return;
+    }
+
+    final when = scheduledFor ??
+        DateTime.now().add(const Duration(days: 30)).copyWith(
+              hour: 10,
+              minute: 0,
+              second: 0,
+              millisecond: 0,
+              microsecond: 0,
+            );
+
+    await scheduleOneTimeNotification(
+      id: _zaritMonthlyId,
+      title: 'Monthly burden check-in',
+      body:
+          'A short 12-question survey — 3 minutes — so you can track how '
+          'you\'re really doing over time.',
+      payload: 'zarit_monthly',
+      scheduledTime: when,
+      channelKey: 'self_care',
+    );
+    debugPrint(
+        'NotificationService: Zarit monthly reminder scheduled for $when.');
+  }
+
+  Future<void> cancelZaritMonthlyReminder() async {
+    await cancel(_zaritMonthlyId);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Taper schedule reminders
+  //
+  // A taper consists of N days, each with a fixed dose. The scheduling
+  // primitives we already have cover two shapes: daily-repeating (same
+  // body every day) and one-shot (single fire on a future date).
+  //
+  // Tapers need "one notification per day at time T, with a body that
+  // changes day-to-day." The clean mapping is one-shot notifications
+  // per future day. We cap at 60 days to avoid flooding the OS alarm
+  // manager; longer tapers get re-scheduled on each app open.
+  //
+  // Notification IDs are derived from (elderId, taperId, day-ordinal) so
+  // cancel is always reliable. The reserved range starts at 900000 to
+  // avoid collision with the med-reminder hash space.
+  // ---------------------------------------------------------------------------
+
+  static const int _taperIdBase = 900000;
+  static const int _taperMaxDaysAhead = 60;
+
+  /// Compose a deterministic notification id for (taper, day-offset).
+  /// Day offset is days from the taper's startDate (0-based).
+  int _taperNotificationId({
+    required String elderId,
+    required String taperId,
+    required int dayOffset,
+  }) {
+    // Keep the final value inside 31-bit positive int range for
+    // AndroidNotificationManager.
+    final composite =
+        '$elderId|$taperId|$dayOffset'.hashCode.toUnsigned(20);
+    return (_taperIdBase + composite) & 0x7FFFFFFF;
+  }
+
+  /// Schedules per-day reminders for an entire taper window. Safe to
+  /// call repeatedly — it cancels any previously-scheduled ids for this
+  /// taper before re-scheduling. Pass a list of `(dayOffset, body)`
+  /// pairs; callers compute the body text from the step for that day.
+  ///
+  /// Returns the number of notifications actually scheduled.
+  Future<int> scheduleTaperReminders({
+    required String elderId,
+    required String taperId,
+    required String medName,
+    required String elderName,
+    required DateTime startDate,
+    required DateTime endDate,
+    required TimeOfDay reminderTime,
+    required String Function(DateTime day) bodyForDay,
+  }) async {
+    // Respect the med-reminders channel toggle.
+    if (_notificationPrefsProvider != null &&
+        !await _notificationPrefsProvider!
+            .areNotificationsEnabledForChannel(_androidMedRemindersChannelId)) {
+      debugPrint('Taper reminders suppressed — med channel disabled.');
+      return 0;
+    }
+
+    // Cancel the previous horizon before rescheduling to avoid orphans.
+    await cancelTaperReminders(elderId: elderId, taperId: taperId);
+
+    final today = DateTime.now();
+    final firstDay = DateTime(startDate.year, startDate.month, startDate.day);
+    final lastDay = DateTime(endDate.year, endDate.month, endDate.day);
+
+    // Start from today or the taper start, whichever is later.
+    final effectiveStart = today.isAfter(firstDay)
+        ? DateTime(today.year, today.month, today.day)
+        : firstDay;
+
+    // Cap the scheduling horizon so we don't flood the alarm queue.
+    final horizonEnd =
+        DateTime(today.year, today.month, today.day + _taperMaxDaysAhead);
+    final effectiveEnd = lastDay.isBefore(horizonEnd) ? lastDay : horizonEnd;
+
+    if (effectiveEnd.isBefore(effectiveStart)) {
+      debugPrint(
+          'Taper reminders: start $effectiveStart is after end $effectiveEnd — nothing to schedule.');
+      return 0;
+    }
+
+    int scheduled = 0;
+    for (DateTime day = effectiveStart;
+        !day.isAfter(effectiveEnd);
+        day = day.add(const Duration(days: 1))) {
+      final fireAt = DateTime(
+        day.year,
+        day.month,
+        day.day,
+        reminderTime.hour,
+        reminderTime.minute,
+      );
+      // Skip if today's fire time is already in the past.
+      if (fireAt.isBefore(DateTime.now())) continue;
+
+      final body = bodyForDay(day);
+      if (body.isEmpty) continue;
+
+      final dayOffset = day.difference(firstDay).inDays;
+      final id = _taperNotificationId(
+        elderId: elderId,
+        taperId: taperId,
+        dayOffset: dayOffset,
+      );
+
+      await scheduleOneTimeNotification(
+        id: id,
+        title: 'Today\'s taper dose — $medName',
+        body: '$body (for $elderName)',
+        payload: 'taper|$elderId|$taperId|${fireAt.toIso8601String()}',
+        scheduledTime: fireAt,
+        channelKey: 'med_reminders',
+      );
+      scheduled++;
+    }
+
+    debugPrint(
+        'NotificationService: scheduled $scheduled taper reminders '
+        'for taper $taperId of $medName.');
+    return scheduled;
+  }
+
+  /// Cancels every taper notification in the horizon for a given taper.
+  /// Iterates across the full scheduling horizon because the underlying
+  /// plugin doesn't expose "cancel by prefix" — deterministic ids make
+  /// this cheap and reliable.
+  Future<void> cancelTaperReminders({
+    required String elderId,
+    required String taperId,
+  }) async {
+    for (int offset = 0; offset < _taperMaxDaysAhead + 365; offset++) {
+      final id = _taperNotificationId(
+        elderId: elderId,
+        taperId: taperId,
+        dayOffset: offset,
+      );
+      await _fln.cancel(id);
+    }
+    debugPrint(
+        'NotificationService: cancelled taper reminders for $taperId.');
   }
 
   String _getAndroidChannelId(String key) {

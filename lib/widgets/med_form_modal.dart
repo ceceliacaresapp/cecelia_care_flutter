@@ -37,6 +37,8 @@ class _MedFormModalState extends State<MedFormModal> {
   Timer? _debounce;
 
   bool _isSaving = false;
+  bool _isPRN = false;
+  int? _prnFollowUpMinutes;
 
   @override
   void initState() {
@@ -230,7 +232,58 @@ class _MedFormModalState extends State<MedFormModal> {
                   controller: _scheduleController,
                   decoration:
                       InputDecoration(labelText: l10n.medicationsScheduleHint)),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+
+              // ── PRN toggle + follow-up timer ──────────────
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('As-needed (PRN)',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                subtitle: const Text(
+                    'Toggle on for medications taken only when needed',
+                    style: TextStyle(fontSize: 11)),
+                value: _isPRN,
+                onChanged: (v) => setState(() {
+                  _isPRN = v;
+                  if (!v) _prnFollowUpMinutes = null;
+                }),
+              ),
+              if (_isPRN) ...[
+                const SizedBox(height: 4),
+                Text('Follow-up reminder',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  children: [null, 30, 60, 90].map((min) {
+                    final selected = _prnFollowUpMinutes == min;
+                    final label = min == null ? 'Off' : '${min}m';
+                    return ChoiceChip(
+                      label: Text(label),
+                      selected: selected,
+                      onSelected: (_) =>
+                          setState(() => _prnFollowUpMinutes = min),
+                      selectedColor:
+                          AppTheme.statusAmber.withValues(alpha: 0.2),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 4),
+                if (_prnFollowUpMinutes != null)
+                  Text(
+                    'After logging a taken dose, you\'ll get a "Did it help?" notification in ${_prnFollowUpMinutes}m.',
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.textSecondary,
+                        fontStyle: FontStyle.italic),
+                  ),
+              ],
+              const SizedBox(height: 16),
+
               ElevatedButton(
                 onPressed: _isSaving ? null : _saveMedication,
                 style:

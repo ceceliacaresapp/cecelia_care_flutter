@@ -15,6 +15,7 @@ import '../../models/entry_types.dart';
 import '../../providers/journal_service_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_styles.dart';
+import '../../widgets/cached_avatar.dart';
 
 const _kImageColor = AppTheme.tileIndigo; // indigo — matches Care screen tile
 
@@ -272,7 +273,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
         appBar: AppBar(title: Text(imageTitle)),
         body: Center(
           child: InteractiveViewer(
-            child: Image.network(imageUrl, fit: BoxFit.contain),
+            child: CachedImage(imageUrl: imageUrl, fit: BoxFit.contain),
           ),
         ),
       ),
@@ -402,7 +403,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                 ),
               ),
             ],
@@ -517,7 +518,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       return Container(
                         decoration: BoxDecoration(
                           color: AppTheme.backgroundGray,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         ),
                         child: Center(
                             child: Text(_l10n.imageUnavailable,
@@ -529,7 +530,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       onTap: () => _showImageFullScreen(imageUrl, imageTitle),
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                           border: Border.all(color: _kImageColor.withValues(alpha: 0.2)),
                           boxShadow: [
                             BoxShadow(
@@ -544,28 +545,10 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: Image.network(
-                                imageUrl,
+                              child: CachedImage(
+                                imageUrl: imageUrl,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
-                                loadingBuilder: (_, child, progress) {
-                                  if (progress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      value: progress.expectedTotalBytes != null
-                                          ? progress.cumulativeBytesLoaded /
-                                              progress.expectedTotalBytes!
-                                          : null,
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (_, __, ___) => Container(
-                                  color: AppTheme.backgroundGray,
-                                  child: const Center(
-                                    child: Icon(Icons.broken_image,
-                                        color: AppTheme.textLight, size: 40),
-                                  ),
-                                ),
                               ),
                             ),
                             Padding(
@@ -694,7 +677,7 @@ class _FolderPickerRow extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                   border: Border.all(
                       color: _kImageColor.withValues(alpha: 0.4),
                       style: BorderStyle.solid),
@@ -839,7 +822,7 @@ class _FolderChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? _kImageColor : _kImageColor.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           border: Border.all(
             color: isSelected ? _kImageColor : _kImageColor.withValues(alpha: 0.25),
           ),
@@ -890,7 +873,7 @@ class _PickerButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: _kImageColor.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: _kImageColor.withValues(alpha: 0.25)),
         ),
         child: Column(

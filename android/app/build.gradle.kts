@@ -1,14 +1,25 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.firebase.crashlytics")
+}
+
+// Load signing properties from key.properties (not checked into git).
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
-    namespace = "com.example.cecelia_care_flutter"
+    namespace = "com.ceceliacare.app"
     compileSdk = flutter.compileSdkVersion
     // REMOVED: ndkVersion to prevent download hangs in IDX
-    // ndkVersion = "27.0.12077973" 
+    // ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -21,16 +32,33 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.cecelia_care_flutter"
+        applicationId = "com.ceceliacare.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = keystoreProperties["storeFile"]?.let {
+                file(it as String)
+            }
+            storePassword = keystoreProperties["storePassword"] as String?
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                // Fallback to debug signing if key.properties is missing
+                // (e.g. CI builds without the keystore).
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
@@ -48,12 +76,12 @@ dependencies {
 configurations.all {
     resolutionStrategy {
         force("androidx.browser:browser:1.8.0")
-        
+
         // Activity 1.9.3 is stable and works with Core 1.13.1
         force("androidx.activity:activity-ktx:1.9.3")
         force("androidx.activity:activity:1.9.3")
 
-        // CRITICAL: 1.13.1 contains 'setStylusHandwritingEnabled' 
+        // CRITICAL: 1.13.1 contains 'setStylusHandwritingEnabled'
         // which prevents the "NoSuchMethodError" crash at startup.
         force("androidx.core:core-ktx:1.13.1")
         force("androidx.core:core:1.13.1")

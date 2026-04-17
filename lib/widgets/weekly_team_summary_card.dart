@@ -159,7 +159,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusL)),
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: const BoxDecoration(
@@ -269,7 +269,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               child: const Row(
                 children: [
@@ -313,7 +313,7 @@ class _WeeklyTeamSummaryCardState extends State<WeeklyTeamSummaryCard> {
                   foregroundColor: const Color(0xFF5D4037),
                   side: const BorderSide(color: Color(0xFFBCAAA4)),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
               ),

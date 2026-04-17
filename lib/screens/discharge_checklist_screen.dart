@@ -1,5 +1,7 @@
 // lib/screens/discharge_checklist_screen.dart
 //
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
+import 'package:cecelia_care_flutter/utils/save_helpers.dart';
 // Hospital-to-home discharge wizard. Four sections:
 //   1. Discharge step checklist
 //   2. Medication reconciliation (compares pre-hospital meds vs discharge)
@@ -136,18 +138,16 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
       }
       HapticUtils.success();
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(markComplete ? 'Discharge plan complete' : 'Saved'),
+              content: Text(markComplete ? l10n.dischargePlanCompleteMessage : l10n.savedMessage),
               backgroundColor: Colors.green),
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Save failed: $e')),
-        );
-      }
+      debugPrint('Discharge checklist save error: $e');
+      if (mounted) showSaveError(context, e, label: 'Discharge');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -176,9 +176,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
       }
     }
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Applied: $added new, $updated dose changes'),
+          content: Text(l10n.appliedMedicationChangesMessage(added.toString(), updated.toString())),
           backgroundColor: Colors.green,
         ),
       );
@@ -221,8 +222,9 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
       HapticUtils.success();
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not schedule: $e')),
+          SnackBar(content: Text(l10n.scheduleFailureMessage(e.toString()))),
         );
       }
     }
@@ -251,28 +253,29 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final elder = context.watch<ActiveElderProvider>().activeElder;
     if (elder == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Discharge Plan')),
-        body: const Center(child: Text('No care recipient selected.')),
+        appBar: AppBar(title: Text(l10n.dischargePlanTitle)),
+        body: Center(child: Text(l10n.noCareRecipientSelected)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Discharge Plan'),
+        title: Text(l10n.dischargePlanTitle),
         backgroundColor: _accent,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.ios_share),
-            tooltip: 'Share summary',
+            tooltip: l10n.shareSummaryTooltip,
             onPressed: _shareSummary,
           ),
           IconButton(
             icon: const Icon(Icons.save_outlined),
-            tooltip: 'Save',
+            tooltip: l10n.saveTooltip,
             onPressed: _saving ? null : () => _save(),
           ),
         ],
@@ -291,7 +294,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                             color: Colors.white, size: 14),
                         const SizedBox(width: 6),
                         Text(
-                            'Overall ${(_overallProgress * 100).round()}% complete',
+                            l10n.overallProgressLabel((_overallProgress * 100).round().toString()),
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 12)),
                       ],
@@ -317,10 +320,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                 unselectedLabelColor: Colors.white70,
                 indicatorColor: Colors.white,
                 tabs: [
-                  Tab(text: 'Steps (${(_stepsProgress * 100).round()}%)'),
-                  Tab(text: 'Meds'),
-                  Tab(text: 'Safety (${(_safetyProgress * 100).round()}%)'),
-                  Tab(text: 'Follow-ups'),
+                  Tab(text: l10n.stepsTabLabel((_stepsProgress * 100).round().toString())),
+                  Tab(text: l10n.medsTabLabel),
+                  Tab(text: l10n.safetyTabLabel((_safetyProgress * 100).round().toString())),
+                  Tab(text: l10n.followUpsTabLabel),
                 ],
               ),
             ],
@@ -345,7 +348,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                 child: OutlinedButton.icon(
                   onPressed: _saving ? null : () => _save(),
                   icon: const Icon(Icons.save_outlined),
-                  label: const Text('Save progress'),
+                  label: Text(l10n.saveProgressButton),
                 ),
               ),
               const SizedBox(width: 10),
@@ -357,7 +360,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Mark complete'),
+                  label: Text(l10n.markCompleteButton),
                 ),
               ),
             ],
@@ -409,21 +412,22 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
   }
 
   Widget _intakeCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Discharge details',
-                style: TextStyle(
+            Text(l10n.dischargeDetailsTitle,
+                style: const TextStyle(
                     fontSize: 13, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             TextField(
-              decoration: const InputDecoration(
-                labelText: 'Facility (optional)',
-                hintText: 'e.g. Mass General Hospital',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.facilityLabel,
+                hintText: l10n.facilityHint,
+                border: const OutlineInputBorder(),
                 isDense: true,
               ),
               onChanged: (v) => _facilityName = v,
@@ -448,7 +452,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                           DateFormat('yyyy-MM-dd').format(picked));
                     }
                   },
-                  child: Text('Discharge date: $_dischargeDate'),
+                  child: Text(l10n.dischargeDateLabel(_dischargeDate)),
                 ),
               ],
             ),
@@ -460,6 +464,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
 
   // ── Tab 2: Meds ─────────────────────────────────────────────────
   Widget _buildMedsTab() {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
@@ -467,11 +472,11 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: _accent.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
-          child: const Text(
-            'Compare the discharge medication list against pre-hospital meds. Mark each as continuing, dose changed, stopped, or new.',
-            style: TextStyle(fontSize: 12),
+          child: Text(
+            l10n.medicationComparisonInstructions,
+            style: const TextStyle(fontSize: 12),
           ),
         ),
         const SizedBox(height: 10),
@@ -493,7 +498,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
             });
           },
           icon: const Icon(Icons.add),
-          label: const Text('Add new medication from discharge'),
+          label: Text(l10n.addNewMedicationButton),
         ),
         const SizedBox(height: 10),
         ElevatedButton.icon(
@@ -503,13 +508,14 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
             foregroundColor: Colors.white,
           ),
           icon: const Icon(Icons.sync),
-          label: const Text('Apply changes to medication list'),
+          label: Text(l10n.applyMedicationChangesButton),
         ),
       ],
     );
   }
 
   Widget _medReconCard(int i, _MedRecon m) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: Padding(
@@ -521,10 +527,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
               controller: TextEditingController(text: m.name)
                 ..selection = TextSelection.fromPosition(
                     TextPosition(offset: m.name.length)),
-              decoration: const InputDecoration(
-                labelText: 'Medication',
+              decoration: InputDecoration(
+                labelText: l10n.medicationLabel,
                 isDense: true,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (v) => m.name = v,
             ),
@@ -533,13 +539,13 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
               spacing: 6,
               runSpacing: 6,
               children: [
-                _statusChip(m, 'continued', 'Continuing',
+                _statusChip(m, 'continued', l10n.medicationStatusContinuing,
                     AppTheme.statusGreen),
-                _statusChip(m, 'changed', 'Dose changed',
+                _statusChip(m, 'changed', l10n.medicationStatusDoseChanged,
                     AppTheme.tileOrange),
                 _statusChip(
-                    m, 'stopped', 'Stopped', AppTheme.statusRed),
-                _statusChip(m, 'new', 'New', AppTheme.tileBlue),
+                    m, 'stopped', l10n.medicationStatusStopped, AppTheme.statusRed),
+                _statusChip(m, 'new', l10n.medicationStatusNew, AppTheme.tileBlue),
               ],
             ),
             const SizedBox(height: 8),
@@ -550,10 +556,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                     controller: TextEditingController(text: m.oldDose)
                       ..selection = TextSelection.fromPosition(
                           TextPosition(offset: m.oldDose.length)),
-                    decoration: const InputDecoration(
-                      labelText: 'Pre-hospital dose',
+                    decoration: InputDecoration(
+                      labelText: l10n.preHospitalDoseLabel,
                       isDense: true,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) => m.oldDose = v,
                   ),
@@ -566,10 +572,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                     controller: TextEditingController(text: m.newDose)
                       ..selection = TextSelection.fromPosition(
                           TextPosition(offset: m.newDose.length)),
-                    decoration: const InputDecoration(
-                      labelText: 'Discharge dose',
+                    decoration: InputDecoration(
+                      labelText: l10n.dischargeDoseLabel,
                       isDense: true,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) => m.newDose = v,
                   ),
@@ -581,10 +587,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
               controller: TextEditingController(text: m.notes)
                 ..selection = TextSelection.fromPosition(
                     TextPosition(offset: m.notes.length)),
-              decoration: const InputDecoration(
-                labelText: 'Notes (optional)',
+              decoration: InputDecoration(
+                labelText: l10n.notesOptionalLabel,
                 isDense: true,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (v) => m.notes = v,
             ),
@@ -594,8 +600,8 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                 onPressed: () => setState(() => _medRecon.removeAt(i)),
                 icon: const Icon(Icons.delete_outline,
                     size: 16, color: AppTheme.dangerColor),
-                label: const Text('Remove',
-                    style: TextStyle(color: AppTheme.dangerColor)),
+                label: Text(l10n.removeButton,
+                    style: const TextStyle(color: AppTheme.dangerColor)),
               ),
             ),
           ],
@@ -613,7 +619,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
         decoration: BoxDecoration(
           color:
               selected ? color.withValues(alpha: 0.15) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
               color: selected ? color : Colors.grey.shade300,
               width: selected ? 1.5 : 1),
@@ -657,6 +663,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
 
   // ── Tab 4: Follow-ups ───────────────────────────────────────────
   Widget _buildFollowUpsTab() {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
@@ -701,10 +708,10 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                     controller: TextEditingController(text: f.notes ?? '')
                       ..selection = TextSelection.fromPosition(TextPosition(
                           offset: (f.notes ?? '').length)),
-                    decoration: const InputDecoration(
-                      labelText: 'Notes (provider, location, prep)',
+                    decoration: InputDecoration(
+                      labelText: l10n.followUpNotesLabel,
                       isDense: true,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) => f.notes = v,
                   ),
@@ -723,9 +730,9 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                           ),
                         )
                       else
-                        const Expanded(
-                            child: Text('Not scheduled',
-                                style: TextStyle(
+                        Expanded(
+                            child: Text(l10n.notScheduledLabel,
+                                style: const TextStyle(
                                     fontSize: 12,
                                     color: AppTheme.textSecondary))),
                       ElevatedButton.icon(
@@ -737,7 +744,7 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
                         ),
                         icon: const Icon(Icons.calendar_today, size: 14),
                         label: Text(
-                            scheduled ? 'Reschedule' : 'Add to calendar'),
+                            scheduled ? l10n.rescheduleButton : l10n.addToCalendarButton),
                       ),
                     ],
                   ),
@@ -751,11 +758,11 @@ class _DischargeChecklistScreenState extends State<DischargeChecklistScreen>
           onPressed: () {
             setState(() {
               _followUps.add(_FollowUp(
-                  type: 'other', label: 'New follow-up'));
+                  type: 'other', label: l10n.newFollowUpLabel));
             });
           },
           icon: const Icon(Icons.add),
-          label: const Text('Add custom follow-up'),
+          label: Text(l10n.addCustomFollowUpButton),
         ),
       ],
     );
@@ -771,7 +778,7 @@ class _MedRecon {
   String oldDose;
   String newDose;
   String status; // continued | changed | stopped | new
-  String notes;
+  String notes = '';
   String? existingId;
 
   _MedRecon({
@@ -779,7 +786,6 @@ class _MedRecon {
     required this.oldDose,
     required this.newDose,
     required this.status,
-    this.notes = '',
     this.existingId,
   });
 
@@ -802,9 +808,6 @@ class _FollowUp {
   _FollowUp({
     required this.type,
     required this.label,
-    this.notes,
-    this.scheduledDate,
-    this.calendarEventId,
   });
 
   Map<String, dynamic> toMap() => {

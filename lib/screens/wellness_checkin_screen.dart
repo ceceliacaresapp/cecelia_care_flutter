@@ -241,17 +241,17 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                       filled: true,
                       fillColor: _kAccent.withValues(alpha: 0.04),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         borderSide:
                             BorderSide(color: _kAccent.withValues(alpha: 0.2)),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         borderSide:
                             BorderSide(color: _kAccent.withValues(alpha: 0.2)),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         borderSide: const BorderSide(color: _kAccent),
                       ),
                     ),
@@ -268,7 +268,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                         backgroundColor: _kAccent,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         ),
                         elevation: 2,
                       ),
@@ -285,7 +285,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.check_circle_outline, size: 20),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   'Save check-in',
                                   style: TextStyle(
@@ -293,7 +293,7 @@ class _WellnessCheckinScreenState extends State<WellnessCheckinScreen> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Text(
                                   '+10 pts',
                                   style: TextStyle(

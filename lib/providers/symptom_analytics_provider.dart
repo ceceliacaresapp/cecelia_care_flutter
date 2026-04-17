@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
+import 'package:cecelia_care_flutter/models/behavioral_entry.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
@@ -61,6 +62,10 @@ class SymptomAnalyticsProvider extends ChangeNotifier {
   double _overallMoodAvg = 0;
   double _overallSleepAvg = 0;
 
+  // Behavioral pattern analysis results.
+  List<String> _behavioralInsights = [];
+  int _behavioralEntryCount = 0;
+
   // ── Getters ─────────────────────────────────────────────────────
   bool get isLoading => _isLoading;
   bool get hasData => _hasData;
@@ -72,6 +77,8 @@ class SymptomAnalyticsProvider extends ChangeNotifier {
   double get overallPainAvg => _overallPainAvg;
   double get overallMoodAvg => _overallMoodAvg;
   double get overallSleepAvg => _overallSleepAvg;
+  List<String> get behavioralInsights => _behavioralInsights;
+  int get behavioralEntryCount => _behavioralEntryCount;
 
   void updateForElder(ElderProfile? elder) {
     final newId = elder?.id;
@@ -98,6 +105,8 @@ class SymptomAnalyticsProvider extends ChangeNotifier {
     _overallPainAvg = 0;
     _overallMoodAvg = 0;
     _overallSleepAvg = 0;
+    _behavioralInsights = [];
+    _behavioralEntryCount = 0;
   }
 
   Future<void> _analyze(String elderId) async {
@@ -332,7 +341,10 @@ class SymptomAnalyticsProvider extends ChangeNotifier {
         }
       }
 
-      _hasData = _totalDaysWithData >= 1;
+      // ── 6. Behavioral pattern detection ────────────────────────
+      await _analyzeBehavioralPatterns(elderId);
+
+      _hasData = _totalDaysWithData >= 1 || _behavioralEntryCount > 0;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -341,6 +353,176 @@ class SymptomAnalyticsProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> _analyzeBehavioralPatterns(String elderId) async {
+    _behavioralInsights = [];
+    _behavioralEntryCount = 0;
+
+    List<Map<String, dynamic>> rawEntries;
+    try {
+      rawEntries = await firestoreService
+          .getBehavioralEntriesStream(elderId)
+          .first
+          .timeout(const Duration(seconds: 8), onTimeout: () => []);
+    } catch (_) {
+      return;
+    }
+
+    if (rawEntries.isEmpty) return;
+
+    final entries = rawEntries
+        .map((d) => BehavioralEntry.fromFirestore(d['id'] as String? ?? '', d))
+        .toList();
+    _behavioralEntryCount = entries.length;
+    if (entries.length < 3) return; // Need a minimum sample.
+
+    // ── Hour-of-day clustering ─────────────────────────────────
+    // Group by hour to find peak agitation windows.
+    final hourCounts = <int, int>{};
+    final hourSeverity = <int, List<int>>{};
+    for (final e in entries) {
+      final parts = e.timeOfDay.split(':');
+      final hour = int.tryParse(parts.firstOrNull ?? '');
+      if (hour == null) continue;
+      hourCounts[hour] = (hourCounts[hour] ?? 0) + 1;
+      hourSeverity.putIfAbsent(hour, () => []).add(e.severity);
+    }
+
+    if (hourCounts.isNotEmpty) {
+      // Find the peak 2-hour window.
+      int peakStart = 0;
+      int peakCount = 0;
+      for (int h = 0; h < 24; h++) {
+        final windowCount = (hourCounts[h] ?? 0) + (hourCounts[(h + 1) % 24] ?? 0);
+        if (windowCount > peakCount) {
+          peakCount = windowCount;
+          peakStart = h;
+        }
+      }
+      if (peakCount >= 2) {
+        final endHour = (peakStart + 2) % 24;
+        final startLabel = _formatHourLabel(peakStart);
+        final endLabel = _formatHourLabel(endHour);
+
+        // Check weekday vs weekend skew.
+        int weekdayCount = 0;
+        int weekendCount = 0;
+        for (final e in entries) {
+          final created = e.createdAt?.toDate();
+          if (created == null) continue;
+          final h = int.tryParse(e.timeOfDay.split(':').first);
+          if (h == null) continue;
+          if (h >= peakStart && h < peakStart + 2) {
+            if (created.weekday >= 6) {
+              weekendCount++;
+            } else {
+              weekdayCount++;
+            }
+          }
+        }
+        final dayQualifier = weekdayCount > weekendCount * 2
+            ? ' on weekdays'
+            : weekendCount > weekdayCount * 2
+                ? ' on weekends'
+                : '';
+
+        _behavioralInsights.add(
+          'Behavioral episodes peak $startLabel\u2013$endLabel$dayQualifier '
+          '($peakCount of ${entries.length} episodes)',
+        );
+      }
+    }
+
+    // ── Top trigger ────────────────────────────────────────────
+    final triggerCounts = <String, int>{};
+    for (final e in entries) {
+      final t = e.trigger;
+      if (t != null && t.isNotEmpty) {
+        triggerCounts[t] = (triggerCounts[t] ?? 0) + 1;
+      }
+    }
+    if (triggerCounts.isNotEmpty) {
+      final sorted = triggerCounts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      final top = sorted.first;
+      if (top.value >= 2) {
+        final pct = (top.value / entries.length * 100).round();
+        _behavioralInsights.add(
+          'Top trigger: ${top.key} ($pct% of episodes)',
+        );
+      }
+    }
+
+    // ── De-escalation effectiveness ────────────────────────────
+    // For each technique, calculate % of episodes that resolved
+    // positively (outcome contains "quickly" or "gradually calmed").
+    final techniqueOutcomes = <String, List<bool>>{};
+    for (final e in entries) {
+      final tech = e.deEscalationTechnique;
+      final outcome = e.outcome;
+      if (tech == null || tech.isEmpty || outcome == null) continue;
+      techniqueOutcomes.putIfAbsent(tech, () => []);
+      techniqueOutcomes[tech]!.add(
+          outcome.contains('quickly') || outcome.contains('calmed'));
+    }
+    // Find the most effective technique (min 2 uses).
+    String? bestTechnique;
+    double bestRate = 0;
+    techniqueOutcomes.forEach((tech, outcomes) {
+      if (outcomes.length >= 2) {
+        final positiveCount = outcomes.where((b) => b).length;
+        final rate = positiveCount / outcomes.length;
+        if (rate > bestRate) {
+          bestRate = rate;
+          bestTechnique = tech;
+        }
+      }
+    });
+    if (bestTechnique != null && bestRate > 0) {
+      _behavioralInsights.add(
+        'Most effective response: $bestTechnique '
+        '(${(bestRate * 100).round()}% positive outcome)',
+      );
+    }
+
+    // ── Severity trend ─────────────────────────────────────────
+    if (entries.length >= 6) {
+      final sorted = entries.toList()
+        ..sort((a, b) =>
+            (a.createdAt?.millisecondsSinceEpoch ?? 0)
+                .compareTo(b.createdAt?.millisecondsSinceEpoch ?? 0));
+      final mid = sorted.length ~/ 2;
+      final firstAvg = sorted
+              .sublist(0, mid)
+              .map((e) => e.severity)
+              .reduce((a, b) => a + b) /
+          mid;
+      final secondAvg = sorted
+              .sublist(mid)
+              .map((e) => e.severity)
+              .reduce((a, b) => a + b) /
+          (sorted.length - mid);
+      final change = secondAvg - firstAvg;
+      if (change > 0.5) {
+        _behavioralInsights.add(
+          'Behavioral severity trending up '
+          '(${firstAvg.toStringAsFixed(1)} \u2192 ${secondAvg.toStringAsFixed(1)} avg)',
+        );
+      } else if (change < -0.5) {
+        _behavioralInsights.add(
+          'Behavioral severity improving '
+          '(${firstAvg.toStringAsFixed(1)} \u2192 ${secondAvg.toStringAsFixed(1)} avg)',
+        );
+      }
+    }
+  }
+
+  static String _formatHourLabel(int hour) {
+    if (hour == 0) return '12 AM';
+    if (hour < 12) return '$hour AM';
+    if (hour == 12) return '12 PM';
+    return '${hour - 12} PM';
   }
 
   /// Force a refresh (e.g., from pull-to-refresh on detail screen).

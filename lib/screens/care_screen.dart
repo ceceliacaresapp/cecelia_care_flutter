@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 import 'package:cecelia_care_flutter/screens/budget_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/image_upload_screen.dart';
 import 'package:cecelia_care_flutter/screens/training_library_screen.dart';
@@ -29,13 +30,23 @@ import 'package:cecelia_care_flutter/screens/wound_tracking_screen.dart';
 import 'package:cecelia_care_flutter/screens/behavioral_log_screen.dart';
 import 'package:cecelia_care_flutter/screens/wandering_risk_screen.dart';
 import 'package:cecelia_care_flutter/screens/elopement_protocol_screen.dart';
+import 'package:cecelia_care_flutter/screens/sensory_preferences_screen.dart';
+import 'package:cecelia_care_flutter/screens/controlled_substance_vault_screen.dart';
 import 'package:cecelia_care_flutter/screens/fall_risk_screen.dart';
+import 'package:cecelia_care_flutter/screens/incident_report_screen.dart';
 import 'package:cecelia_care_flutter/screens/skin_integrity_screen.dart';
 import 'package:cecelia_care_flutter/screens/cognitive_assessment_screen.dart';
 import 'package:cecelia_care_flutter/screens/discharge_checklist_screen.dart';
 import 'package:cecelia_care_flutter/screens/pain_history_map_screen.dart';
+import 'package:cecelia_care_flutter/screens/insurance/insurance_dashboard_screen.dart';
+import 'package:cecelia_care_flutter/screens/medications/taper_schedule_list_screen.dart';
+import 'package:cecelia_care_flutter/screens/music_therapy_screen.dart';
+import 'package:cecelia_care_flutter/screens/sleep_rhythm_screen.dart';
+import 'package:cecelia_care_flutter/screens/support_group_finder_screen.dart';
+import 'package:cecelia_care_flutter/screens/succession_planner_screen.dart';
 import 'package:cecelia_care_flutter/screens/task_delegation_screen.dart';
 import 'package:cecelia_care_flutter/screens/weight_trend_screen.dart';
+import 'package:cecelia_care_flutter/screens/full_assessment_report_screen.dart';
 import 'package:cecelia_care_flutter/models/caregiver_role.dart';
 import 'package:cecelia_care_flutter/screens/medications/medication_manager_screen.dart';
 import 'package:cecelia_care_flutter/providers/medication_provider.dart';
@@ -60,7 +71,6 @@ class _CareScreenState extends State<CareScreen> {
 
   /// Persisted custom ordering of tile IDs. Empty until loaded.
   List<String> _customOrder = [];
-  bool _orderLoaded = false;
   bool _editMode = false;
 
   @override
@@ -78,13 +88,12 @@ class _CareScreenState extends State<CareScreen> {
         if (mounted) {
           setState(() {
             _customOrder = list;
-            _orderLoaded = true;
           });
           return;
         }
       } catch (_) {}
     }
-    if (mounted) setState(() => _orderLoaded = true);
+    if (mounted) setState(() {});
   }
 
   Future<void> _saveOrder() async {
@@ -139,16 +148,11 @@ class _CareScreenState extends State<CareScreen> {
                     ? elder.preferredName!
                     : elder.profileName;
                 return ActionChip(
-                  avatar: CircleAvatar(
+                  avatar: CachedAvatar(
+                    imageUrl: elder.photoUrl,
                     radius: 12,
-                    backgroundImage: elder.photoUrl != null &&
-                            elder.photoUrl!.isNotEmpty
-                        ? NetworkImage(elder.photoUrl!)
-                        : null,
-                    child: elder.photoUrl == null || elder.photoUrl!.isEmpty
-                        ? Text(name.isNotEmpty ? name[0] : '?',
-                            style: const TextStyle(fontSize: 10))
-                        : null,
+                    fallbackChild: Text(name.isNotEmpty ? name[0] : '?',
+                        style: const TextStyle(fontSize: 10)),
                   ),
                   label: Text(name),
                   onPressed: () => elderProv.setActive(elder),
@@ -241,7 +245,7 @@ class _CareScreenState extends State<CareScreen> {
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppTheme.tileIndigo.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       ),
                       child: Text(
                         '$count folder${count == 1 ? '' : 's'}',
@@ -349,6 +353,22 @@ class _CareScreenState extends State<CareScreen> {
             }
           },
         ),
+      if (role.canAccessBudget)
+        _TileSpec(
+          id: 'insuranceTracker',
+          icon: Icons.health_and_safety_outlined,
+          title: 'Insurance & Claims',
+          color: AppTheme.tileBlueDark,
+          onTap: () {
+            if (activeElder != null) {
+              Navigator.push(context,
+                  FadeSlideRoute(page: const InsuranceDashboardScreen()));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(l10n.settingsNoActiveElderSelected)));
+            }
+          },
+        ),
       _TileSpec(
         id: 'emergencyCard',
         icon: Icons.medical_information_outlined,
@@ -356,6 +376,22 @@ class _CareScreenState extends State<CareScreen> {
         color: AppTheme.dangerColor,
         onTap: () => Navigator.push(context,
             FadeSlideRoute(page: const EmergencyCardScreen())),
+      ),
+      _TileSpec(
+        id: 'successionPlan',
+        icon: Icons.handshake_outlined,
+        title: 'Succession Plan',
+        color: AppTheme.tileIndigoDeep,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const SuccessionPlannerScreen())),
+      ),
+      _TileSpec(
+        id: 'taperSchedules',
+        icon: Icons.trending_down,
+        title: 'Taper Schedules',
+        color: AppTheme.tileOrange,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const TaperScheduleListScreen())),
       ),
       _TileSpec(
         id: 'doctorSummary',
@@ -372,6 +408,14 @@ class _CareScreenState extends State<CareScreen> {
         color: AppTheme.tileIndigoDark,
         onTap: () => Navigator.push(context,
             FadeSlideRoute(page: const AppointmentPrepScreen())),
+      ),
+      _TileSpec(
+        id: 'fullAssessmentReport',
+        icon: Icons.assessment_outlined,
+        title: 'Assessment Report',
+        color: AppTheme.tileIndigo,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const FullAssessmentReportScreen())),
       ),
       _TileSpec(
         id: 'carePlans',
@@ -406,6 +450,14 @@ class _CareScreenState extends State<CareScreen> {
             FadeSlideRoute(page: const RespiteCareFinderScreen())),
       ),
       _TileSpec(
+        id: 'supportGroupFinder',
+        icon: Icons.groups_outlined,
+        title: 'Support Groups',
+        color: AppTheme.tileTeal,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const SupportGroupFinderScreen())),
+      ),
+      _TileSpec(
         id: 'adlScore',
         icon: Icons.accessibility_new_outlined,
         title: 'ADL Score',
@@ -438,6 +490,38 @@ class _CareScreenState extends State<CareScreen> {
         color: AppTheme.tileOrangeDeep,
         onTap: () => Navigator.push(context,
             FadeSlideRoute(page: const BehavioralLogScreen())),
+      ),
+      _TileSpec(
+        id: 'musicTherapy',
+        icon: Icons.music_note_outlined,
+        title: 'Music & Reactions',
+        color: AppTheme.tilePurple,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const MusicTherapyScreen())),
+      ),
+      _TileSpec(
+        id: 'sleepRhythm',
+        icon: Icons.nightlight_round,
+        title: 'Sleep Rhythm',
+        color: AppTheme.tileIndigoDeep,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const SleepRhythmScreen())),
+      ),
+      _TileSpec(
+        id: 'sensoryPreferences',
+        icon: Icons.sensors_outlined,
+        title: 'Sensory Prefs',
+        color: AppTheme.tileTeal,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const SensoryPreferencesScreen())),
+      ),
+      _TileSpec(
+        id: 'controlledSubstances',
+        icon: Icons.shield_outlined,
+        title: 'Med Vault',
+        color: AppTheme.tileOrange,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const ControlledSubstanceVaultScreen())),
       ),
       _TileSpec(
         id: 'wanderingRisk',
@@ -486,6 +570,14 @@ class _CareScreenState extends State<CareScreen> {
         color: AppTheme.tileBlueDark,
         onTap: () => Navigator.push(context,
             FadeSlideRoute(page: const TaskDelegationScreen())),
+      ),
+      _TileSpec(
+        id: 'incidentReports',
+        icon: Icons.assignment_late_outlined,
+        title: 'Incident Reports',
+        color: AppTheme.statusRed,
+        onTap: () => Navigator.push(context,
+            FadeSlideRoute(page: const IncidentReportScreen())),
       ),
       _TileSpec(
         id: 'dischargePlan',
@@ -632,7 +724,7 @@ class _FeaturedTile extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           border: Border.all(color: color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
@@ -651,7 +743,7 @@ class _FeaturedTile extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
                   child: Icon(icon, size: 28, color: color),
                 ),
@@ -698,7 +790,7 @@ class _FeaturedTile extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       border: Border.all(color: color.withValues(alpha: 0.15)),
                     ),
                     child: Text(

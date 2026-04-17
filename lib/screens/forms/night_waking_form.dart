@@ -3,6 +3,7 @@
 // Night waking log: time woke, duration, cause, intervention, returned to
 // sleep. Critical for dementia/Alzheimer's tracking.
 
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -42,29 +43,33 @@ class _NightWakingFormState extends State<NightWakingForm> {
 
   static const Color _accent = AppTheme.tileIndigoDeep;
 
-  static const List<String> _durationOptions = [
-    '< 15 min', '15\u201330 min', '30\u201360 min', '1\u20132 hours', '2+ hours',
+  static List<String> _durationOptions(AppLocalizations l10n) => [
+    l10n.nightWakingDurationUnder15Min,
+    l10n.nightWakingDuration15To30Min,
+    l10n.nightWakingDuration30To60Min,
+    l10n.nightWakingDuration1To2Hours,
+    l10n.nightWakingDuration2PlusHours,
   ];
 
-  static const List<String> _causeOptions = [
-    'Confusion / disorientation',
-    'Pain / discomfort',
-    'Bathroom',
-    'Hunger / thirst',
-    'Nightmare / agitation',
-    'Noise / environment',
-    'Unknown',
+  static List<String> _causeOptions(AppLocalizations l10n) => [
+    l10n.nightWakingCauseConfusion,
+    l10n.nightWakingCausePain,
+    l10n.nightWakingCauseBathroom,
+    l10n.nightWakingCauseHungerThirst,
+    l10n.nightWakingCauseNightmareAgitation,
+    l10n.nightWakingCauseNoiseEnvironment,
+    l10n.nightWakingCauseUnknown,
   ];
 
-  static const List<String> _interventionOptions = [
-    'Verbal reassurance',
-    'Bathroom assist',
-    'Repositioned',
-    'Medication given',
-    'Walked with them',
-    'Sat with them',
-    'Offered water / snack',
-    'None needed',
+  static List<String> _interventionOptions(AppLocalizations l10n) => [
+    l10n.nightWakingInterventionVerbalReassurance,
+    l10n.nightWakingInterventionBathroomAssist,
+    l10n.nightWakingInterventionRepositioned,
+    l10n.nightWakingInterventionMedicationGiven,
+    l10n.nightWakingInterventionWalkedWithThem,
+    l10n.nightWakingInterventionSatWithThem,
+    l10n.nightWakingInterventionOfferedWaterSnack,
+    l10n.nightWakingInterventionNoneNeeded,
   ];
 
   bool get _canSave => _duration != null && _cause != null;
@@ -78,11 +83,12 @@ class _NightWakingFormState extends State<NightWakingForm> {
   Future<void> _handleSave() async {
     if (!_canSave) return;
     setState(() => _isSaving = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final journal = context.read<JournalServiceProvider>();
       final user = AuthService.currentUser;
       if (user == null) {
-        _showSnackBar('Not authenticated.', Colors.red);
+        _showSnackBar(l10n.errorNotAuthenticated, Colors.red);
         return;
       }
       final payload = <String, dynamic>{
@@ -104,13 +110,13 @@ class _NightWakingFormState extends State<NightWakingForm> {
         'visibleToUserIds': <String>[],
       };
       await journal.addJournalEntry('nightWaking', payload, user.uid);
-      _showSnackBar('Night waking entry saved.', Colors.green);
+      _showSnackBar(l10n.nightWakingEntrySaveSuccess, Colors.green);
       HapticUtils.success();
       Navigator.of(context, rootNavigator: true).pop();
       widget.onClose?.call();
     } catch (e) {
       debugPrint('Error saving night waking: $e');
-      _showSnackBar('Failed to save. Please try again.', Colors.red);
+      _showSnackBar(l10n.nightWakingFormSaveError, Colors.red);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -125,17 +131,19 @@ class _NightWakingFormState extends State<NightWakingForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
           24, 8, 24, MediaQuery.of(context).viewInsets.bottom + 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FormSheetHeader(title: 'Log Night Waking'),
+          FormSheetHeader(title: l10n.nightWakingFormTitle),
           const SizedBox(height: 20),
 
-          // ── Time Woke ──────────────────────────────────────
-          FormSectionHeader(label: 'Time Woke', color: _accent),
+          // -- Time Woke ----------------------------------------------
+          FormSectionHeader(label: l10n.nightWakingTimeWokeLabel, color: _accent),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
@@ -149,7 +157,7 @@ class _NightWakingFormState extends State<NightWakingForm> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               child: Row(
                 children: [
@@ -165,74 +173,77 @@ class _NightWakingFormState extends State<NightWakingForm> {
           ),
           const SizedBox(height: 20),
 
-          // ── Duration ───────────────────────────────────────
+          // -- Duration -----------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Duration Awake', color: _accent),
+          FormSectionHeader(label: l10n.nightWakingDurationLabel, color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _durationOptions.map((d) => _chip(
+            children: _durationOptions(l10n).map((d) => _chip(
                 d, _duration == d, () => setState(() => _duration = d))).toList(),
           ),
           const SizedBox(height: 20),
 
-          // ── Cause ──────────────────────────────────────────
+          // -- Cause --------------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Cause', color: _accent),
+          FormSectionHeader(label: l10n.nightWakingCauseLabel, color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _causeOptions.map((c) => _chip(
+            children: _causeOptions(l10n).map((c) => _chip(
                 c, _cause == c, () => setState(() => _cause = c))).toList(),
           ),
           const SizedBox(height: 20),
 
-          // ── Intervention ───────────────────────────────────
+          // -- Intervention -------------------------------------------
           const FormSectionDivider(),
-          FormSectionHeader(label: 'Interventions', color: _accent),
+          FormSectionHeader(label: l10n.nightWakingInterventionsLabel, color: _accent),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _interventionOptions.map((i) {
+            children: _interventionOptions(l10n).map((i) {
               final selected = _interventions.contains(i);
               return _chip(i, selected, () {
                 setState(() {
-                  if (selected) _interventions.remove(i);
-                  else _interventions.add(i);
+                  if (selected) {
+                    _interventions.remove(i);
+                  } else {
+                    _interventions.add(i);
+                  }
                 });
               });
             }).toList(),
           ),
           const SizedBox(height: 20),
 
-          // ── Returned to sleep ──────────────────────────────
+          // -- Returned to sleep --------------------------------------
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Returned to sleep',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            title: Text(l10n.nightWakingReturnedToSleepLabel,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             value: _returnedToSleep,
             onChanged: (v) => setState(() => _returnedToSleep = v),
-            activeColor: _accent,
+            activeThumbColor: _accent,
           ),
           const SizedBox(height: 8),
 
-          // ── Notes ──────────────────────────────────────────
+          // -- Notes --------------------------------------------------
           TextField(
             controller: _noteCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Notes (optional)',
-              border: OutlineInputBorder(),
-              hintText: 'Any observations...',
+            decoration: InputDecoration(
+              labelText: l10n.nightWakingNotesLabel,
+              border: const OutlineInputBorder(),
+              hintText: l10n.nightWakingNotesHint,
             ),
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: 24),
 
-          // ── Cancel + Save ──────────────────────────────────
+          // -- Cancel + Save ------------------------------------------
           Row(
             children: [
               Expanded(
@@ -245,10 +256,10 @@ class _NightWakingFormState extends State<NightWakingForm> {
                     side: BorderSide(color: Colors.grey.shade400),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
-                  child: const Text('Cancel',
-                      style: TextStyle(
+                  child: Text(l10n.nightWakingCancelButton,
+                      style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
@@ -261,7 +272,7 @@ class _NightWakingFormState extends State<NightWakingForm> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
                   child: _isSaving
                       ? const SizedBox(
@@ -269,8 +280,8 @@ class _NightWakingFormState extends State<NightWakingForm> {
                           height: 20,
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white))
-                      : const Text('Save',
-                          style: TextStyle(
+                      : Text(l10n.nightWakingSaveButton,
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
@@ -281,12 +292,6 @@ class _NightWakingFormState extends State<NightWakingForm> {
     );
   }
 
-  Widget _label(String text) => Text(text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppTheme.textSecondary,
-      ));
 
   Widget _chip(String label, bool selected, VoidCallback onTap) {
     return GestureDetector(
@@ -296,7 +301,7 @@ class _NightWakingFormState extends State<NightWakingForm> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? _accent.withValues(alpha: 0.12) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
             color: selected ? _accent : Colors.grey.shade300,
             width: selected ? 1.5 : 1,

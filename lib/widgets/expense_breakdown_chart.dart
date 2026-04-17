@@ -51,7 +51,7 @@ class ExpenseBreakdownChart extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(
             color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),

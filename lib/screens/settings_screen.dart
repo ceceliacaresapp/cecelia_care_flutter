@@ -1,7 +1,6 @@
 import 'package:cecelia_care_flutter/utils/page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
-import 'package:cecelia_care_flutter/providers/locale_provider.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
@@ -17,10 +16,15 @@ import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/compact_grid_tile.dart';
 import 'package:cecelia_care_flutter/providers/theme_provider.dart';
 import 'package:cecelia_care_flutter/screens/manage_care_recipient_profiles_screen.dart';
+import 'package:cecelia_care_flutter/screens/invite/create_invite_screen.dart';
+import 'package:cecelia_care_flutter/screens/invite/redeem_invite_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/dashboard_settings_screen.dart';
 import 'package:cecelia_care_flutter/screens/settings/custom_entry_types_screen.dart';
 import 'package:cecelia_care_flutter/screens/accessibility_settings_screen.dart';
+import 'package:cecelia_care_flutter/services/biometric_lock_service.dart';
 import 'package:cecelia_care_flutter/widgets/staggered_fade_in.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? navigateToManageCareRecipientProfiles;
@@ -30,17 +34,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  Locale? _selectedLocale;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _selectedLocale = Provider.of<LocaleProvider>(context, listen: false).selectedLocale;
-    });
-  }
-
   @override
   void dispose() { super.dispose(); }
 
@@ -83,23 +76,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirm != true) return;
     try {
       await Provider.of<FirestoreService>(context, listen: false).clearElderData(activeElder.id);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.settingsClearDataSuccess(activeElder.profileName))));
+      }
     } catch (e) {
-      debugPrint("SettingsScreen._handleClearData error: $e");
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      debugPrint('SettingsScreen._handleClearData error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.settingsClearDataErrorGeneric(e.toString()))));
-    }
-  }
-
-  String _getLanguageDisplayName(Locale locale, AppLocalizations l10n) {
-    switch (locale.languageCode) {
-      case "en": return l10n.languageNameEn;
-      case "es": return l10n.languageNameEs;
-      case "ko": return l10n.languageNameKo;
-      case "ja": return l10n.languageNameJa;
-      case "zh": return l10n.languageNameZh;
-      default: return locale.toLanguageTag();
+      }
     }
   }
 
@@ -118,15 +104,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final role = activeElderProvider.currentUserRole;
     final canExport = role.canExport;
-    
-    final canAccessProfilesScreen = role.canAccessProfilesScreen;
 
-    if (_selectedLocale == null || !AppLocalizations.supportedLocales.contains(_selectedLocale)) {
-      _selectedLocale = AppLocalizations.supportedLocales.firstWhere(
-        (sl) => _selectedLocale != null && sl.languageCode == _selectedLocale!.languageCode,
-        orElse: () => AppLocalizations.supportedLocales.first,
-      );
-    }
+    final canAccessProfilesScreen = role.canAccessProfilesScreen;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
@@ -152,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               color: AppTheme.backgroundGray,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
               border:
                   Border.all(color: AppTheme.textLight.withValues(alpha: 0.4)),
             ),
@@ -214,6 +193,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: AppTheme.primaryColor,
                   onTap: () => Navigator.push(context,
                       FadeSlideRoute(page: const MyAccountScreen())),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // ── Invites row ───────────────────────────────────────────
+        // Create Invite is admin-only; Redeem Invite is available to
+        // every signed-in user so they can join another family's team.
+        _SectionHeader(label: 'Family invites'),
+        const SizedBox(height: 6),
+        StaggeredFadeIn(
+          index: 1,
+          child: Row(
+            children: [
+              if (isPrimaryAdmin)
+                Expanded(
+                  child: _SettingsGridTile(
+                    icon: Icons.group_add_outlined,
+                    title: 'Invite family',
+                    subtitle: 'Generate a code',
+                    color: AppTheme.tileBlue,
+                    onTap: () => Navigator.push(
+                        context,
+                        FadeSlideRoute(
+                            page: const CreateInviteScreen())),
+                  ),
+                )
+              else
+                const Expanded(child: SizedBox.shrink()),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.vpn_key_outlined,
+                  title: 'Redeem invite',
+                  subtitle: 'Enter a code',
+                  color: AppTheme.tileIndigo,
+                  onTap: () => Navigator.push(
+                      context,
+                      FadeSlideRoute(page: const RedeemInviteScreen())),
                 ),
               ),
             ],
@@ -292,6 +313,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
 
+        // ── Biometric lock ─────────────────────────────────────────
+        if (BiometricLockService.instance.isDeviceSupported)
+          Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: _BiometricLockToggle(),
+          ),
+
         const SizedBox(height: 14),
 
         // ── More row ──────────────────────────────────────────────
@@ -342,58 +370,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
 
+        const SizedBox(height: 14),
+        StaggeredFadeIn(
+          index: 4,
+          child: Row(
+            children: [
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'How we handle data',
+                  color: AppTheme.tileBlueDark,
+                  onTap: () => launchUrl(
+                    Uri.parse('https://ceceliacareapp.web.app/privacy-policy.html'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _SettingsGridTile(
+                  icon: Icons.language_outlined,
+                  title: 'Website',
+                  subtitle: 'ceceliacareapp.web.app',
+                  color: AppTheme.primaryColor,
+                  onTap: () => launchUrl(
+                    Uri.parse('https://ceceliacareapp.web.app'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         const SizedBox(height: 18),
 
         // ── Appearance ────────────────────────────────────────────
         _SectionHeader(label: 'Appearance'),
         const SizedBox(height: 6),
         const _DarkModeSelector(),
-
-        const SizedBox(height: 14),
-
-        // ── Language selector ─────────────────────────────────────
-        _SectionHeader(label: l10n.settingsTitleLanguage),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<Locale>(
-          decoration: InputDecoration(
-            labelText: l10n.settingsLabelSelectLanguage,
-            labelStyle: textTheme.bodyMedium,
-            prefixIcon: const Icon(Icons.language_outlined,
-                color: AppTheme.textSecondary),
-            filled: true,
-            fillColor: AppTheme.primaryColor.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.2)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.2)),
-            ),
-          ),
-          value: _selectedLocale,
-          items: AppLocalizations.supportedLocales
-              .map((Locale locale) => DropdownMenuItem<Locale>(
-                    value: locale,
-                    child: Text(
-                        _getLanguageDisplayName(locale, l10n),
-                        style: textTheme.bodyMedium),
-                  ))
-              .toList(),
-          onChanged: (Locale? newValue) {
-            if (newValue != null) {
-              setState(() => _selectedLocale = newValue);
-              Provider.of<LocaleProvider>(context, listen: false)
-                  .setLocale(newValue);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(l10n
-                      .settingsLanguageChangedConfirmation(
-                          newValue.toLanguageTag()))));
-            }
-          },
-        ),
 
         const SizedBox(height: 24),
 
@@ -407,7 +423,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               backgroundColor: theme.primaryColor,
               foregroundColor: Colors.white,
             ),
@@ -422,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppTheme.dangerColor.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(
                   color: AppTheme.dangerColor.withValues(alpha: 0.2)),
             ),
@@ -448,7 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         height: 36,
                         decoration: BoxDecoration(
                           color: AppTheme.dangerColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         ),
                         child: const Icon(Icons.delete_forever_outlined,
                             color: AppTheme.dangerColor, size: 20),
@@ -512,20 +528,17 @@ class _ProfileHeaderCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         boxShadow: [BoxShadow(
           color: AppTheme.primaryColor.withValues(alpha: 0.25),
           blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Column(children: [
-        CircleAvatar(
+        CachedAvatar(
+          imageUrl: userProfile!.avatarUrl,
           radius: 44,
           backgroundColor: Colors.white.withValues(alpha: 0.25),
-          backgroundImage: (userProfile!.avatarUrl?.isNotEmpty == true)
-            ? NetworkImage(userProfile!.avatarUrl!) : null,
-          child: (userProfile!.avatarUrl == null || userProfile!.avatarUrl!.isEmpty)
-            ? avatarChild ?? const Icon(Icons.person, size: 48, color: Colors.white)
-            : null,
+          fallbackChild: avatarChild ?? const Icon(Icons.person, size: 48, color: Colors.white),
         ),
         const SizedBox(height: 12),
         Text(userProfile!.displayName,
@@ -605,7 +618,7 @@ class _DarkModeSelector extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: _kColor.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: _kColor.withValues(alpha: 0.15)),
         ),
         child: Column(
@@ -618,7 +631,7 @@ class _DarkModeSelector extends StatelessWidget {
                   height: 36,
                   decoration: BoxDecoration(
                     color: _kColor.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   child: Icon(
                     themeProvider.isDark(context)
@@ -694,7 +707,7 @@ class _ThemeChip extends StatelessWidget {
             color: selected
                 ? _kColor.withValues(alpha: 0.12)
                 : AppTheme.backgroundGray,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
             border: Border.all(
               color: selected ? _kColor : Colors.transparent,
               width: selected ? 1.5 : 1,
@@ -720,6 +733,104 @@ class _ThemeChip extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Biometric lock toggle
+// ---------------------------------------------------------------------------
+
+class _BiometricLockToggle extends StatefulWidget {
+  @override
+  State<_BiometricLockToggle> createState() => _BiometricLockToggleState();
+}
+
+class _BiometricLockToggleState extends State<_BiometricLockToggle> {
+  late bool _enabled;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _enabled = BiometricLockService.instance.isEnabled;
+  }
+
+  Future<void> _toggle(bool value) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final success = await BiometricLockService.instance.setEnabled(value);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      if (success) _enabled = value;
+    });
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          value
+              ? 'Biometric lock enabled. The app will lock when you leave.'
+              : 'Biometric lock disabled.',
+        ),
+        backgroundColor: value ? AppTheme.statusGreen : AppTheme.textSecondary,
+        duration: const Duration(seconds: 2),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
+            ),
+            child: const Icon(Icons.fingerprint,
+                color: AppTheme.primaryColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'App lock',
+                  style: TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  _enabled
+                      ? 'Biometric or PIN required to open'
+                      : 'Off — anyone with your phone can open the app',
+                  style: const TextStyle(
+                      fontSize: 11.5, color: AppTheme.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          _busy
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Switch(
+                  value: _enabled,
+                  onChanged: _toggle,
+                  activeThumbColor: AppTheme.primaryColor,
+                ),
+        ],
       ),
     );
   }

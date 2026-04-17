@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/models/shift_definition.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 import 'package:cecelia_care_flutter/services/weather_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
@@ -147,7 +148,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusL)),
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: BoxDecoration(
@@ -183,21 +184,15 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
                     ],
                   ),
                 ),
-                CircleAvatar(
+                CachedAvatar(
+                  imageUrl: userProfile?.avatarUrl,
                   radius: 20,
                   backgroundColor: Colors.white.withValues(alpha: 0.7),
-                  backgroundImage: userProfile?.avatarUrl != null &&
-                          userProfile!.avatarUrl!.isNotEmpty
-                      ? NetworkImage(userProfile.avatarUrl!)
-                      : null,
-                  child: userProfile?.avatarUrl == null ||
-                          userProfile!.avatarUrl!.isEmpty
-                      ? Text(userInitial,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF5D4037),
-                          ))
-                      : null,
+                  fallbackChild: Text(userInitial,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF5D4037),
+                      )),
                 ),
               ],
             ),
@@ -281,7 +276,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
@@ -368,7 +363,7 @@ class _OrientationBoardCardState extends State<OrientationBoardCard> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
           child: Row(
             children: [

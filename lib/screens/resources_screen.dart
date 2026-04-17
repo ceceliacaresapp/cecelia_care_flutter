@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart'; // Corrected import path
 
 class ResourceInfo {
@@ -98,7 +99,7 @@ class ResourcesScreen extends StatelessWidget {
           backgroundColor: Theme.of(context).colorScheme.surface, // Use theme color
           foregroundColor: Theme.of(context).colorScheme.onSurface, // Use theme color for text
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
           ),
           elevation: 2,
         ),

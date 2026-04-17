@@ -46,7 +46,7 @@ class BadgesRow extends StatelessWidget {
                 color: isUnlocked
                     ? AppTheme.tileOrange.withValues(alpha: 0.08)
                     : AppTheme.backgroundGray,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 border: Border.all(
                   color: isUnlocked
                       ? AppTheme.tileOrange.withValues(alpha: 0.3)
@@ -105,7 +105,7 @@ void showBadgeInfoDialog(BuildContext context, Badge badge) {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusL)),
       title: Row(
         children: [
           Icon(
@@ -143,7 +143,7 @@ void showBadgeInfoDialog(BuildContext context, Badge badge) {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: tierColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 border: Border.all(color: tierColor.withValues(alpha: 0.3)),
               ),
               child: Text(
@@ -207,7 +207,7 @@ void showBadgeInfoDialog(BuildContext context, Badge badge) {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppTheme.tilePurple.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
             ),
             child: const Row(
               crossAxisAlignment: CrossAxisAlignment.start,

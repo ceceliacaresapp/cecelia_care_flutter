@@ -19,6 +19,7 @@ import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
 
 class WoundTrackingScreen extends StatefulWidget {
@@ -156,7 +157,7 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
         backgroundColor: Colors.grey.shade100,
         onSelected: (_) => setState(() => _regionFilter = key),
         side: BorderSide.none,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
       ),
     );
   }
@@ -198,11 +199,23 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
           );
         }
 
+        // Show healing timeline when a specific region is filtered.
+        final showTimeline =
+            _regionFilter != 'all' && entries.length >= 2;
+
         return ListView.builder(
           padding: const EdgeInsets.all(12),
-          itemCount: entries.length,
-          itemBuilder: (_, i) =>
-              _buildWoundCard(entries[i], allEntries),
+          itemCount: entries.length + (showTimeline ? 1 : 0),
+          itemBuilder: (_, i) {
+            if (showTimeline && i == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _WoundHealingTimeline(entries: entries),
+              );
+            }
+            final idx = showTimeline ? i - 1 : i;
+            return _buildWoundCard(entries[idx], allEntries);
+          },
         );
       },
     );
@@ -224,7 +237,7 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -232,9 +245,9 @@ class _WoundTrackingScreenState extends State<WoundTrackingScreen> {
           children: [
             // Photo thumbnail
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
               child: entry.photoUrl.isNotEmpty
-                  ? Image.network(entry.photoUrl,
+                  ? CachedImage(imageUrl: entry.photoUrl,
                       width: 80, height: 80, fit: BoxFit.cover)
                   : Container(
                       width: 80,
@@ -439,11 +452,11 @@ class _ComparisonSheet extends StatelessWidget {
                 fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           child: AspectRatio(
             aspectRatio: 1,
             child: entry.photoUrl.isNotEmpty
-                ? Image.network(entry.photoUrl, fit: BoxFit.cover)
+                ? CachedImage(imageUrl: entry.photoUrl, fit: BoxFit.cover)
                 : Container(color: Colors.grey.shade200),
           ),
         ),
@@ -589,7 +602,7 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
 
           // Photo preview
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
             child: Image.file(widget.imageFile,
                 height: 180, width: double.infinity, fit: BoxFit.cover),
           ),
@@ -626,7 +639,7 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
                     color: isSelected
                         ? AppTheme.statusRed.withValues(alpha: 0.1)
                         : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                       color: isSelected
                           ? AppTheme.statusRed
@@ -698,7 +711,7 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
             ),
             child: _isSaving
                 ? const SizedBox(
@@ -726,7 +739,7 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
             color: isSelected
                 ? color.withValues(alpha: 0.15)
                 : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
             border: Border.all(
               color: isSelected ? color : Colors.grey.shade300,
               width: isSelected ? 1.5 : 1,
@@ -740,6 +753,240 @@ class _WoundMetadataFormState extends State<_WoundMetadataForm> {
                 color: isSelected ? color : Colors.grey.shade600,
               )),
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Wound healing timeline — horizontal dot + arrow visualization showing
+// severity progression for a specific body region.
+// ---------------------------------------------------------------------------
+
+class _WoundHealingTimeline extends StatelessWidget {
+  const _WoundHealingTimeline({required this.entries});
+  final List<WoundEntry> entries;
+
+  static int _severityRank(String severity) {
+    switch (severity) {
+      case 'mild':
+        return 1;
+      case 'moderate':
+        return 2;
+      case 'severe':
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
+  static Color _dotColor(String severity) {
+    switch (severity) {
+      case 'mild':
+        return AppTheme.statusGreen;
+      case 'moderate':
+        return AppTheme.statusAmber;
+      case 'severe':
+        return AppTheme.statusRed;
+      default:
+        return AppTheme.textLight;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sort oldest → newest.
+    final sorted = entries.toList()
+      ..sort((a, b) {
+        final aMs = a.createdAt?.millisecondsSinceEpoch ?? 0;
+        final bMs = b.createdAt?.millisecondsSinceEpoch ?? 0;
+        return aMs.compareTo(bMs);
+      });
+
+    if (sorted.length < 2) return const SizedBox.shrink();
+
+    final region = sorted.first.region;
+    final dateFmt = DateFormat('MMM d');
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundGray,
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
+        border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('${region.icon} ',
+                  style: const TextStyle(fontSize: 14)),
+              Text(
+                '${region.label} Healing Timeline',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${sorted.length} entries',
+                style: TextStyle(
+                    fontSize: 11, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Scrollable timeline row.
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < sorted.length; i++) ...[
+                  _TimelineDot(
+                    entry: sorted[i],
+                    dateFmt: dateFmt,
+                  ),
+                  if (i < sorted.length - 1)
+                    _TimelineArrow(
+                      fromSeverity: sorted[i].severity,
+                      toSeverity: sorted[i + 1].severity,
+                    ),
+                ],
+              ],
+            ),
+          ),
+          // Legend
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _legendDot(AppTheme.statusGreen, 'Improving'),
+              const SizedBox(width: 12),
+              _legendDot(AppTheme.statusAmber, 'Stable'),
+              const SizedBox(width: 12),
+              _legendDot(AppTheme.statusRed, 'Worsening'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _legendDot(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+      ],
+    );
+  }
+}
+
+class _TimelineDot extends StatelessWidget {
+  const _TimelineDot({required this.entry, required this.dateFmt});
+  final WoundEntry entry;
+  final DateFormat dateFmt;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _WoundHealingTimeline._dotColor(entry.severity);
+    final dateStr = entry.createdAt != null
+        ? dateFmt.format(entry.createdAt!.toDate())
+        : '?';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 18,
+          height: 18,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          entry.severityLabel,
+          style: TextStyle(
+              fontSize: 9, fontWeight: FontWeight.w600, color: color),
+        ),
+        Text(
+          dateStr,
+          style: TextStyle(fontSize: 9, color: AppTheme.textSecondary),
+        ),
+      ],
+    );
+  }
+}
+
+class _TimelineArrow extends StatelessWidget {
+  const _TimelineArrow({
+    required this.fromSeverity,
+    required this.toSeverity,
+  });
+  final String fromSeverity;
+  final String toSeverity;
+
+  @override
+  Widget build(BuildContext context) {
+    final fromRank = _WoundHealingTimeline._severityRank(fromSeverity);
+    final toRank = _WoundHealingTimeline._severityRank(toSeverity);
+
+    Color color;
+    String arrow;
+    if (toRank < fromRank) {
+      color = AppTheme.statusGreen;
+      arrow = '\u2191'; // ↑ improving
+    } else if (toRank > fromRank) {
+      color = AppTheme.statusRed;
+      arrow = '\u2193'; // ↓ worsening
+    } else {
+      color = AppTheme.statusAmber;
+      arrow = '\u2192'; // → stable
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20), // align with dot center
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 24,
+            height: 2,
+            color: color.withValues(alpha: 0.4),
+          ),
+          Text(
+            arrow,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          Container(
+            width: 24,
+            height: 2,
+            color: color.withValues(alpha: 0.4),
+          ),
+        ],
       ),
     );
   }

@@ -3,6 +3,7 @@
 // Quick-log form for fluid intake. Deliberately minimal for multiple
 // daily uses. Volume presets + fluid type chips.
 
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/services/auth_service.dart';
@@ -44,9 +45,15 @@ class _HydrationFormState extends State<HydrationForm> {
   static const List<int> _presetsOz = [4, 8, 12, 16];
   static const List<int> _presetsMl = [120, 240, 350, 480];
 
-  static const List<String> _fluidTypes = [
-    'Water', 'Juice', 'Coffee / Tea', 'Milk',
-    'Broth / Soup', 'Thickened liquid', 'IV fluids', 'Other',
+  static List<String> _fluidTypes(AppLocalizations l10n) => [
+    l10n.hydrationFluidWater,
+    l10n.hydrationFluidJuice,
+    l10n.hydrationFluidCoffeeTea,
+    l10n.hydrationFluidMilk,
+    l10n.hydrationFluidBrothSoup,
+    l10n.hydrationFluidThickenedLiquid,
+    l10n.hydrationFluidIVFluids,
+    l10n.hydrationFluidOther,
   ];
 
   @override
@@ -81,6 +88,7 @@ class _HydrationFormState extends State<HydrationForm> {
   Future<void> _handleSave() async {
     if (!_canSave) return;
     setState(() => _isSaving = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final journal = context.read<JournalServiceProvider>();
       final user = AuthService.currentUser;
@@ -111,7 +119,7 @@ class _HydrationFormState extends State<HydrationForm> {
       debugPrint('Error saving hydration: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save.'),
+          SnackBar(content: Text(l10n.hydrationSaveError),
               backgroundColor: Colors.red),
         );
       }
@@ -122,6 +130,7 @@ class _HydrationFormState extends State<HydrationForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final presets = _unit == 'oz' ? _presetsOz : _presetsMl;
 
     return SingleChildScrollView(
@@ -130,10 +139,10 @@ class _HydrationFormState extends State<HydrationForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FormSheetHeader(title: 'Log Fluid Intake'),
+          FormSheetHeader(title: l10n.hydrationFormTitle),
           const SizedBox(height: 16),
 
-          // ── Volume presets ─────────────────────────────────
+          // -- Volume presets -----------------------------------------
           Row(
             children: presets.map((v) {
               return Expanded(
@@ -150,7 +159,7 @@ class _HydrationFormState extends State<HydrationForm> {
                         color: _volumeCtrl.text == v.toString()
                             ? _accent.withValues(alpha: 0.12)
                             : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         border: Border.all(
                           color: _volumeCtrl.text == v.toString()
                               ? _accent
@@ -178,7 +187,7 @@ class _HydrationFormState extends State<HydrationForm> {
           ),
           const SizedBox(height: 12),
 
-          // ── Custom volume + unit ───────────────────────────
+          // -- Custom volume + unit -----------------------------------
           Row(
             children: [
               Expanded(
@@ -186,9 +195,9 @@ class _HydrationFormState extends State<HydrationForm> {
                   controller: _volumeCtrl,
                   keyboardType: const TextInputType.numberWithOptions(
                       decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Volume',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.hydrationFormVolumeLabel,
+                    border: const OutlineInputBorder(),
                     isDense: true,
                   ),
                   onChanged: (_) => setState(() {}),
@@ -196,9 +205,9 @@ class _HydrationFormState extends State<HydrationForm> {
               ),
               const SizedBox(width: 8),
               SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'oz', label: Text('oz')),
-                  ButtonSegment(value: 'ml', label: Text('ml')),
+                segments: [
+                  ButtonSegment(value: 'oz', label: Text(l10n.hydrationUnitOz)),
+                  ButtonSegment(value: 'ml', label: Text(l10n.hydrationUnitMl)),
                 ],
                 selected: {_unit},
                 onSelectionChanged: (s) {
@@ -213,8 +222,8 @@ class _HydrationFormState extends State<HydrationForm> {
           ),
           const SizedBox(height: 20),
 
-          // ── Fluid type ─────────────────────────────────────
-          Text('Fluid Type',
+          // -- Fluid type ---------------------------------------------
+          Text(l10n.hydrationFormFluidTypeLabel,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -223,7 +232,7 @@ class _HydrationFormState extends State<HydrationForm> {
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: _fluidTypes.map((t) {
+            children: _fluidTypes(l10n).map((t) {
               final selected = _fluidType == t;
               return GestureDetector(
                 onTap: () => setState(() => _fluidType = t),
@@ -235,7 +244,7 @@ class _HydrationFormState extends State<HydrationForm> {
                     color: selected
                         ? _accent.withValues(alpha: 0.12)
                         : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                       color: selected ? _accent : Colors.grey.shade300,
                       width: selected ? 1.5 : 1,
@@ -254,20 +263,20 @@ class _HydrationFormState extends State<HydrationForm> {
           ),
           const SizedBox(height: 16),
 
-          // ── Notes ──────────────────────────────────────────
+          // -- Notes --------------------------------------------------
           TextField(
             controller: _noteCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Notes (optional)',
-              border: OutlineInputBorder(),
-              hintText: 'e.g., refused after 2 sips, used thickener',
+            decoration: InputDecoration(
+              labelText: l10n.hydrationFormNotesLabel,
+              border: const OutlineInputBorder(),
+              hintText: l10n.hydrationFormNotesHint,
             ),
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
           ),
           const SizedBox(height: 24),
 
-          // ── Cancel + Save ──────────────────────────────────
+          // -- Cancel + Save ------------------------------------------
           Row(
             children: [
               Expanded(
@@ -280,10 +289,10 @@ class _HydrationFormState extends State<HydrationForm> {
                     side: BorderSide(color: Colors.grey.shade400),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
-                  child: const Text('Cancel',
-                      style: TextStyle(
+                  child: Text(l10n.hydrationFormCancelButton,
+                      style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
@@ -296,7 +305,7 @@ class _HydrationFormState extends State<HydrationForm> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   ),
                   child: _isSaving
                       ? const SizedBox(
@@ -304,8 +313,8 @@ class _HydrationFormState extends State<HydrationForm> {
                           height: 20,
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white))
-                      : const Text('Save',
-                          style: TextStyle(
+                      : Text(l10n.hydrationFormSaveButton,
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),

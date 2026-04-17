@@ -12,8 +12,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +30,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/medication_definitions_provider.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyCardScreen extends StatefulWidget {
   const EmergencyCardScreen({super.key});
@@ -131,7 +134,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: med.color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           ),
                           child: Icon(med.icon, color: med.color),
                         ),
@@ -171,7 +174,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                         backgroundColor: AppTheme.dangerColor,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         ),
                       ),
                       child: const Text('Done',
@@ -245,7 +248,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 border: Border.all(
                     color: AppTheme.dangerColor.withValues(alpha: 0.3),
                     width: 2),
@@ -378,7 +381,61 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
+
+            // ── Poison Control quick-dial ───────────────────────────
+            GestureDetector(
+              onTap: () {
+                HapticUtils.tap();
+                launchUrl(Uri.parse('tel:18002221222'));
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppTheme.statusAmber.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                  border: Border.all(
+                      color: AppTheme.statusAmber.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.statusAmber.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.warning_amber_outlined,
+                          color: AppTheme.statusAmber, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Poison Control',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.statusAmber,
+                              )),
+                          const Text('1-800-222-1222 · 24/7',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary,
+                              )),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.call,
+                        color: AppTheme.statusAmber, size: 20),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
 
             // ── Rescue Medications section ──────────────────────────
             _RescueMedsSection(
@@ -423,7 +480,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                   backgroundColor: AppTheme.dangerColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
                   elevation: 2,
                 ),
@@ -437,6 +494,52 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
               style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 18),
+
+            // ── ICE Lock Screen Generator ──────────────────────────
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => _showLockScreenPreview(
+                  context,
+                  activeElder,
+                  meds.map((m) => m.dose != null && m.dose!.isNotEmpty
+                      ? '${m.name} (${m.dose})'
+                      : m.name).toList(),
+                ),
+                icon: const Icon(Icons.phone_android_outlined, size: 20),
+                label: const Text(
+                  'Generate Lock Screen Card',
+                  style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.tileIndigoDeep,
+                  side: BorderSide(
+                    color: AppTheme.tileIndigo.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'Creates a wallpaper image with emergency info — set it '
+              'as your lock screen so first responders can read it '
+              'without unlocking.',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppTheme.textSecondary,
+                fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
             ),
@@ -474,7 +577,7 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                 padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
                   color: PdfColor.fromHex('#E53935'),
-                  borderRadius: pw.BorderRadius.circular(8),
+                  borderRadius: pw.BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -533,6 +636,27 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                 )
               else
                 _pdfInfoRow('Emergency Contact', 'Not set'),
+
+              // ── Poison Control ─────────────────────────────────
+              pw.SizedBox(height: 10),
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromHex('#FFF8E1'),
+                  borderRadius: pw.BorderRadius.circular(6),
+                  border: pw.Border.all(
+                      color: PdfColor.fromHex('#F57C00'), width: 0.5),
+                ),
+                child: pw.Text(
+                  'POISON CONTROL: 1-800-222-1222 (24/7)',
+                  style: pw.TextStyle(
+                    fontSize: 11,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColor.fromHex('#E65100'),
+                  ),
+                ),
+              ),
 
               // ── Rescue Medications PDF section ──────────────────
               if (activeRescue.isNotEmpty) ...[
@@ -601,6 +725,34 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
         );
       }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // ICE Lock Screen generator
+  // ---------------------------------------------------------------------------
+
+  void _showLockScreenPreview(
+    BuildContext context,
+    ElderProfile elder,
+    List<String> medNames,
+  ) {
+    final displayName = elder.preferredName?.isNotEmpty == true
+        ? elder.preferredName!
+        : elder.profileName;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => _IceLockScreenDialog(
+        displayName: displayName,
+        dob: elder.dateOfBirth,
+        allergies: elder.allergies,
+        dietaryRestrictions: elder.dietaryRestrictions,
+        medications: medNames,
+        emergencyContactName: elder.emergencyContactName,
+        emergencyContactPhone: elder.emergencyContactPhone,
+        emergencyContactRelationship: elder.emergencyContactRelationship,
+      ),
+    );
   }
 
   static pw.Widget _pdfInfoRow(String label, String value,
@@ -722,6 +874,402 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
 }
 
 // ---------------------------------------------------------------------------
+// ICE Lock Screen preview + capture dialog
+// ---------------------------------------------------------------------------
+
+class _IceLockScreenDialog extends StatefulWidget {
+  const _IceLockScreenDialog({
+    required this.displayName,
+    required this.dob,
+    required this.allergies,
+    required this.dietaryRestrictions,
+    required this.medications,
+    this.emergencyContactName,
+    this.emergencyContactPhone,
+    this.emergencyContactRelationship,
+  });
+
+  final String displayName;
+  final String dob;
+  final List<String> allergies;
+  final String dietaryRestrictions;
+  final List<String> medications;
+  final String? emergencyContactName;
+  final String? emergencyContactPhone;
+  final String? emergencyContactRelationship;
+
+  @override
+  State<_IceLockScreenDialog> createState() => _IceLockScreenDialogState();
+}
+
+class _IceLockScreenDialogState extends State<_IceLockScreenDialog> {
+  final GlobalKey _repaintKey = GlobalKey();
+  bool _capturing = false;
+
+  Future<void> _captureAndShare() async {
+    if (_capturing) return;
+    setState(() => _capturing = true);
+
+    try {
+      final boundary = _repaintKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) throw Exception('Render boundary not found');
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) throw Exception('Could not encode image');
+
+      final pngBytes = byteData.buffer.asUint8List();
+      final tempDir = await getTemporaryDirectory();
+      final safeName =
+          widget.displayName.replaceAll(RegExp(r'[^\w\s]'), '').trim();
+      final file = File(
+          '${tempDir.path}/ICE_LockScreen_${safeName.isEmpty ? 'card' : safeName}.png');
+      await file.writeAsBytes(pngBytes);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'image/png')],
+        subject: 'ICE Lock Screen — ${widget.displayName}',
+        text: 'Save this image, then set it as your phone\'s lock screen '
+            'wallpaper. If you\'re ever incapacitated, first responders '
+            'can see emergency info without unlocking.',
+      );
+
+      HapticUtils.success();
+    } catch (e) {
+      debugPrint('ICE lockscreen capture error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Could not generate image: $e'),
+          backgroundColor: AppTheme.dangerColor,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _capturing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // The actual rendered card — captured as a PNG.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radiusL),
+            child: RepaintBoundary(
+              key: _repaintKey,
+              child: _IceLockScreenCard(
+                displayName: widget.displayName,
+                dob: widget.dob,
+                allergies: widget.allergies,
+                dietaryRestrictions: widget.dietaryRestrictions,
+                medications: widget.medications,
+                emergencyContactName: widget.emergencyContactName,
+                emergencyContactPhone: widget.emergencyContactPhone,
+                emergencyContactRelationship:
+                    widget.emergencyContactRelationship,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54),
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusM)),
+                  ),
+                  child: const Text('Close'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _capturing ? null : _captureAndShare,
+                  icon: _capturing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.save_alt_outlined, size: 18),
+                  label: Text(_capturing ? 'Saving...' : 'Save & share'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.dangerColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.radiusM)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Save the image, then set it as your lock screen wallpaper.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white70,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The visual lockscreen card — rendered as a widget, captured as a
+/// PNG. Black background with high-contrast text designed to be legible
+/// on a phone lock screen at arm's length (large text, red accents).
+class _IceLockScreenCard extends StatelessWidget {
+  const _IceLockScreenCard({
+    required this.displayName,
+    required this.dob,
+    required this.allergies,
+    required this.dietaryRestrictions,
+    required this.medications,
+    this.emergencyContactName,
+    this.emergencyContactPhone,
+    this.emergencyContactRelationship,
+  });
+
+  final String displayName;
+  final String dob;
+  final List<String> allergies;
+  final String dietaryRestrictions;
+  final List<String> medications;
+  final String? emergencyContactName;
+  final String? emergencyContactPhone;
+  final String? emergencyContactRelationship;
+
+  @override
+  Widget build(BuildContext context) {
+    // 9:16-ish aspect ratio so the image fills most lock screens
+    // without extreme cropping. The actual width is constrained by
+    // the dialog; the height follows from aspect ratio.
+    return AspectRatio(
+      aspectRatio: 9 / 16,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 36, 20, 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF111111),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Red ICE header ────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.dangerColor,
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
+              ),
+              child: const Column(
+                children: [
+                  Icon(Icons.medical_information_outlined,
+                      color: Colors.white, size: 28),
+                  SizedBox(height: 4),
+                  Text(
+                    'IN CASE OF EMERGENCY',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2.5,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── Name + DOB ───────────────────────────────
+            Text(
+              displayName,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1.2,
+              ),
+            ),
+            if (dob.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'DOB: $dob',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            _divider(),
+            const SizedBox(height: 12),
+
+            // ── Allergies (red highlight) ────────────────
+            _iceLabel('ALLERGIES'),
+            const SizedBox(height: 4),
+            Text(
+              allergies.isNotEmpty ? allergies.join(', ') : 'None listed',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: allergies.isNotEmpty
+                    ? FontWeight.w700
+                    : FontWeight.normal,
+                color: allergies.isNotEmpty
+                    ? const Color(0xFFFF8A80)
+                    : Colors.white54,
+                height: 1.35,
+              ),
+            ),
+
+            if (dietaryRestrictions.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              _iceLabel('DIETARY RESTRICTIONS'),
+              const SizedBox(height: 4),
+              Text(
+                dietaryRestrictions,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                  height: 1.35,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            _divider(),
+            const SizedBox(height: 12),
+
+            // ── Medications ──────────────────────────────
+            _iceLabel('CURRENT MEDICATIONS'),
+            const SizedBox(height: 4),
+            Text(
+              medications.isNotEmpty
+                  ? medications.join('\n')
+                  : 'None listed',
+              style: TextStyle(
+                fontSize: 14,
+                color: medications.isNotEmpty
+                    ? Colors.white70
+                    : Colors.white38,
+                height: 1.5,
+              ),
+              maxLines: 8,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            const Spacer(),
+
+            // ── Emergency contact (bottom) ───────────────
+            if (emergencyContactName != null &&
+                emergencyContactName!.isNotEmpty) ...[
+              _divider(),
+              const SizedBox(height: 12),
+              _iceLabel('EMERGENCY CONTACT'),
+              const SizedBox(height: 6),
+              Text(
+                emergencyContactName!,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              if (emergencyContactRelationship != null &&
+                  emergencyContactRelationship!.isNotEmpty)
+                Text(
+                  emergencyContactRelationship!,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.6),
+                  ),
+                ),
+              if (emergencyContactPhone != null &&
+                  emergencyContactPhone!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.dangerColor.withValues(alpha: 0.3),
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusS),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.call,
+                          color: Colors.white, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        emergencyContactPhone!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                'Cecelia Care · ${DateFormat('MMM yyyy').format(DateTime.now())}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _divider() {
+    return Container(
+      height: 1,
+      color: Colors.white.withValues(alpha: 0.15),
+    );
+  }
+
+  Widget _iceLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.8,
+        color: AppTheme.dangerColor.withValues(alpha: 0.9),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Rescue meds section (on-screen)
 // ---------------------------------------------------------------------------
 
@@ -740,7 +1288,7 @@ class _RescueMedsSection extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         border: Border.all(
             color: AppTheme.dangerColor.withValues(alpha: 0.3), width: 2),
       ),
@@ -816,7 +1364,7 @@ class _RescueMedCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         color: med.color.withValues(alpha: 0.04),
         border:
             Border(left: BorderSide(color: med.color, width: 4)),
@@ -832,7 +1380,7 @@ class _RescueMedCard extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: med.color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
             ),
             child: Icon(med.icon, color: med.color, size: 22),
           ),
@@ -910,7 +1458,7 @@ class _RescueMedCard extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppTheme.dangerColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 border: Border.all(
                     color: AppTheme.dangerColor.withValues(alpha: 0.3)),
               ),
@@ -983,7 +1531,7 @@ class _InfoRow extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
             ),
             child: Icon(icon, size: 20, color: color),
           ),
@@ -1009,7 +1557,7 @@ class _InfoRow extends StatelessWidget {
                     color: isWarning
                         ? const Color(0xFFFFF3E0)
                         : AppTheme.backgroundGray,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: isWarning
                         ? Border.all(
                             color: AppTheme.tileOrange

@@ -308,6 +308,8 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
     required String elderId,
     String? rxCui,
     String? photoUrl,
+    bool isPRN = false,
+    int? prnFollowUpMinutes,
     Future<List<String>> Function(MedicationDefinition newlyAddedMed,
             List<MedicationDefinition> otherMedsForElder)?
         checkInteractionsFunction,
@@ -327,6 +329,9 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
         'rxCui': rxCui,
         'interactionNotes': [],
         'reminderEnabled': false,
+        'isPRN': isPRN,
+        if (prnFollowUpMinutes != null)
+          'prnFollowUpMinutes': prnFollowUpMinutes,
         if (photoUrl != null) 'photoUrl': photoUrl,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -523,7 +528,9 @@ class MedicationDefinitionsProvider extends ChangeNotifier {
         for (final medDef in definitionsToCheck) {
           if (medDef.id == null ||
               medDef.rxCui == null ||
-              medDef.rxCui!.isEmpty) continue;
+              medDef.rxCui!.isEmpty) {
+            continue;
+          }
           List<String> newInteractionNotes = [];
           if (parsedInteractionPairs.isNotEmpty) {
             for (var pair in parsedInteractionPairs) {

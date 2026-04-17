@@ -40,11 +40,15 @@ dependencies:
   firebase_messaging: ^16.0.4
   firebase_storage: ^13.0.4
   firebase_app_check: ^0.4.1+2
+  firebase_crashlytics: ^5.0.5
   cloud_functions: ^6.0.4
 
   # --- notifications / timezone ---
   flutter_local_notifications: ^19.5.0
   timezone: ^0.10.1
+
+  # --- images ---
+  cached_network_image: ^3.4.1
 
   # --- misc ---
   url_launcher: ^6.3.0
@@ -54,6 +58,9 @@ dependencies:
   permission_handler: ^11.3.1
   csv: ^6.0.0
   pdf: ^3.11.0
+
+  # --- biometric lock ---
+  local_auth: ^2.3.0
 
   # --- celebrations ---
   confetti: ^0.7.0
@@ -66,6 +73,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
@@ -87,3 +95,19 @@ flutter:
           weight: 600
         - asset: assets/fonts/Poppins-Bold.ttf
           weight: 700
+
+# ── Launcher Icons ────────────────────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#3F51B5"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"

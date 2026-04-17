@@ -18,6 +18,8 @@ import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
+import 'package:cecelia_care_flutter/models/elder_profile.dart';
+import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/screens/export_screen.dart' show ExportMeta;
 import 'package:cecelia_care_flutter/services/export_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
@@ -109,9 +111,9 @@ class _DoctorSummaryScreenState extends State<DoctorSummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final activeElder =
-        context.watch<ActiveElderProvider>().activeElder;
+        context.select<ActiveElderProvider, ElderProfile?>((p) => p.activeElder);
     final userProfile =
-        context.watch<UserProfileProvider>().userProfile;
+        context.select<UserProfileProvider, UserProfile?>((p) => p.userProfile);
     final currentUserId =
         FirebaseAuth.instance.currentUser?.uid;
     final journalProvider =
@@ -251,7 +253,7 @@ class _HeaderCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: _kColor.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: _kColor.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -263,7 +265,7 @@ class _HeaderCard extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: _kColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: const Icon(Icons.summarize_outlined,
                     size: 22, color: _kColor),
@@ -393,7 +395,7 @@ class _EntryCountChips extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
             border: Border.all(color: color.withValues(alpha: 0.25)),
           ),
           child: Text(
@@ -556,7 +558,7 @@ class _HighlightRow extends StatelessWidget {
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: highlight.color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
             ),
             child: Icon(highlight.icon,
                 size: 16, color: highlight.color),
@@ -657,7 +659,7 @@ class _ShareBar extends StatelessWidget {
           backgroundColor: _kColor,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM)),
         ),
         onPressed: (isGenerating || !hasEntries) ? null : onShare,
       ),

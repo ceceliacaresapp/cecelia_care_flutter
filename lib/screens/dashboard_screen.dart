@@ -56,6 +56,8 @@ import 'package:cecelia_care_flutter/widgets/hydration_progress_card.dart';
 import 'package:cecelia_care_flutter/screens/weight_trend_screen.dart';
 import 'package:cecelia_care_flutter/screens/medication_adherence_screen.dart';
 import 'package:cecelia_care_flutter/screens/forms/hydration_form.dart';
+import 'package:cecelia_care_flutter/models/user_profile.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 import 'package:cecelia_care_flutter/screens/badges_screen.dart';
 
 // ---------------------------------------------------------------------------
@@ -450,12 +452,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) setState(() => _sectionConfig = config);
   }
 
-  /// Returns true if a section key is visible in the current config.
-  bool _isVisible(String key) {
-    if (_sectionConfig == null) return true; // show all while loading
-    return _sectionConfig!.any((s) => s['key'] == key && s['visible'] == true);
-  }
-
   /// Builds the ordered list of section widgets based on saved config.
   List<Widget> _buildDynamicSections({
     required BuildContext context,
@@ -473,6 +469,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 4),
         const OrientationBoardCard(),
       ],
+      'careTeam': () {
+        if (isMultiView) return <Widget>[];
+        return <Widget>[
+          const SizedBox(height: 12),
+          _CareTeamRow(elderId: activeElder.id),
+        ];
+      },
       'weeklyTeamSummary': () => [
         const SizedBox(height: 12),
         const WeeklyTeamSummaryCard(),
@@ -508,8 +511,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (isMultiView) return <Widget>[];
         return [
           Builder(builder: (ctx) {
-            final medProv = ctx.watch<MedicationDefinitionsProvider>();
-            final pinned = medProv.pinnedMeds;
+            final pinned = ctx.select<MedicationDefinitionsProvider, List>((p) => p.pinnedMeds);
             if (pinned.isEmpty) return const SizedBox.shrink();
 
             return Column(
@@ -538,39 +540,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
       'careLog': () {
         if (isMultiView) {
-          // Show one care log summary per elder, stacked with name headers.
+          // Single merged stream for all care recipients (whereIn query).
+          final elderIds = allElders.map((e) => e.id).toList();
           return <Widget>[
             const SizedBox(height: 20),
             const _SectionLabel(label: "Today's care log"),
             const SizedBox(height: 10),
-            for (final elder in allElders) ...[
-              _ElderSubheader(
-                elder: elder,
-                index: allElders.indexOf(elder),
+            StreamBuilder<List<JournalEntry>>(
+              stream: firestoreService.getJournalEntriesStreamForElders(
+                elderIds: elderIds,
+                currentUserId: currentUserId,
+                startDate: startOfDay,
+                endDate: endOfDay,
               ),
-              StreamBuilder<List<JournalEntry>>(
-                stream: firestoreService.getJournalEntriesStream(
-                  elderId: elder.id,
-                  currentUserId: currentUserId,
-                  startDate: startOfDay,
-                  endDate: endOfDay,
-                ),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return StreamErrorCard(
-                      message: "Couldn't load today's care log",
-                      error: snapshot.error,
-                    );
-                  }
-                  if (snapshot.connectionState == ConnectionState.waiting &&
-                      !snapshot.hasData) {
-                    return const SkeletonDashboardSection();
-                  }
-                  return _TodaySummaryGrid(entries: snapshot.data ?? []);
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return StreamErrorCard(
+                    message: "Couldn't load today's care log",
+                    error: snapshot.error,
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
+                  return const SkeletonDashboardSection();
+                }
+                final entries = snapshot.data ?? [];
+                // Group entries by care recipient and render per-recipient grids.
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final elder in allElders) ...[
+                      _ElderSubheader(
+                        elder: elder,
+                        index: allElders.indexOf(elder),
+                      ),
+                      _TodaySummaryGrid(
+                        entries: entries
+                            .where((e) => e.elderId == elder.id)
+                            .toList(),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ],
+                );
+              },
+            ),
           ];
         }
         return <Widget>[
@@ -626,7 +640,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ];
       },
       'quickLog': () {
-        if (!context.watch<ActiveElderProvider>().canLog) return <Widget>[];
+        if (!context.select<ActiveElderProvider, bool>((p) => p.canLog)) return <Widget>[];
         if (isMultiView) {
           // Multi-view: render one quick-log row per elder, mirroring the
           // careLog section so caregivers managing multiple recipients can
@@ -671,8 +685,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (isMultiView) return <Widget>[];
         return <Widget>[
           Builder(builder: (ctx) {
-            final medProv = ctx.watch<MedicationDefinitionsProvider>();
-            if (medProv.medDefinitions.isEmpty) return const SizedBox.shrink();
+            final meds = ctx.select<MedicationDefinitionsProvider, List>((p) => p.medDefinitions);
+            if (meds.isEmpty) return const SizedBox.shrink();
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
@@ -928,7 +942,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: assessment.riskColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   border: Border.all(
                       color: assessment.riskColor.withValues(alpha: 0.4)),
                 ),
@@ -978,7 +992,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: assessment.riskColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   border: Border.all(
                       color: assessment.riskColor.withValues(alpha: 0.4)),
                 ),
@@ -1029,7 +1043,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppTheme.statusAmber.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   border: Border.all(
                       color: AppTheme.statusAmber.withValues(alpha: 0.4)),
                 ),
@@ -1231,7 +1245,7 @@ class _QuickActionsGrid extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: action.color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(color: action.color.withValues(alpha: 0.2)),
             ),
             child: Column(
@@ -1357,7 +1371,7 @@ class _EntryTypeChip extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
@@ -1498,7 +1512,7 @@ class _PinnedMedCardState extends State<_PinnedMedCard> {
           color: _justLogged
               ? AppTheme.statusGreen.withValues(alpha: 0.08)
               : _kColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(
             color: _justLogged
                 ? AppTheme.statusGreen.withValues(alpha: 0.3)
@@ -1597,7 +1611,7 @@ class _MultiViewHiddenHint extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppTheme.primaryColor.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(
               color: AppTheme.primaryColor.withValues(alpha: 0.2)),
         ),
@@ -1612,7 +1626,7 @@ class _MultiViewHiddenHint extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'More on the single-elder dashboard',
+                    'More on the single-recipient dashboard',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
@@ -1623,8 +1637,8 @@ class _MultiViewHiddenHint extends StatelessWidget {
                   Text(
                     '${hiddenLabels.join(', ')} '
                     '${hiddenLabels.length == 1 ? 'is' : 'are'} hidden in '
-                    'multi-elder view because the data is specific to one '
-                    'care recipient. Switch to single-elder view to see '
+                    'multi-recipient view because the data is specific to one '
+                    'care recipient. Switch to single-recipient view to see '
                     'them.',
                     style: const TextStyle(
                       fontSize: 11,
@@ -1718,6 +1732,230 @@ class _SectionLabel extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Care Team activity row — avatar circles with green/grey dot for
+// recently-active status. Tapping opens a detail bottom sheet.
+// ---------------------------------------------------------------------------
+
+class _CareTeamRow extends StatefulWidget {
+  const _CareTeamRow({required this.elderId});
+  final String elderId;
+
+  @override
+  State<_CareTeamRow> createState() => _CareTeamRowState();
+}
+
+class _CareTeamRowState extends State<_CareTeamRow> {
+  List<UserProfile>? _users;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CareTeamRow old) {
+    super.didUpdateWidget(old);
+    if (old.elderId != widget.elderId) _fetch();
+  }
+
+  Future<void> _fetch() async {
+    setState(() => _loading = true);
+    try {
+      final users = await context
+          .read<FirestoreService>()
+          .getAssociatedUsersForElder(widget.elderId);
+      if (mounted) setState(() { _users = users; _loading = false; });
+    } catch (e) {
+      debugPrint('_CareTeamRow fetch error: $e');
+      if (mounted) setState(() { _users = []; _loading = false; });
+    }
+  }
+
+  bool _isActive(UserProfile u) {
+    if (u.lastActiveAt == null) return false;
+    return DateTime.now().difference(u.lastActiveAt!.toDate()).inHours < 24;
+  }
+
+  void _showDetail() {
+    final users = _users;
+    if (users == null || users.isEmpty) return;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Care Team',
+                  style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 14),
+              ...users.map((u) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        _AvatarWithDot(
+                          imageUrl: u.avatarUrl,
+                          name: u.displayName,
+                          isActive: _isActive(u),
+                          radius: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(u.displayName,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600)),
+                              if (u.lastActiveLabel.isNotEmpty)
+                                Text(u.lastActiveLabel,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: _isActive(u)
+                                            ? AppTheme.statusGreen
+                                            : AppTheme.textSecondary)),
+                            ],
+                          ),
+                        ),
+                        if (u.email.isNotEmpty)
+                          Text(u.email,
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.textLight)),
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const SizedBox(height: 40);
+    }
+    final users = _users;
+    if (users == null || users.length < 2) {
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: _showDetail,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
+          border: Border.all(
+              color: AppTheme.primaryColor.withValues(alpha: 0.12)),
+        ),
+        child: Row(
+          children: [
+            // Overlapping avatars
+            SizedBox(
+              width: 24.0 + (users.length - 1) * 18.0,
+              height: 28,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  for (int i = 0; i < users.length && i < 5; i++)
+                    Positioned(
+                      left: i * 18.0,
+                      child: _AvatarWithDot(
+                        imageUrl: users[i].avatarUrl,
+                        name: users[i].displayName,
+                        isActive: _isActive(users[i]),
+                        radius: 14,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Care Team',
+                      style: TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
+                  Text(
+                    '${users.where(_isActive).length} of ${users.length} active today',
+                    style: TextStyle(
+                        fontSize: 11, color: AppTheme.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                size: 18, color: AppTheme.textLight),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarWithDot extends StatelessWidget {
+  const _AvatarWithDot({
+    required this.imageUrl,
+    required this.name,
+    required this.isActive,
+    this.radius = 14,
+  });
+
+  final String? imageUrl;
+  final String name;
+  final bool isActive;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        CachedAvatar(
+          imageUrl: imageUrl,
+          radius: radius,
+          fallbackChild: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : '?',
+            style: TextStyle(
+                fontSize: radius * 0.7,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textSecondary),
+          ),
+        ),
+        Positioned(
+          right: -1,
+          bottom: -1,
+          child: Container(
+            width: radius * 0.55,
+            height: radius * 0.55,
+            decoration: BoxDecoration(
+              color: isActive ? AppTheme.statusGreen : AppTheme.textLight,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

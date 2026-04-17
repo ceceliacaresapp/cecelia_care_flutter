@@ -88,7 +88,7 @@ class _DiseaseRoadmapScreenState extends State<DiseaseRoadmapScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(color: r.color.withValues(alpha: 0.3)),
             ),
             child: Row(
@@ -97,7 +97,7 @@ class _DiseaseRoadmapScreenState extends State<DiseaseRoadmapScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: r.color.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
                   ),
                   child: Icon(r.icon, color: r.color, size: 28),
                 ),
@@ -188,7 +188,7 @@ class _StagePicker extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppTheme.backgroundGray,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +235,7 @@ class _StagePicker extends StatelessWidget {
                     color: selected
                         ? color.withValues(alpha: 0.18)
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     border: Border.all(
                       color: selected ? color : Colors.grey.shade300,
                       width: selected ? 1.5 : 1,
@@ -370,7 +370,7 @@ class _StageCard extends StatelessWidget {
     return Card(
       elevation: highlighted ? 3 : 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(
           color: highlighted ? color : Colors.transparent,
           width: highlighted ? 2 : 0,
@@ -430,7 +430,7 @@ class _StageCard extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 border: Border.all(color: color.withValues(alpha: 0.25)),
               ),
               child: Column(

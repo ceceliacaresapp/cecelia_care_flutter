@@ -1458,12 +1458,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bottomNavTimeline => 'Timeline';
 
   @override
-  String bottomNavCareLog(Object term) {
-    return 'Care Log';
-  }
+  String get bottomNavCareLog => 'Care Log';
 
   @override
-  String bottomNavCalendar(Object term) {
+  String bottomNavCalendar(String term) {
     return 'Calendar';
   }
 
@@ -2958,4 +2956,737 @@ class AppLocalizationsEn extends AppLocalizations {
   String validationErrorInvalidFormat(String fieldName) {
     return 'Invalid format for $fieldName';
   }
+
+  @override
+  String get dischargePlanTitle => 'Discharge Plan';
+
+  @override
+  String get shareSummaryTooltip => 'Share summary';
+
+  @override
+  String get saveTooltip => 'Save';
+
+  @override
+  String overallProgressLabel(String percent) {
+    return 'Overall $percent% complete';
+  }
+
+  @override
+  String stepsTabLabel(String percent) {
+    return 'Steps ($percent%)';
+  }
+
+  @override
+  String get medsTabLabel => 'Meds';
+
+  @override
+  String safetyTabLabel(String percent) {
+    return 'Safety ($percent%)';
+  }
+
+  @override
+  String get followUpsTabLabel => 'Follow-ups';
+
+  @override
+  String get saveProgressButton => 'Save progress';
+
+  @override
+  String get markCompleteButton => 'Mark complete';
+
+  @override
+  String get dischargePlanCompleteMessage => 'Discharge plan complete';
+
+  @override
+  String get savedMessage => 'Saved';
+
+  @override
+  String appliedMedicationChangesMessage(String added, String updated) {
+    return 'Applied: $added new, $updated dose changes';
+  }
+
+  @override
+  String scheduleFailureMessage(String error) {
+    return 'Could not schedule: $error';
+  }
+
+  @override
+  String get dischargeDetailsTitle => 'Discharge details';
+
+  @override
+  String get facilityLabel => 'Facility (optional)';
+
+  @override
+  String get facilityHint => 'e.g. Mass General Hospital';
+
+  @override
+  String dischargeDateLabel(String date) {
+    return 'Discharge date: $date';
+  }
+
+  @override
+  String get medicationComparisonInstructions =>
+      'Compare the discharge medication list against pre-hospital meds. Mark each as continuing, dose changed, stopped, or new.';
+
+  @override
+  String get addNewMedicationButton => 'Add new medication from discharge';
+
+  @override
+  String get applyMedicationChangesButton => 'Apply changes to medication list';
+
+  @override
+  String get medicationLabel => 'Medication';
+
+  @override
+  String get medicationStatusContinuing => 'Continuing';
+
+  @override
+  String get medicationStatusDoseChanged => 'Dose changed';
+
+  @override
+  String get medicationStatusStopped => 'Stopped';
+
+  @override
+  String get medicationStatusNew => 'New';
+
+  @override
+  String get preHospitalDoseLabel => 'Pre-hospital dose';
+
+  @override
+  String get dischargeDoseLabel => 'Discharge dose';
+
+  @override
+  String get notesOptionalLabel => 'Notes (optional)';
+
+  @override
+  String get followUpNotesLabel => 'Notes (provider, location, prep)';
+
+  @override
+  String get notScheduledLabel => 'Not scheduled';
+
+  @override
+  String get rescheduleButton => 'Reschedule';
+
+  @override
+  String get addToCalendarButton => 'Add to calendar';
+
+  @override
+  String get newFollowUpLabel => 'New follow-up';
+
+  @override
+  String get addCustomFollowUpButton => 'Add custom follow-up';
+
+  @override
+  String get cognitiveScreenTitle => 'Cognitive Screen';
+
+  @override
+  String get startFirstAssessmentButton => 'Start First Assessment';
+
+  @override
+  String get newAssessmentButton => 'New Assessment';
+
+  @override
+  String get noAssessmentsYetTitle => 'No assessments yet';
+
+  @override
+  String get noAssessmentsSubtitle =>
+      '7 brain games — about 10–15 minutes.\nTracks memory, attention, and executive function over time.';
+
+  @override
+  String get educationalScreeningDisclaimer =>
+      'Educational screening only — not a clinical diagnosis. Always follow up with a doctor for cognitive concerns.';
+
+  @override
+  String get domainBreakdownTitle => 'Domain breakdown';
+
+  @override
+  String get skippedLabel => 'Skipped';
+
+  @override
+  String get trendCardTitle => 'Trend';
+
+  @override
+  String assessmentCountLabel(String count) {
+    return '$count assessments';
+  }
+
+  @override
+  String get historyCardTitle => 'History';
+
+  @override
+  String get assessmentSavedMessage => 'Assessment saved';
+
+  @override
+  String assessmentStepLabel(String current, String total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get exitAssessmentDialogTitle => 'Exit assessment?';
+
+  @override
+  String get exitAssessmentDialogContent => 'Progress will be lost.';
+
+  @override
+  String get stayButton => 'Stay';
+
+  @override
+  String get exitButton => 'Exit';
+
+  @override
+  String get backButton => 'Back';
+
+  @override
+  String get skipButton => 'Skip';
+
+  @override
+  String get nextButton => 'Next';
+
+  @override
+  String get letsBrainExercisesTitle => 'Let\'s do some brain exercises!';
+
+  @override
+  String get assessmentInstructionsText =>
+      'This takes about 10–15 minutes. Sit together with the care recipient — you facilitate, they participate. You can skip any section.';
+
+  @override
+  String get letsBeginButton => 'Let\'s Begin';
+
+  @override
+  String get memoryWordListTitle => 'Memory: Word List';
+
+  @override
+  String get wordListInstructionsText =>
+      'Read these 5 words OUT LOUD to the care recipient and ask them to remember them. We will test recall after the other exercises.';
+
+  @override
+  String get startWordListButton => 'Start word list';
+
+  @override
+  String get allReadMessage => 'All read!';
+
+  @override
+  String get readAllWordsButton => 'I\'ve read them all';
+
+  @override
+  String get clockDrawingTitle => 'Visuospatial: Clock Drawing';
+
+  @override
+  String get clockDrawingInstructionsText =>
+      'Ask: \"Please draw a clock showing 10 minutes past 11.\"';
+
+  @override
+  String get caregiverScoringLabel => 'Caregiver scoring';
+
+  @override
+  String get clockCircleLabel => 'Circle roughly correct?';
+
+  @override
+  String get clockNumbersLabel => 'All 12 numbers present?';
+
+  @override
+  String get clockPositionsLabel => 'Numbers in correct positions?';
+
+  @override
+  String get clockHandsLabel => 'Hands showing correct time?';
+
+  @override
+  String get trailMakingTitle => 'Attention: Trail Making';
+
+  @override
+  String get trailMakingInstructionsText =>
+      'Tap the numbered circles in order, 1 through 15, as fast as you can.';
+
+  @override
+  String get digitSpanTitle => 'Working Memory: Digit Span';
+
+  @override
+  String get digitSpanInstructionsText =>
+      'Read each number out loud as it appears, then ask the recipient to repeat.';
+
+  @override
+  String get categoryFluencyTitle => 'Language: Category Fluency';
+
+  @override
+  String get categoryFluencyInstructionsText =>
+      'Tap \"+\" for each valid answer the recipient names.';
+
+  @override
+  String get delayedWordRecallTitle => 'Memory: Delayed Word Recall';
+
+  @override
+  String get delayedWordRecallInstructionsText =>
+      'Ask: \"What were the 5 words I showed you earlier?\" Tap each word the recipient correctly recalls.';
+
+  @override
+  String wordsRecalledCountLabel(String recalled, String total) {
+    return '$recalled of $total recalled';
+  }
+
+  @override
+  String get orientationTitle => 'Orientation';
+
+  @override
+  String get orientationInstructionsText =>
+      'Ask each question and tap whether they answered correctly.';
+
+  @override
+  String correctAnswerLabel(String answer) {
+    return 'Correct: $answer';
+  }
+
+  @override
+  String get patternSequenceTitle => 'Executive: Pattern Sequence';
+
+  @override
+  String get patternSequenceInstructionsText =>
+      'Ask: \"What comes next in the pattern?\"';
+
+  @override
+  String weakestDomainLabel(String domain) {
+    return 'Weakest: $domain';
+  }
+
+  @override
+  String get sessionNotesHint => 'Anything to remember about this session...';
+
+  @override
+  String get saveAssessmentButton => 'Save Assessment';
+
+  @override
+  String get taskBoardTitle => 'Task Board';
+
+  @override
+  String get noCareRecipientSelected => 'No care recipient selected.';
+
+  @override
+  String get activeTabLabel => 'Active';
+
+  @override
+  String get completedTabLabel => 'Completed';
+
+  @override
+  String get newTaskButton => 'New Task';
+
+  @override
+  String get noActiveTasksTitle => 'No active tasks';
+
+  @override
+  String get noActiveTasksSubtitle => 'Tap New Task to delegate.';
+
+  @override
+  String get noCompletedTasksTitle => 'No completed tasks yet';
+
+  @override
+  String get noCompletedTasksSubtitle => 'Completed tasks will show here.';
+
+  @override
+  String actionFailedMessage(String error) {
+    return 'Action failed: $error';
+  }
+
+  @override
+  String get unassignedLabel => 'Unassigned';
+
+  @override
+  String createdByLabel(String name) {
+    return 'Created by $name';
+  }
+
+  @override
+  String completionNoteLabel(String note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String get claimTaskButton => 'I\'ll do it';
+
+  @override
+  String get acceptTaskButton => 'Accept';
+
+  @override
+  String get declineTaskButton => 'Decline';
+
+  @override
+  String get editButton => 'Edit';
+
+  @override
+  String get markTaskCompleteDialogTitle => 'Mark task complete?';
+
+  @override
+  String get completionNoteInputLabel => 'Completion note (optional)';
+
+  @override
+  String get completeButton => 'Complete';
+
+  @override
+  String get deleteTaskDialogTitle => 'Delete task?';
+
+  @override
+  String get cannotBeUndoneMessage => 'This cannot be undone.';
+
+  @override
+  String get editTaskTitle => 'Edit Task';
+
+  @override
+  String get taskTitleLabel => 'Title';
+
+  @override
+  String get taskTitleHint => 'e.g. Pick up prescriptions';
+
+  @override
+  String get taskDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get assignToLabel => 'Assign to';
+
+  @override
+  String get unassignedOption => 'Unassigned';
+
+  @override
+  String get dueDateLabel => 'Due date';
+
+  @override
+  String get noDueDateLabel => 'No due date';
+
+  @override
+  String get createTaskButton => 'Create Task';
+
+  @override
+  String get visitorFormTitle => 'Log Visitor';
+
+  @override
+  String get visitorFormNameLabel => 'Visitor Name';
+
+  @override
+  String get visitorFormNameHint => 'e.g. Aunt Susan';
+
+  @override
+  String get visitorFormRelationshipLabel => 'Relationship';
+
+  @override
+  String get visitorFormVisitTimeLabel => 'Visit Time';
+
+  @override
+  String get visitorFormDurationLabel => 'Duration';
+
+  @override
+  String get visitorFormResponseLabel => 'Recipient\'s Response';
+
+  @override
+  String get visitorFormActivitiesLabel => 'Activities';
+
+  @override
+  String get visitorFormNotesLabel => 'Notes (optional)';
+
+  @override
+  String get visitorFormNotesHint => 'Any observations...';
+
+  @override
+  String get visitorFormCancelButton => 'Cancel';
+
+  @override
+  String get visitorFormSaveButton => 'Save';
+
+  @override
+  String get visitorRelationshipFamily => 'Family';
+
+  @override
+  String get visitorRelationshipFriend => 'Friend';
+
+  @override
+  String get visitorRelationshipNeighbor => 'Neighbor';
+
+  @override
+  String get visitorRelationshipHomeHealthAide => 'Home health aide';
+
+  @override
+  String get visitorRelationshipTherapist => 'Therapist';
+
+  @override
+  String get visitorRelationshipClergy => 'Clergy / spiritual';
+
+  @override
+  String get visitorRelationshipOther => 'Other';
+
+  @override
+  String get visitorDurationUnder15Min => '< 15 min';
+
+  @override
+  String get visitorDuration15To30Min => '15–30 min';
+
+  @override
+  String get visitorDuration30To60Min => '30–60 min';
+
+  @override
+  String get visitorDuration1To2Hours => '1–2 hours';
+
+  @override
+  String get visitorDuration2PlusHours => '2+ hours';
+
+  @override
+  String get visitorResponsePositive => 'Positive / engaged';
+
+  @override
+  String get visitorResponsePositiveHint => 'Smiled, talked, participated';
+
+  @override
+  String get visitorResponseNeutral => 'Neutral / calm';
+
+  @override
+  String get visitorResponseNeutralHint => 'No change in demeanor';
+
+  @override
+  String get visitorResponseAgitated => 'Agitated / anxious';
+
+  @override
+  String get visitorResponseAgitatedHint => 'Restless, irritable, raised voice';
+
+  @override
+  String get visitorResponseWithdrawn => 'Withdrawn / unresponsive';
+
+  @override
+  String get visitorResponseWithdrawnHint => 'Shut down, would not engage';
+
+  @override
+  String get visitorResponseConfused => 'Confused / disoriented';
+
+  @override
+  String get visitorResponseConfusedHint => 'Did not recognize visitor';
+
+  @override
+  String get visitorActivityConversation => 'Conversation';
+
+  @override
+  String get visitorActivityWatchedTV => 'Watched TV';
+
+  @override
+  String get visitorActivityPlayedGames => 'Played games';
+
+  @override
+  String get visitorActivityLookedAtPhotos => 'Looked at photos';
+
+  @override
+  String get visitorActivityWentOutside => 'Went outside';
+
+  @override
+  String get visitorActivityAteTogether => 'Ate together';
+
+  @override
+  String get visitorActivityMusicSinging => 'Music / singing';
+
+  @override
+  String get visitorActivityJustSatTogether => 'Just sat together';
+
+  @override
+  String get visitorLogSaveSuccess => 'Visitor log saved.';
+
+  @override
+  String get visitorLogSaveError => 'Failed to save. Please try again.';
+
+  @override
+  String get hydrationFormTitle => 'Log Fluid Intake';
+
+  @override
+  String get hydrationFormVolumeLabel => 'Volume';
+
+  @override
+  String get hydrationUnitOz => 'oz';
+
+  @override
+  String get hydrationUnitMl => 'ml';
+
+  @override
+  String get hydrationFormFluidTypeLabel => 'Fluid Type';
+
+  @override
+  String get hydrationFormNotesLabel => 'Notes (optional)';
+
+  @override
+  String get hydrationFormNotesHint =>
+      'e.g., refused after 2 sips, used thickener';
+
+  @override
+  String get hydrationFormCancelButton => 'Cancel';
+
+  @override
+  String get hydrationFormSaveButton => 'Save';
+
+  @override
+  String get hydrationFluidWater => 'Water';
+
+  @override
+  String get hydrationFluidJuice => 'Juice';
+
+  @override
+  String get hydrationFluidCoffeeTea => 'Coffee / Tea';
+
+  @override
+  String get hydrationFluidMilk => 'Milk';
+
+  @override
+  String get hydrationFluidBrothSoup => 'Broth / Soup';
+
+  @override
+  String get hydrationFluidThickenedLiquid => 'Thickened liquid';
+
+  @override
+  String get hydrationFluidIVFluids => 'IV fluids';
+
+  @override
+  String get hydrationFluidOther => 'Other';
+
+  @override
+  String get hydrationSaveError => 'Failed to save.';
+
+  @override
+  String get nightWakingFormTitle => 'Log Night Waking';
+
+  @override
+  String get nightWakingTimeWokeLabel => 'Time Woke';
+
+  @override
+  String get nightWakingDurationLabel => 'Duration Awake';
+
+  @override
+  String get nightWakingCauseLabel => 'Cause';
+
+  @override
+  String get nightWakingInterventionsLabel => 'Interventions';
+
+  @override
+  String get nightWakingReturnedToSleepLabel => 'Returned to sleep';
+
+  @override
+  String get nightWakingNotesLabel => 'Notes (optional)';
+
+  @override
+  String get nightWakingNotesHint => 'Any observations...';
+
+  @override
+  String get nightWakingCancelButton => 'Cancel';
+
+  @override
+  String get nightWakingSaveButton => 'Save';
+
+  @override
+  String get nightWakingDurationUnder15Min => '< 15 min';
+
+  @override
+  String get nightWakingDuration15To30Min => '15–30 min';
+
+  @override
+  String get nightWakingDuration30To60Min => '30–60 min';
+
+  @override
+  String get nightWakingDuration1To2Hours => '1–2 hours';
+
+  @override
+  String get nightWakingDuration2PlusHours => '2+ hours';
+
+  @override
+  String get nightWakingCauseConfusion => 'Confusion / disorientation';
+
+  @override
+  String get nightWakingCausePain => 'Pain / discomfort';
+
+  @override
+  String get nightWakingCauseBathroom => 'Bathroom';
+
+  @override
+  String get nightWakingCauseHungerThirst => 'Hunger / thirst';
+
+  @override
+  String get nightWakingCauseNightmareAgitation => 'Nightmare / agitation';
+
+  @override
+  String get nightWakingCauseNoiseEnvironment => 'Noise / environment';
+
+  @override
+  String get nightWakingCauseUnknown => 'Unknown';
+
+  @override
+  String get nightWakingInterventionVerbalReassurance => 'Verbal reassurance';
+
+  @override
+  String get nightWakingInterventionBathroomAssist => 'Bathroom assist';
+
+  @override
+  String get nightWakingInterventionRepositioned => 'Repositioned';
+
+  @override
+  String get nightWakingInterventionMedicationGiven => 'Medication given';
+
+  @override
+  String get nightWakingInterventionWalkedWithThem => 'Walked with them';
+
+  @override
+  String get nightWakingInterventionSatWithThem => 'Sat with them';
+
+  @override
+  String get nightWakingInterventionOfferedWaterSnack =>
+      'Offered water / snack';
+
+  @override
+  String get nightWakingInterventionNoneNeeded => 'None needed';
+
+  @override
+  String get nightWakingEntrySaveSuccess => 'Night waking entry saved.';
+
+  @override
+  String get nightWakingFormSaveError => 'Failed to save. Please try again.';
+
+  @override
+  String get errorNotAuthenticated => 'Not authenticated.';
+
+  @override
+  String get painHistoryScreenTitle => 'Pain History';
+
+  @override
+  String get painHistoryNoCareRecipient => 'No care recipient selected.';
+
+  @override
+  String get painHistoryPeriod7Days => '7d';
+
+  @override
+  String get painHistoryPeriod30Days => '30d';
+
+  @override
+  String get painHistoryPeriod90Days => '90d';
+
+  @override
+  String get painHistorySummaryPainEntries => 'Pain entries';
+
+  @override
+  String get painHistorySummaryLocationsMarked => 'Locations marked';
+
+  @override
+  String get painHistoryEmptyTitle => 'No pain markers in this window';
+
+  @override
+  String get painHistoryEmptySubtitle =>
+      'Pain entries logged before the body map was added show only as text and won\'t appear here.';
+
+  @override
+  String get painIntensityMildRange => 'Mild 1–3';
+
+  @override
+  String get painIntensityModerateRange => 'Moderate 4–6';
+
+  @override
+  String get painIntensitySevereRange => 'Severe 7–8';
+
+  @override
+  String get painIntensityExtremeRange => 'Extreme 9–10';
+
+  @override
+  String get painHistoryRegionFrequencyLabel => 'Region frequency';
+
+  @override
+  String get painHistoryTimelineLabel => 'Timeline';
+
+  @override
+  String get painHistoryShowAllButton => 'Show all';
 }

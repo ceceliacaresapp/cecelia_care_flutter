@@ -73,7 +73,7 @@ class _AdherenceSummaryCardState extends State<AdherenceSummaryCard> {
           child: Card(
             elevation: 1,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               side: pct < 70
                   ? BorderSide(
                       color: AppTheme.statusRed.withValues(alpha: 0.3))

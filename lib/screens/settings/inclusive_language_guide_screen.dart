@@ -72,7 +72,7 @@ class _BuildContent extends StatelessWidget {
   }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

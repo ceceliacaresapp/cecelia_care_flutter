@@ -79,7 +79,7 @@ class _TaskSummaryCardState extends State<TaskSummaryCard> {
           child: Card(
             elevation: 1,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               side: BorderSide(
                   color: accent.withValues(alpha: 0.3), width: 1),
             ),
@@ -91,7 +91,7 @@ class _TaskSummaryCardState extends State<TaskSummaryCard> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     ),
                     child: Icon(Icons.task_alt_outlined,
                         color: accent, size: 22),
@@ -133,7 +133,7 @@ class _TaskSummaryCardState extends State<TaskSummaryCard> {
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppTheme.dangerColor,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       ),
                       child: Text('$overdue overdue',
                           style: const TextStyle(

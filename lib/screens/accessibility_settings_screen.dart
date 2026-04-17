@@ -27,7 +27,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppTheme.tileBlueDark.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
             ),
             child: const Text(
               'Cecelia Care is designed to be accessible for both '
@@ -115,7 +115,7 @@ class AccessibilitySettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
           color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
         ),
         child: const Text('Coming soon',
             style: TextStyle(fontSize: 10, color: Colors.grey)),

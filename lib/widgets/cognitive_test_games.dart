@@ -90,7 +90,7 @@ class ClockDrawingCanvasState extends State<ClockDrawingCanvas> {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: Colors.grey.shade400, width: 2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
         clipBehavior: Clip.hardEdge,
         child: Stack(
@@ -311,7 +311,7 @@ class _TrailMakingGameState extends State<TrailMakingGame> {
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             color: Colors.indigo.shade50,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
           ),
           child: Row(
             children: [
@@ -338,7 +338,7 @@ class _TrailMakingGameState extends State<TrailMakingGame> {
                     horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.indigo.shade700,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                 ),
                 child: Text(
                   'Next: $_next',
@@ -625,7 +625,7 @@ class _DigitSpanGameState extends State<DigitSpanGame> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.deepPurple.shade50,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -971,7 +971,7 @@ class _PatternSequenceGameState extends State<PatternSequenceGame> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.teal.shade50,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           ),
           child: Text('Pattern ${_index + 1} of ${_patterns.length}',
               style: TextStyle(
@@ -1018,7 +1018,7 @@ class _PatternSequenceGameState extends State<PatternSequenceGame> {
                               ? Colors.green.shade100
                               : Colors.red.shade100)
                           : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       border: Border.all(
                         color: _showResult && _selected == i
                             ? (i == p.answerIndex
@@ -1046,7 +1046,7 @@ class _PatternSequenceGameState extends State<PatternSequenceGame> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.amber.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(color: Colors.amber, width: 2),
         ),
         child: Text('?',

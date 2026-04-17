@@ -2,6 +2,7 @@
 //
 // Structured wandering risk assessment with risk score display, safeguard
 // gaps, and history tracking.
+import 'package:cecelia_care_flutter/utils/save_helpers.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -102,13 +103,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
       }
     } catch (e) {
       debugPrint('Wandering assessment save error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to save.'),
-              backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) showSaveError(context, e, label: 'Wandering');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -162,7 +157,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
         // Risk score hero
         Card(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusL)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -222,7 +217,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppTheme.tileOrange.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(
                   color: AppTheme.tileOrange.withValues(alpha: 0.3)),
             ),
@@ -397,7 +392,7 @@ class _WanderingRiskScreenState extends State<WanderingRiskScreen> {
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM)),
           ),
           child: _isSaving
               ? const SizedBox(

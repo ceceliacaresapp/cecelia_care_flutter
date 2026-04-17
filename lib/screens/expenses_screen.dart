@@ -350,7 +350,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
                 color: _kExpenseColor.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 border: Border.all(
                     color: _kExpenseColor.withValues(alpha: 0.2)),
               ),
@@ -416,7 +416,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: _kExpenseColor.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       border: Border.all(
                           color: _kExpenseColor.withValues(alpha: 0.2)),
                     ),
@@ -629,7 +629,7 @@ class _UserCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: _kExpenseColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
@@ -640,7 +640,7 @@ class _UserCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -5,8 +5,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cecelia_care_flutter/utils/app_theme.dart';
 
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 
 class ElderViewToggle extends StatelessWidget {
   const ElderViewToggle({super.key});
@@ -36,7 +38,7 @@ class ElderViewToggle extends StatelessWidget {
         height: 32,
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -44,15 +46,11 @@ class ElderViewToggle extends StatelessWidget {
           // Single elder segment
           _Segment(
             label: displayName,
-            icon: photoUrl != null && photoUrl.isNotEmpty
-                ? CircleAvatar(
-                    radius: 10,
-                    backgroundImage: NetworkImage(photoUrl),
-                  )
-                : CircleAvatar(
+            icon: CachedAvatar(
+                    imageUrl: photoUrl,
                     radius: 10,
                     backgroundColor: Colors.white.withValues(alpha: 0.3),
-                    child: Text(
+                    fallbackChild: Text(
                       elderName.isNotEmpty ? elderName[0].toUpperCase() : '?',
                       style: const TextStyle(
                           fontSize: 10,
@@ -100,7 +98,7 @@ class _Segment extends StatelessWidget {
           color: isSelected
               ? Colors.white.withValues(alpha: 0.25)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -42,6 +42,29 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if false;
     }
+
+    // --- Family Invite Codes ---
+    // Top-level collection where doc id == the code string. A code
+    // carries a denormalized elderName + role + creator so a signed-in
+    // user can preview an invite before committing. Writes are owned
+    // exclusively by Cloud Functions (createInviteCode / redeemInviteCode
+    // / revokeInviteCode), which enforce role + TTL + use-count rules
+    // that are too complex to express in Firestore rules.
+    match /inviteCodes/{code} {
+      // Any signed-in user can read a single code by id (for preview
+      // + redemption). Documents contain only non-sensitive metadata
+      // (elder name + role + expiry) — no PHI.
+      allow get: if request.auth != null;
+      // List queries are restricted per-document to the code creator.
+      // If a query returns a doc the caller didn't create, the query
+      // is rejected. This lets the admin "my recent invites" view
+      // work without exposing other caregivers' invites.
+      allow list: if request.auth != null &&
+        resource.data.createdByUid == request.auth.uid;
+      // All mutations go through Cloud Functions (Admin SDK bypasses
+      // rules); block direct client writes.
+      allow create, update, delete: if false;
+    }
     match /suggestions/{suggestionId} {
       allow create: if true;
       allow read, update, delete: if false;
@@ -126,6 +149,22 @@ service cloud.firestore {
         allow write: if canWrite(elderId);
       }
 
+      // Music reactions — per-song reaction log driving the "what
+      // calms / what agitates" analytics. All caregivers can read
+      // and write (viewer sees history, cannot add).
+      match /musicReactions/{entryId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Incident reports — regulatory-grade documentation for falls,
+      // elopements, medication errors, behavioral events. Caregivers
+      // read + write; viewers read-only. Timestamped for audit.
+      match /incidentReports/{reportId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
       // Wandering assessments — all caregivers can read and write.
       match /wanderingAssessments/{assessmentId} {
         allow read: if isCaregiver(elderId);
@@ -162,6 +201,23 @@ service cloud.firestore {
         allow write: if canWrite(elderId);
       }
 
+      // Succession plan ("If I Can't Be Here") — one plan per elder at
+      // doc id "primary". Any caregiver can read so a backup can pull it
+      // up in an emergency. Write restricted to admin/caregiver (not viewer).
+      match /successionPlan/{planId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
+      // Taper schedules — prescriber-authored step-down plans for
+      // medications that must not be stopped abruptly. Caregivers read
+      // (so anyone on the team can see today's dose); admin/caregiver
+      // write. Viewers cannot author tapers.
+      match /taperSchedules/{taperId} {
+        allow read: if isCaregiver(elderId);
+        allow write: if canWrite(elderId);
+      }
+
       // Care tasks — delegation hub. Any caregiver can read/create/update.
       // Delete restricted to admin or task creator.
       match /careTasks/{taskId} {
@@ -194,6 +250,15 @@ service cloud.firestore {
 
     // --- Respite Providers (shared, read-only for most users) ---
     match /respiteProviders/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+
+    // --- Support Groups (community-contributed, read by all
+    // authenticated users, additions open to any signed-in user;
+    // no client-side edit/delete to keep the directory stable).
+    match /supportGroups/{docId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if false;
@@ -269,6 +334,39 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid;
     }
 
+    // --- Insurance Policies ---
+    // Richer, shareable insurance records. Owner-only — mirrors the
+    // financial-data pattern. Benefit counters live as a subcollection
+    // of the parent policy.
+    match /insurancePolicies/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+
+      match /benefitCounters/{counterId} {
+        // Benefit counters are owned implicitly by the parent policy's
+        // owner. We can't do a get() on the parent in rules without
+        // paying for extra reads on every query, so we duplicate a
+        // userId field in the counter doc and enforce it here.
+        allow read, write: if request.auth != null &&
+          request.resource.data.userId == request.auth.uid ||
+          (resource != null && resource.data.userId == request.auth.uid);
+      }
+    }
+
+    // --- Insurance Claims ---
+    match /insuranceClaims/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+
     // --- Collection Group Queries ---
     match /{path=**}/expenses/{expenseId} {
       allow read, write: if request.auth != null;
@@ -300,6 +398,18 @@ service cloud.firestore {
     // Wellness check-ins — daily 5-dimension self-assessments.
     // Queried with: where('userId', isEqualTo: uid)
     match /wellnessCheckins/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Zarit Burden Interview (ZBI-12) assessments — monthly clinical
+    // burden score. Private to the caregiver who took it. Queried
+    // with: where('userId', isEqualTo: uid) orderBy completedAt desc.
+    match /zaritAssessments/{docId} {
       allow read: if request.auth != null &&
         resource.data.userId == request.auth.uid;
       allow create: if request.auth != null &&

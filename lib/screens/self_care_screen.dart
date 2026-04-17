@@ -22,6 +22,7 @@ import 'package:cecelia_care_flutter/providers/wellness_provider.dart';
 import 'package:cecelia_care_flutter/providers/gamification_provider.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/providers/self_care_provider.dart';
+import 'package:cecelia_care_flutter/providers/zarit_provider.dart';
 import 'package:cecelia_care_flutter/models/self_care_reminder.dart';
 import 'package:cecelia_care_flutter/models/badge.dart' as app_badge;
 import 'package:cecelia_care_flutter/services/notification_service.dart';
@@ -38,11 +39,15 @@ import 'package:cecelia_care_flutter/screens/sos_screen.dart';
 import 'package:cecelia_care_flutter/screens/burnout_intervention_screen.dart';
 import 'package:cecelia_care_flutter/screens/affirmations_screen.dart';
 import 'package:cecelia_care_flutter/screens/caregiver_journal/caregiver_journal_screen.dart';
+import 'package:cecelia_care_flutter/screens/support_group_finder_screen.dart';
+import 'package:cecelia_care_flutter/screens/zarit_assessment_screen.dart';
+import 'package:cecelia_care_flutter/screens/zarit_history_screen.dart';
 
 // Widgets
 import 'package:cecelia_care_flutter/widgets/burnout_score_card.dart';
 import 'package:cecelia_care_flutter/widgets/streak_widget.dart';
 import 'package:cecelia_care_flutter/widgets/weekly_challenge_card.dart';
+import 'package:cecelia_care_flutter/widgets/zarit_burden_card.dart';
 
 // Self-care accent — purple, matching the nav tab.
 const _kSelfCareColor = AppTheme.tilePurple;
@@ -59,9 +64,9 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
   bool _isInit = false;
 
   final Map<String, int> _stableReminderIds = {
-    "hydrate": 1001,
-    "stretch": 1002,
-    "walk": 1003,
+    'hydrate': 1001,
+    'stretch': 1002,
+    'walk': 1003,
   };
 
   @override
@@ -70,7 +75,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
     if (!_isInit) {
       final scProv = context.read<SelfCareProvider>();
       Future.wait([scProv.load(), scProv.loadHistory()]).catchError((error) {
-        debugPrint("Error during initial data load in SelfCareScreen: $error");
+        debugPrint('Error during initial data load in SelfCareScreen: $error');
         return <void>[];
       });
       _isInit = true;
@@ -101,7 +106,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXL)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -161,7 +166,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                 backgroundColor: _kSelfCareColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
@@ -186,7 +191,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
 
     // Keep mood note in sync
     if (scProv.todayNote != _lastKnownTodayNote) {
-      _noteCtrl.text = scProv.todayNote ?? "";
+      _noteCtrl.text = scProv.todayNote ?? '';
       _lastKnownTodayNote = scProv.todayNote;
     }
 
@@ -204,7 +209,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
-            "Error: ${scProv.errorInfo!.details}",
+            'Error: ${scProv.errorInfo!.details}',
             style: TextStyle(color: theme.colorScheme.error),
             textAlign: TextAlign.center,
           ),
@@ -243,29 +248,57 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
           const SizedBox(height: 14),
 
           // ══════════════════════════════════════════════════════════
-          // 2. BURNOUT SCORE CARD
+          // 2. BURNOUT SCORE CARD + ZARIT BURDEN CARD
+          //
+          // Both cards live under the same "Your wellbeing" label so the
+          // caregiver sees the weekly (burnout) and monthly (Zarit)
+          // pictures together — one informal, one validated clinical.
           // ══════════════════════════════════════════════════════════
-          if (wellProv.recentCheckins.isNotEmpty) ...[
-            _SectionLabel(label: 'Your wellbeing'),
-            const SizedBox(height: 8),
-            BurnoutScoreCard(
-              burnoutStatus: wellProv.burnoutStatus,
-              dimensionAverages: wellProv.dimensionAverages,
-              moodTrend: wellProv.moodTrend,
-              onTapRelief: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (_) => const BreathingExerciseScreen()),
-              ),
-              onTapSos: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => wellProv.burnoutThresholdTriggered
-                      ? const BurnoutInterventionScreen()
-                      : const SosScreen(),
+          Builder(builder: (ctx) {
+            final zarit = ctx.watch<ZaritProvider>();
+            final hasBurnout = wellProv.recentCheckins.isNotEmpty;
+            final showAny = hasBurnout || zarit.hasHistory || !zarit.isLoading;
+            if (!showAny) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SectionLabel(label: 'Your wellbeing'),
+                const SizedBox(height: 8),
+                if (hasBurnout)
+                  BurnoutScoreCard(
+                    burnoutStatus: wellProv.burnoutStatus,
+                    dimensionAverages: wellProv.dimensionAverages,
+                    moodTrend: wellProv.moodTrend,
+                    onTapRelief: () => Navigator.of(ctx).push(
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              const BreathingExerciseScreen()),
+                    ),
+                    onTapSos: () => Navigator.of(ctx).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            wellProv.burnoutThresholdTriggered
+                                ? const BurnoutInterventionScreen()
+                                : const SosScreen(),
+                      ),
+                    ),
+                  ),
+                if (hasBurnout) const SizedBox(height: 10),
+                ZaritBurdenCard(
+                  provider: zarit,
+                  onStartAssessment: () => Navigator.of(ctx).push(
+                    MaterialPageRoute(
+                        builder: (_) => const ZaritAssessmentScreen()),
+                  ),
+                  onViewHistory: () => Navigator.of(ctx).push(
+                    MaterialPageRoute(
+                        builder: (_) => const ZaritHistoryScreen()),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 14),
-          ],
+                const SizedBox(height: 14),
+              ],
+            );
+          }),
 
           // ══════════════════════════════════════════════════════════
           // 3. STREAK + LEVEL
@@ -313,6 +346,66 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
             ),
           ),
 
+          const SizedBox(height: 10),
+
+          // Support-group entry point — isolation is the #1 driver of
+          // caregiver depression, so the finder sits next to the other
+          // relief tools rather than buried under Care-screen tiles.
+          InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const SupportGroupFinderScreen()),
+            ),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.tileTeal.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                border: Border.all(
+                    color: AppTheme.tileTeal.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.tileTeal.withValues(alpha: 0.14),
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusS),
+                    ),
+                    child: const Icon(Icons.groups_outlined,
+                        color: AppTheme.tileTeal, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Find a support group',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Virtual, phone, in-person — filtered to your situation.',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                              height: 1.4),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward,
+                      size: 14, color: AppTheme.tileTeal),
+                ],
+              ),
+            ),
+          ),
+
           const SizedBox(height: 14),
 
           // ══════════════════════════════════════════════════════════
@@ -346,7 +439,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: ["🙂", "😐", "😔", "😡", "😍"].map((emoji) {
+                  children: ['🙂', '😐', '😔', '😡', '😍'].map((emoji) {
                     final isSelected = scProv.todayMood == emoji;
                     return GestureDetector(
                       onTap: () => scProv.saveMood(emoji, _noteCtrl.text),
@@ -374,18 +467,18 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                     filled: true,
                     fillColor: AppTheme.tilePinkBright.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       borderSide: BorderSide(
                           color: AppTheme.tilePinkBright.withValues(alpha: 0.3)),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       borderSide: BorderSide(
                           color: AppTheme.tilePinkBright.withValues(alpha: 0.3)),
                     ),
                   ),
                   onSubmitted: (text) =>
-                      scProv.saveMood(scProv.todayMood ?? "🙂", text),
+                      scProv.saveMood(scProv.todayMood ?? '🙂', text),
                 ),
               ],
             ),
@@ -395,7 +488,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
 
           // Mood history strip
           if (scProv.history.isNotEmpty) ...[
-            _SectionLabel(label: "Mood history"),
+            _SectionLabel(label: 'Mood history'),
             const SizedBox(height: 8),
             SizedBox(
               height: 72,
@@ -409,7 +502,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                   if (i >= reversed.length) return const SizedBox.shrink();
                   final entry = reversed[i];
                   final isStreakDay = i < scProv.currentStreak;
-                  final dateLabel = DateFormat("MMM d",
+                  final dateLabel = DateFormat('MMM d',
                           Localizations.localeOf(context).languageCode)
                       .format(entry.date);
                   return Column(
@@ -447,7 +540,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                 _ReminderRow(
                   context: context,
                   provider: scProv,
-                  id: "hydrate",
+                  id: 'hydrate',
                   label: l10n.hydrate,
                   icon: Icons.water_drop_outlined,
                   stableIds: _stableReminderIds,
@@ -457,7 +550,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                 _ReminderRow(
                   context: context,
                   provider: scProv,
-                  id: "stretch",
+                  id: 'stretch',
                   label: l10n.stretch,
                   icon: Icons.self_improvement_outlined,
                   stableIds: _stableReminderIds,
@@ -467,7 +560,7 @@ class _SelfCareScreenState extends State<SelfCareScreen> {
                 _ReminderRow(
                   context: context,
                   provider: scProv,
-                  id: "walk",
+                  id: 'walk',
                   label: l10n.walk,
                   icon: Icons.directions_walk_outlined,
                   stableIds: _stableReminderIds,
@@ -504,7 +597,7 @@ class _CheckinCta extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           boxShadow: [
             BoxShadow(
               color: _kSelfCareColor.withValues(alpha: 0.25),
@@ -570,7 +663,7 @@ class _CheckinDoneBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.statusGreen.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border:
             Border.all(color: AppTheme.statusGreen.withValues(alpha: 0.2)),
       ),
@@ -703,7 +796,7 @@ class _ReliefTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         padding: const EdgeInsets.all(14),
@@ -753,7 +846,7 @@ class _TieredBadgeChip extends StatelessWidget {
         width: 90,
         decoration: BoxDecoration(
           color: isEarned ? style.backgroundColor : AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(
             color: isEarned ? style.color : Colors.transparent,
             width: isEarned ? 1.5 : 1,
@@ -775,7 +868,7 @@ class _TieredBadgeChip extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                   color: style.color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: Text(
                   style.label,
@@ -841,7 +934,7 @@ class _SelfCareCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
@@ -852,7 +945,7 @@ class _SelfCareCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -908,7 +1001,7 @@ class _ReminderRow extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: _color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
             ),
             child: Icon(icon, size: 18, color: _color),
           ),
@@ -931,7 +1024,7 @@ class _ReminderRow extends StatelessWidget {
           ),
           Switch(
             value: isOn,
-            activeColor: _color,
+            activeThumbColor: _color,
             onChanged: (on) async {
               if (!on) {
                 await provider.saveReminder(
@@ -948,9 +1041,9 @@ class _ReminderRow extends StatelessWidget {
                       .scheduleDailyRepeatingNotification(
                     notificationId: stableIds[id] ?? id.hashCode,
                     time: pickedTime,
-                    channelId: "self_care",
+                    channelId: 'self_care',
                     title: l10n.selfCareReminderTitle,
-                    body: "$label time!",
+                    body: '$label time!',
                     payload: '{"type":"$id","reminderType":"self_care"}',
                   );
                 }

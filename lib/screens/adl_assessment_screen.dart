@@ -2,6 +2,7 @@
 //
 // Combined ADL assessment form + history trend. Uses the Katz ADL Index
 // (6 dimensions, each 0–2, total 0–12).
+import 'package:cecelia_care_flutter/utils/save_helpers.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -59,13 +60,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
       }
     } catch (e) {
       debugPrint('ADL save error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Failed to save. Please try again.'),
-              backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) showSaveError(context, e, label: 'ADL');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -149,7 +144,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
 
   Widget _buildSummary(AdlAssessment a) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -278,7 +273,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM)),
           ),
           child: _isSaving
               ? const SizedBox(
@@ -301,7 +296,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -336,7 +331,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
                         color: isSelected
                             ? color.withValues(alpha: 0.15)
                             : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         border: Border.all(
                           color: isSelected ? color : Colors.grey.shade300,
                           width: isSelected ? 1.5 : 1,
@@ -419,7 +414,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
   Widget _buildHistoryCard(AdlAssessment a) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusS)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
@@ -429,7 +424,7 @@ class _AdlAssessmentScreenState extends State<AdlAssessmentScreen> {
               height: 36,
               decoration: BoxDecoration(
                 color: a.scoreColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
               ),
               alignment: Alignment.center,
               child: Text('${a.totalScore}',

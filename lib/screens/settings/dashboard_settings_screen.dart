@@ -248,7 +248,7 @@ class _DashboardSettingsScreenState extends State<DashboardSettingsScreen> {
                                 color: visible
                                     ? AppTheme.primaryColor.withValues(alpha: 0.1)
                                     : AppTheme.backgroundGray,
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                               ),
                               child: Icon(
                                 icon,

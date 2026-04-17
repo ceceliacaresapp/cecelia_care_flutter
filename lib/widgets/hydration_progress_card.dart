@@ -148,7 +148,7 @@ class _HydrationProgressCardState extends State<HydrationProgressCard> {
         return Card(
           elevation: 1,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM)),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(

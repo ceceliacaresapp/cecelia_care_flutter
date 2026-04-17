@@ -28,6 +28,10 @@ class ElderProfile {
   final String? emergencyContactRelationship;
   final String? photoUrl;
 
+  /// Sensory preference matrix — keys: light, sound, texture, foodTemp,
+  /// smell, touch. Values are free-text preferences set by caregivers.
+  final Map<String, String> sensoryPreferences;
+
   ElderProfile({
     required this.id,
     required this.profileName,
@@ -48,6 +52,7 @@ class ElderProfile {
     this.emergencyContactPhone,
     this.emergencyContactRelationship,
     this.photoUrl,
+    this.sensoryPreferences = const {},
   });
 
   // ---------------------------------------------------------------------------
@@ -112,6 +117,11 @@ class ElderProfile {
       emergencyContactRelationship:
           data['emergencyContactRelationship'] as String?,
       photoUrl: data['photoUrl'] as String?,
+      sensoryPreferences: Map<String, String>.from(
+        (data['sensoryPreferences'] as Map<String, dynamic>?)
+                ?.map((k, v) => MapEntry(k, v.toString())) ??
+            {},
+      ),
     );
   }
 
@@ -138,6 +148,8 @@ class ElderProfile {
       if (emergencyContactRelationship != null)
         'emergencyContactRelationship': emergencyContactRelationship,
       'photoUrl': photoUrl,
+      if (sensoryPreferences.isNotEmpty)
+        'sensoryPreferences': sensoryPreferences,
     };
   }
 
@@ -161,6 +173,7 @@ class ElderProfile {
     String? emergencyContactPhone,
     String? emergencyContactRelationship,
     String? photoUrl,
+    Map<String, String>? sensoryPreferences,
   }) {
     return ElderProfile(
       id: id ?? this.id,
@@ -184,6 +197,7 @@ class ElderProfile {
       emergencyContactRelationship:
           emergencyContactRelationship ?? this.emergencyContactRelationship,
       photoUrl: photoUrl ?? this.photoUrl,
+      sensoryPreferences: sensoryPreferences ?? this.sensoryPreferences,
     );
   }
 }

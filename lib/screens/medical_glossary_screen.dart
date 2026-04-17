@@ -83,7 +83,7 @@ class _MedicalGlossaryScreenState extends State<MedicalGlossaryScreen> {
                         },
                       ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 ),
                 isDense: true,
               ),
@@ -147,7 +147,7 @@ class _MedicalGlossaryScreenState extends State<MedicalGlossaryScreen> {
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         side: BorderSide(color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Theme(
@@ -177,7 +177,7 @@ class _MedicalGlossaryScreenState extends State<MedicalGlossaryScreen> {
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 ),
                 child: Text(
                   t.category.toUpperCase(),

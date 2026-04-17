@@ -12,9 +12,11 @@ import 'package:cecelia_care_flutter/models/elder_profile.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/providers/user_profile_provider.dart';
+import 'package:cecelia_care_flutter/screens/invite/create_invite_screen.dart';
 import 'package:cecelia_care_flutter/widgets/elder_profile_form_modal.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart'
     as UserModel;
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 
 class ManageCareRecipientProfilesScreen extends StatefulWidget {
   const ManageCareRecipientProfilesScreen({super.key});
@@ -30,8 +32,6 @@ class _ManageCareRecipientProfilesScreenState
   late ThemeData _theme;
 
   final _inviteEmailController = TextEditingController();
-  String? _selectedElderIdForInvite;
-
   bool _isCreatingNewProfile = false;
   bool _isInviting = false;
   ElderProfile? _editingProfile;
@@ -70,8 +70,10 @@ class _ManageCareRecipientProfilesScreenState
     final firestoreService = context.read<FirestoreService>();
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_l10n.errorNotLoggedIn)));
+      }
       return;
     }
     try {
@@ -80,9 +82,11 @@ class _ManageCareRecipientProfilesScreenState
           throw Exception('Care Recipient ID is missing, cannot update.');
         }
         await firestoreService.updateElderProfile(_editingProfile!.id, data);
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 _l10n.profileUpdatedSnackbar(_editingProfile!.profileName))));
+        }
       } else {
         final newElderId =
             await firestoreService.createElderProfile(data);
@@ -100,8 +104,10 @@ class _ManageCareRecipientProfilesScreenState
       }
       _cancelCreateOrEdit();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_l10n.errorSavingProfile(e.toString()))));
+      }
     }
   }
 
@@ -143,11 +149,12 @@ class _ManageCareRecipientProfilesScreenState
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(_l10n.invitationSentSnackbar(email))));
         _inviteEmailController.clear();
-        _selectedElderIdForInvite = null;
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(_l10n.errorSendingInvitation(e.toString()))));
+      }
     } finally {
       if (mounted) setState(() => _isInviting = false);
     }
@@ -204,9 +211,11 @@ class _ManageCareRecipientProfilesScreenState
         ));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Could not change role: $e'),
           backgroundColor: AppTheme.dangerColor));
+      }
     }
   }
 
@@ -248,12 +257,16 @@ class _ManageCareRecipientProfilesScreenState
           'caregiverRoles.$caregiverIdToRemove': FieldValue.delete(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content:
                 Text(_l10n.caregiverRemovedSnackbar(caregiverIdentifier))));
+        }
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(_l10n.errorRemovingCaregiver(e.toString()))));
+        }
       }
     }
   }
@@ -324,7 +337,7 @@ class _ManageCareRecipientProfilesScreenState
       elevation: isActive ? 4 : 2,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(
           color: isActive ? AppTheme.accentColor : Colors.transparent,
           width: 2,
@@ -382,10 +395,11 @@ class _ManageCareRecipientProfilesScreenState
                   onTap: () {
                     Provider.of<ActiveElderProvider>(context, listen: false)
                         .setActive(profile);
-                    if (mounted)
+                    if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(_l10n.profileSetActiveSnackbar(
                               profile.profileName))));
+                    }
                   },
                 ),
                 if (isPrimaryAdmin)
@@ -398,9 +412,28 @@ class _ManageCareRecipientProfilesScreenState
                 if (isPrimaryAdmin)
                   _ActionChip(
                     icon: Icons.person_add_alt_1_outlined,
-                    label: 'Invite',
+                    label: 'Invite by email',
                     color: AppTheme.tileTeal,
                     onTap: () => _showInviteDialog(profile),
+                  ),
+                if (isPrimaryAdmin)
+                  _ActionChip(
+                    icon: Icons.vpn_key_outlined,
+                    label: 'Invite by code',
+                    color: AppTheme.tileBlue,
+                    onTap: () async {
+                      // CreateInviteScreen reads the active elder via
+                      // ActiveElderProvider — set it before navigating.
+                      await Provider.of<ActiveElderProvider>(context,
+                              listen: false)
+                          .setActive(profile);
+                      if (!mounted) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const CreateInviteScreen()),
+                      );
+                    },
                   ),
               ],
             ),
@@ -451,26 +484,29 @@ class _ManageCareRecipientProfilesScreenState
             Text(_l10n.primaryAdminLabel,
                 style: _theme.textTheme.bodyLarge
                     ?.copyWith(fontWeight: FontWeight.bold)),
-            FutureBuilder<DocumentSnapshot>(
+            FutureBuilder<DocumentSnapshot?>(
               future: profile.primaryAdminUserId.isNotEmpty
                   ? FirebaseFirestore.instance
                       .collection('users')
                       .doc(profile.primaryAdminUserId)
                       .get()
-                  : Future.value(null),
+                  : null,
               builder: (context, snapshot) {
-                if (profile.primaryAdminUserId.isEmpty)
+                if (profile.primaryAdminUserId.isEmpty) {
                   return Text(_l10n.adminNotAssigned,
                       style: _theme.textTheme.bodyLarge);
-                if (snapshot.connectionState == ConnectionState.waiting)
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return Text(_l10n.loadingAdminInfo,
                       style: _theme.textTheme.bodyLarge);
+                }
                 if (snapshot.hasError ||
                     !snapshot.hasData ||
-                    (snapshot.data != null && !snapshot.data!.exists))
+                    (snapshot.data != null && !snapshot.data!.exists)) {
                   return Text(profile.primaryAdminUserId,
                       style: _theme.textTheme.bodyLarge
                           ?.copyWith(fontStyle: FontStyle.italic));
+                }
                 final adminData =
                     snapshot.data!.data() as Map<String, dynamic>?;
                 final adminName = adminData?['displayName'] as String? ??
@@ -543,7 +579,7 @@ class _ManageCareRecipientProfilesScreenState
                           color: isAdmin
                               ? AppTheme.tileBlue.withValues(alpha: 0.04)
                               : AppTheme.backgroundGray,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           border: Border.all(
                             color: isAdmin
                                 ? AppTheme.tileBlue.withValues(alpha: 0.2)
@@ -633,7 +669,6 @@ class _ManageCareRecipientProfilesScreenState
   // ---------------------------------------------------------------------------
 
   void _showInviteDialog(ElderProfile profile) {
-    _selectedElderIdForInvite = profile.id;
     _inviteEmailController.clear();
     CaregiverRole selectedRole = CaregiverRole.caregiver;
 
@@ -686,7 +721,7 @@ class _ManageCareRecipientProfilesScreenState
                           color: isSelected
                               ? AppTheme.primaryColor.withValues(alpha: 0.06)
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           border: Border.all(
                             color: isSelected
                                 ? AppTheme.primaryColor
@@ -726,7 +761,7 @@ class _ManageCareRecipientProfilesScreenState
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
@@ -735,7 +770,6 @@ class _ManageCareRecipientProfilesScreenState
                 child: Text(_l10n.cancelButton),
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
-                  _selectedElderIdForInvite = null;
                 },
               ),
               ElevatedButton(
@@ -825,13 +859,15 @@ class _ManageCareRecipientProfilesScreenState
             .read<FirestoreService>()
             .getMyEldersStream(currentUserId),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return Center(
                 child: Text('${_l10n.errorPrefix}${snapshot.error}',
                     style:
                         const TextStyle(color: AppTheme.dangerColor)));
+          }
 
           final profiles = snapshot.data ?? [];
 
@@ -916,7 +952,7 @@ class _RoleBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
@@ -983,20 +1019,18 @@ class _ElderAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final initial =
         profileName.isNotEmpty ? profileName[0].toUpperCase() : '?';
-    return CircleAvatar(
+    return CachedAvatar(
+      imageUrl: photoUrl,
       radius: radius,
       backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.12),
-      backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
-      child: photoUrl == null
-          ? Text(
-              initial,
-              style: TextStyle(
-                fontSize: radius * 0.75,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryColor,
-              ),
-            )
-          : null,
+      fallbackChild: Text(
+        initial,
+        style: TextStyle(
+          fontSize: radius * 0.75,
+          fontWeight: FontWeight.bold,
+          color: AppTheme.primaryColor,
+        ),
+      ),
     );
   }
 }
@@ -1028,7 +1062,7 @@ class _ActionChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           color: filled ? color : color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           border: Border.all(
             color: color.withValues(alpha: filled ? 1.0 : 0.4),
             width: filled ? 1.5 : 1,

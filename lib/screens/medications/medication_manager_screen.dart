@@ -18,6 +18,7 @@ import '../../providers/medication_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/rxnav_service.dart';
 import '../../utils/app_theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../utils/app_styles.dart';
 import '../../models/medication_entry.dart';
 import '../../models/medication_definition.dart';
@@ -283,6 +284,9 @@ class _MedicationLogTab extends StatelessWidget {
             return _MedicationAdherenceCard(
               name: name,
               photoUrl: matchingDef?.photoUrl,
+              isPRN: matchingDef?.isPRN ?? false,
+              isControlled: matchingDef?.isControlled ?? false,
+              prnFollowUpMinutes: matchingDef?.prnFollowUpMinutes,
               latest: latest,
               entries: entries,
               l10n: l10n,
@@ -303,6 +307,9 @@ class _MedicationAdherenceCard extends StatelessWidget {
   const _MedicationAdherenceCard({
     required this.name,
     this.photoUrl,
+    this.isPRN = false,
+    this.isControlled = false,
+    this.prnFollowUpMinutes,
     required this.latest,
     required this.entries,
     required this.l10n,
@@ -311,6 +318,9 @@ class _MedicationAdherenceCard extends StatelessWidget {
 
   final String name;
   final String? photoUrl;
+  final bool isPRN;
+  final bool isControlled;
+  final int? prnFollowUpMinutes;
   final MedicationEntry latest;
   final List<MedicationEntry> entries;
   final AppLocalizations l10n;
@@ -325,7 +335,7 @@ class _MedicationAdherenceCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusM)),
       elevation: 1,
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -342,10 +352,10 @@ class _MedicationAdherenceCard extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     image: photoUrl != null && photoUrl!.isNotEmpty
                         ? DecorationImage(
-                            image: NetworkImage(photoUrl!),
+                            image: CachedNetworkImageProvider(photoUrl!),
                             fit: BoxFit.cover,
                           )
                         : null,
@@ -361,14 +371,67 @@ class _MedicationAdherenceCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name,
-                          style: AppStyles.listTileTitle,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(name,
+                                style: AppStyles.listTileTitle,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1),
+                          ),
+                          if (isControlled) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppTheme.tileOrange
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.shield_outlined,
+                                      size: 10,
+                                      color: AppTheme.tileOrange),
+                                  const SizedBox(width: 2),
+                                  Text('C',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.tileOrange,
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ],
+                          if (isPRN) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppTheme.statusAmber
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text('PRN',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.statusAmber,
+                                    letterSpacing: 0.5,
+                                  )),
+                            ),
+                          ],
+                        ],
+                      ),
                       Text(
                         '${latest.dose.isNotEmpty ? latest.dose : l10n.medicationsDoseNotSet}'
                         ' – '
-                        '${latest.schedule.isNotEmpty ? latest.schedule : l10n.medicationsScheduleNotSet}',
+                        '${latest.schedule.isNotEmpty ? latest.schedule : l10n.medicationsScheduleNotSet}'
+                        '${isPRN && prnFollowUpMinutes != null ? ' · Follow-up: ${prnFollowUpMinutes}m' : ''}',
                         style: theme.textTheme.bodyMedium?.copyWith(
                             color: AppTheme.textSecondary),
                         overflow: TextOverflow.ellipsis,
@@ -887,7 +950,7 @@ class _ReminderCardState extends State<_ReminderCard> {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(
           color: def.reminderEnabled
               ? AppTheme.primaryColor.withValues(alpha: 0.4)
@@ -910,10 +973,10 @@ class _ReminderCardState extends State<_ReminderCard> {
                     margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       image: def.hasPhoto
                           ? DecorationImage(
-                              image: NetworkImage(def.photoUrl!),
+                              image: CachedNetworkImageProvider(def.photoUrl!),
                               fit: BoxFit.cover,
                             )
                           : null,
@@ -975,7 +1038,7 @@ class _ReminderCardState extends State<_ReminderCard> {
                     : Switch(
                         value: def.reminderEnabled,
                         onChanged: _onToggle,
-                        activeColor: AppTheme.primaryColor,
+                        activeThumbColor: AppTheme.primaryColor,
                       ),
               ],
             ),
@@ -985,7 +1048,7 @@ class _ReminderCardState extends State<_ReminderCard> {
               const SizedBox(height: 8),
               InkWell(
                 onTap: _editTime,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusS),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                       vertical: 6, horizontal: 2),

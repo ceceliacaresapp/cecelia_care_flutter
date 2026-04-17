@@ -100,7 +100,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
               hintText: 'Search resources...',
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               isDense: true,
             ),
             onChanged: (v) => setState(() => _searchQuery = v),
@@ -112,7 +112,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppTheme.tileTeal.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(
                   color: AppTheme.tileTeal.withValues(alpha: 0.15)),
             ),
@@ -199,7 +199,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusM),
                         border: Border.all(
                             color: r.color.withValues(alpha: 0.3)),
                       ),
@@ -213,7 +213,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                             decoration: BoxDecoration(
                               color:
                                   r.color.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusS),
                             ),
                             child: Icon(r.icon,
                                 color: r.color, size: 22),
@@ -275,7 +275,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
                     border: Border.all(
                         color: AppTheme.primaryColor.withValues(alpha: 0.3)),
                   ),
@@ -285,7 +285,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         ),
                         child: Icon(Icons.menu_book_outlined,
                             color: AppTheme.primaryColor, size: 24),
@@ -337,7 +337,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: info.color.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       border: Border.all(
                           color: info.color.withValues(alpha: 0.2)),
                     ),
@@ -347,7 +347,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: info.color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusS),
                           ),
                           child:
                               Icon(info.icon, color: info.color, size: 24),
@@ -443,7 +443,7 @@ class _TrainingLibraryScreenState extends State<TrainingLibraryScreen> {
                       color: isViewed
                           ? AppTheme.statusGreen.withValues(alpha: 0.04)
                           : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       border: Border.all(
                         color: isViewed
                             ? AppTheme.statusGreen

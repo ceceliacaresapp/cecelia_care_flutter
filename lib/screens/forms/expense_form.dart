@@ -13,6 +13,7 @@ import 'package:cecelia_care_flutter/services/auth_service.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/providers/journal_service_provider.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 
 class ExpenseForm extends StatefulWidget {
   final ExpenseEntry? editingItem;
@@ -299,7 +300,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                             color: isSelected
                                 ? AppTheme.primaryColor
                                 : AppTheme.backgroundGray,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusXL),
                             border: Border.all(
                               color: isSelected
                                   ? AppTheme.primaryColor
@@ -428,23 +429,17 @@ class _ImageAttachPicker extends StatelessWidget {
     if (selectedImageUrl != null && selectedImageUrl!.isNotEmpty) {
       return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(color: _kColor.withValues(alpha: 0.3)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            Image.network(
-              selectedImageUrl!,
+            CachedImage(
+              imageUrl: selectedImageUrl!,
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: 80,
-                color: const Color(0xFFE8EAF6),
-                child: const Center(
-                    child: Icon(Icons.broken_image, color: _kColor)),
-              ),
             ),
             Positioned(
               top: 6,
@@ -493,7 +488,7 @@ class _ImageAttachPicker extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
         decoration: BoxDecoration(
           color: _kColor.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
               color: _kColor.withValues(alpha: 0.25), style: BorderStyle.solid),
         ),
@@ -592,14 +587,10 @@ class _ImageAttachPicker extends StatelessWidget {
                           Navigator.of(sheetCtx).pop();
                           onSelected(e.id ?? '', url, title);
                         },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(url, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                    color: const Color(0xFFE8EAF6),
-                                    child: const Icon(Icons.broken_image,
-                                        color: _kColor),
-                                  )),
+                        child: CachedImage(
+                          imageUrl: url,
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         ),
                       );
                     },

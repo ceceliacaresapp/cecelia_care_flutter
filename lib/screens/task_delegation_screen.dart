@@ -14,6 +14,7 @@ import 'package:cecelia_care_flutter/models/care_task.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
+import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/widgets/skeleton_loaders.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
@@ -57,29 +58,30 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final elder = context.watch<ActiveElderProvider>().activeElder;
 
     if (elder == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Task Board')),
-        body: const Center(
-          child: Text('No care recipient selected.',
-              style: TextStyle(color: AppTheme.textSecondary)),
+        appBar: AppBar(title: Text(l10n.taskBoardTitle)),
+        body: Center(
+          child: Text(l10n.noCareRecipientSelected,
+              style: const TextStyle(color: AppTheme.textSecondary)),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Task Board'),
+        title: Text(l10n.taskBoardTitle),
         bottom: TabBar(
           controller: _tab,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Completed'),
+          tabs: [
+            Tab(text: l10n.activeTabLabel),
+            Tab(text: l10n.completedTabLabel),
           ],
         ),
       ),
@@ -95,7 +97,7 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
         foregroundColor: Colors.white,
         onPressed: () => _openTaskEditor(elder.id),
         icon: const Icon(Icons.add),
-        label: const Text('New Task'),
+        label: Text(l10n.newTaskButton),
       ),
     );
   }
@@ -117,10 +119,11 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
                 CareTask.fromFirestore(elderId, d['id'] as String, d))
             .toList();
         if (tasks.isEmpty) {
-          return const EmptyStateWidget(
+          final l10n = AppLocalizations.of(context)!;
+          return EmptyStateWidget(
               icon: Icons.task_alt_outlined,
-              title: 'No active tasks',
-              subtitle: 'Tap New Task to delegate.');
+              title: l10n.noActiveTasksTitle,
+              subtitle: l10n.noActiveTasksSubtitle);
         }
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
@@ -152,10 +155,11 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
                 CareTask.fromFirestore(elderId, d['id'] as String, d))
             .toList();
         if (tasks.isEmpty) {
-          return const EmptyStateWidget(
+          final l10n = AppLocalizations.of(context)!;
+          return EmptyStateWidget(
               icon: Icons.history,
-              title: 'No completed tasks yet',
-              subtitle: 'Completed tasks will show here.');
+              title: l10n.noCompletedTasksTitle,
+              subtitle: l10n.noCompletedTasksSubtitle);
         }
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
@@ -214,8 +218,9 @@ class _TaskDelegationScreenState extends State<TaskDelegationScreen>
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Action failed: $e')),
+          SnackBar(content: Text(l10n.actionFailedMessage(e.toString()))),
         );
       }
     }
@@ -268,6 +273,7 @@ class _TaskCardState extends State<_TaskCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final t = widget.task;
     final isCreator = t.createdBy == widget.currentUid;
     final isAssignee = t.assignedTo == widget.currentUid;
@@ -280,7 +286,7 @@ class _TaskCardState extends State<_TaskCard> {
       margin: const EdgeInsets.symmetric(vertical: 5),
       elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         side: BorderSide(
           color: t.isOverdue
               ? AppTheme.dangerColor.withValues(alpha: 0.5)
@@ -288,7 +294,7 @@ class _TaskCardState extends State<_TaskCard> {
         ),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         onTap: () => setState(() => _expanded = !_expanded),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -301,7 +307,7 @@ class _TaskCardState extends State<_TaskCard> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: t.categoryColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                     ),
                     child: Icon(t.categoryIcon,
                         color: t.categoryColor, size: 20),
@@ -358,7 +364,7 @@ class _TaskCardState extends State<_TaskCard> {
                         color: AppTheme.tileOrange.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text('Unassigned',
+                      child: Text(l10n.unassignedLabel,
                           style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -380,13 +386,13 @@ class _TaskCardState extends State<_TaskCard> {
                         style: const TextStyle(
                             fontSize: 12, height: 1.4)),
                   ),
-                Text('Created by ${t.createdByName}',
+                Text(l10n.createdByLabel(t.createdByName),
                     style: const TextStyle(
                         fontSize: 10, color: AppTheme.textSecondary)),
                 if (t.completedAt != null && t.completionNote != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text('Note: ${t.completionNote}',
+                    child: Text(l10n.completionNoteLabel(t.completionNote!),
                         style: const TextStyle(
                             fontSize: 11, fontStyle: FontStyle.italic)),
                   ),
@@ -397,31 +403,31 @@ class _TaskCardState extends State<_TaskCard> {
                     runSpacing: 6,
                     children: [
                       if (isUnassigned)
-                        _actionBtn('I\'ll do it', Icons.pan_tool_outlined,
+                        _actionBtn(l10n.claimTaskButton, Icons.pan_tool_outlined,
                             AppTheme.tileBlueDark,
                             () => widget.onAction(t, 'claim')),
                       if (isAssignee && t.status == 'open')
-                        _actionBtn('Accept', Icons.thumb_up_outlined,
+                        _actionBtn(l10n.acceptTaskButton, Icons.thumb_up_outlined,
                             AppTheme.tileBlue,
                             () => widget.onAction(t, 'accept')),
                       if (isAssignee && t.status == 'open')
-                        _actionBtn('Decline',
+                        _actionBtn(l10n.declineTaskButton,
                             Icons.do_not_disturb_alt_outlined,
                             const Color(0xFF757575),
                             () => widget.onAction(t, 'decline')),
                       if (isAssignee &&
                           (t.status == 'open' || t.status == 'accepted'))
                         _actionBtn(
-                            'Mark complete',
+                            l10n.markCompleteButton,
                             Icons.check_circle_outline,
                             AppTheme.statusGreen,
                             () => _confirmComplete(t)),
                       if (isCreator)
-                        _actionBtn('Edit', Icons.edit_outlined,
+                        _actionBtn(l10n.editButton, Icons.edit_outlined,
                             AppTheme.textSecondary,
                             () => widget.onAction(t, 'edit')),
                       if (isCreator)
-                        _actionBtn('Delete', Icons.delete_outline,
+                        _actionBtn(l10n.deleteButton, Icons.delete_outline,
                             AppTheme.dangerColor,
                             () => _confirmDelete(t)),
                     ],
@@ -447,22 +453,23 @@ class _TaskCardState extends State<_TaskCard> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         visualDensity: VisualDensity.compact,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8)),
+            borderRadius: BorderRadius.circular(AppTheme.radiusS)),
       ),
     );
   }
 
   Future<void> _confirmComplete(CareTask t) async {
+    final l10n = AppLocalizations.of(context)!;
     final ctrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Mark task complete?'),
+        title: Text(l10n.markTaskCompleteDialogTitle),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(
-            labelText: 'Completion note (optional)',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.completionNoteInputLabel,
+            border: const OutlineInputBorder(),
           ),
           maxLines: 2,
           textCapitalization: TextCapitalization.sentences,
@@ -470,10 +477,10 @@ class _TaskCardState extends State<_TaskCard> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l10n.cancelButton)),
           ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Complete')),
+              child: Text(l10n.completeButton)),
         ],
       ),
     );
@@ -483,20 +490,21 @@ class _TaskCardState extends State<_TaskCard> {
   }
 
   Future<void> _confirmDelete(CareTask t) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: const Text('This cannot be undone.'),
+        title: Text(l10n.deleteTaskDialogTitle),
+        content: Text(l10n.cannotBeUndoneMessage),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l10n.cancelButton)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               style:
                   TextButton.styleFrom(foregroundColor: AppTheme.dangerColor),
-              child: const Text('Delete')),
+              child: Text(l10n.deleteButton)),
         ],
       ),
     );
@@ -621,6 +629,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -647,17 +656,17 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
               ),
             ),
             Text(
-              widget.existing == null ? 'New Task' : 'Edit Task',
+              widget.existing == null ? l10n.newTaskButton : l10n.editTaskTitle,
               style: const TextStyle(
                   fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _titleCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                hintText: 'e.g. Pick up prescriptions',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.taskTitleLabel,
+                hintText: l10n.taskTitleHint,
+                border: const OutlineInputBorder(),
               ),
               textCapitalization: TextCapitalization.sentences,
               onChanged: (_) => setState(() {}),
@@ -665,16 +674,16 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
             const SizedBox(height: 12),
             TextField(
               controller: _descCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Description (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.taskDescriptionLabel,
+                border: const OutlineInputBorder(),
               ),
               maxLines: 2,
               textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: 16),
-            const Text('Category',
-                style: TextStyle(
+            Text(l10n.categoryLabel,
+                style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textSecondary)),
@@ -694,7 +703,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                       color: selected
                           ? color.withValues(alpha: 0.15)
                           : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusS),
                       border: Border.all(
                         color:
                             selected ? color : Colors.grey.shade300,
@@ -725,8 +734,8 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-            const Text('Assign to',
-                style: TextStyle(
+            Text(l10n.assignToLabel,
+                style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textSecondary)),
@@ -738,9 +747,9 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                 isDense: true,
               ),
               items: [
-                const DropdownMenuItem<String?>(
+                DropdownMenuItem<String?>(
                   value: null,
-                  child: Text('Unassigned'),
+                  child: Text(l10n.unassignedOption),
                 ),
                 ...widget.team.map((u) => DropdownMenuItem<String?>(
                       value: u.uid,
@@ -750,8 +759,8 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
               onChanged: (v) => setState(() => _assigneeUid = v),
             ),
             const SizedBox(height: 16),
-            const Text('Due date',
-                style: TextStyle(
+            Text(l10n.dueDateLabel,
+                style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textSecondary)),
@@ -764,7 +773,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                     icon: const Icon(Icons.calendar_today, size: 16),
                     label: Text(
                       _dueDate == null
-                          ? 'No due date'
+                          ? l10n.noDueDateLabel
                           : DateFormat('MMM d, yyyy h:mm a')
                               .format(_dueDate!),
                     ),
@@ -787,7 +796,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
               ),
               child: _saving
                   ? const SizedBox(
@@ -795,7 +804,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                       height: 18,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : Text(widget.existing == null ? 'Create Task' : 'Save',
+                  : Text(widget.existing == null ? l10n.createTaskButton : l10n.saveButton,
                       style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w700)),
             ),

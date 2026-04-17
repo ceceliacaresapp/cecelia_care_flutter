@@ -46,7 +46,7 @@ class WeeklyChallengeCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           border: Border.all(color: color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
@@ -57,7 +57,7 @@ class WeeklyChallengeCard extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTheme.radiusL),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,7 +158,7 @@ class WeeklyChallengeCard extends StatelessWidget {
                                 horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               color: _kCompletedColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusS),
                               border: Border.all(
                                   color: _kCompletedColor
                                       .withValues(alpha: 0.25)),
@@ -278,7 +278,7 @@ class _BonusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
@@ -314,7 +314,7 @@ class _NoChallengeCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.backgroundGray,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
         border: Border.all(color: AppTheme.textLight.withValues(alpha: 0.3)),
       ),
       child: Row(

@@ -89,11 +89,6 @@ class MedicationProvider with ChangeNotifier {
       try {
         final currentUser = FirebaseAuth.instance.currentUser;
         final String loggedByUserId = currentUser?.uid ?? '';
-        final String loggedByDisplayName =
-            currentUser?.displayName ??
-            currentUser?.email ??
-            'Caregiver';
-
         await _firestoreService.addJournalEntry(
           elderId: _elderId,
           type: EntryType.medication,
@@ -121,14 +116,14 @@ class MedicationProvider with ChangeNotifier {
 
     // Step 3: Decrement pill count (taken only).
     if (taken && _medDefsProvider != null) {
-      final matchingDef = _medDefsProvider!.medDefinitions
+      final matchingDef = _medDefsProvider.medDefinitions
           .where((d) =>
               d.elderId == _elderId &&
               d.name.toLowerCase() == entry.name.toLowerCase())
           .firstOrNull;
 
       if (matchingDef?.id != null) {
-        await _medDefsProvider!.decrementPillCount(
+        await _medDefsProvider.decrementPillCount(
           medDefId: matchingDef!.id!,
           medName: entry.name,
           elderName: _elderName,

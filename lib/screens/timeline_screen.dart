@@ -23,9 +23,10 @@ import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/models/journal_entry.dart';
 import 'package:cecelia_care_flutter/models/user_profile.dart';
-import 'package:cecelia_care_flutter/widgets/user_selector_widget.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 import 'package:cecelia_care_flutter/models/entry_types.dart';
 import 'package:cecelia_care_flutter/widgets/empty_state_widget.dart';
+import 'package:cecelia_care_flutter/widgets/timeline_message_composer.dart';
 
 // Color tables for entry types live in lib/utils/entry_type_helpers.dart
 // (shared with dashboard_screen.dart). Thin alias keeps the existing
@@ -81,7 +82,6 @@ class TimelineScreenState extends State<TimelineScreen> {
   List<UserProfile> _elderAssociatedUsers = [];
   bool _isLoadingUsers = false;
 
-  bool _isPosting = false;
   String? _editingMessageId;
 
   Set<String> _hiddenMessageIds = {};
@@ -211,10 +211,12 @@ class TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  Future<void> _submitMessage() async {
-    final text = _messageController.text.trim();
-    if (text.isEmpty && _editingMessageId == null) return;
-
+  Future<void> _handleComposerSend({
+    required String text,
+    required bool isPublic,
+    required List<String> visibleToUserIds,
+    String? editingMessageId,
+  }) async {
     final User? user = FirebaseAuth.instance.currentUser;
     final activeElder =
         Provider.of<ActiveElderProvider>(context, listen: false).activeElder;
@@ -232,66 +234,53 @@ class TimelineScreenState extends State<TimelineScreen> {
       return;
     }
 
-    if (mounted) setState(() => _isPosting = true);
-
-    try {
-      List<String> visibleToUserIds = [];
-      final String currentUserId = user.uid;
-
-      if (_isPublicMessage) {
-        visibleToUserIds.add('all');
-      } else {
-        visibleToUserIds.addAll(_selectedUserIdsForMessage);
-        if (!visibleToUserIds.contains(currentUserId)) {
-          visibleToUserIds.add(currentUserId);
-        }
+    final String currentUserId = user.uid;
+    final List<String> resolvedIds = [];
+    if (isPublic) {
+      resolvedIds.add('all');
+    } else {
+      resolvedIds.addAll(visibleToUserIds);
+      if (!resolvedIds.contains(currentUserId)) {
+        resolvedIds.add(currentUserId);
       }
-
-      final firestoreService = context.read<FirestoreService>();
-
-      if (_editingMessageId != null) {
-        await firestoreService.updateJournalEntry(
-          entryId: _editingMessageId!,
-          type: EntryType.message,
-          text: text,
-          visibleToUserIds: visibleToUserIds,
-          isPublic: _isPublicMessage,
-        );
-        if (mounted) {
-          _showSnackBar(_l10n.timelineMessageUpdatedSuccess, isError: false);
-        }
-      } else {
-        await firestoreService.addJournalEntry(
-          elderId: activeElder.id,
-          type: EntryType.message,
-          creatorId: currentUserId,
-          text: text,
-          visibleToUserIds: visibleToUserIds,
-          isPublic: _isPublicMessage,
-        );
-      }
-
-      _messageController.clear();
-      if (mounted) {
-        setState(() {
-          _showMessageInput = false;
-          _isPublicMessage = true;
-          _selectedUserIdsForMessage.clear();
-          _editingMessageId = null;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackBar(
-          _editingMessageId != null
-              ? _l10n.timelineErrorUpdatingMessage(e.toString())
-              : _l10n.timelineCouldNotPostMessage(e.toString()),
-          isError: true,
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isPosting = false);
     }
+
+    final firestoreService = context.read<FirestoreService>();
+
+    if (editingMessageId != null) {
+      await firestoreService.updateJournalEntry(
+        entryId: editingMessageId,
+        type: EntryType.message,
+        text: text,
+        visibleToUserIds: resolvedIds,
+        isPublic: isPublic,
+      );
+      if (mounted) {
+        _showSnackBar(_l10n.timelineMessageUpdatedSuccess, isError: false);
+      }
+    } else {
+      await firestoreService.addJournalEntry(
+        elderId: activeElder.id,
+        type: EntryType.message,
+        creatorId: currentUserId,
+        text: text,
+        visibleToUserIds: resolvedIds,
+        isPublic: isPublic,
+      );
+    }
+
+    _closeComposer();
+  }
+
+  void _closeComposer() {
+    if (!mounted) return;
+    _messageController.clear();
+    setState(() {
+      _showMessageInput = false;
+      _isPublicMessage = true;
+      _selectedUserIdsForMessage.clear();
+      _editingMessageId = null;
+    });
   }
 
   String _getHiddenMessagesPreferenceKey(String elderId) {
@@ -561,7 +550,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                   onChanged: (v) => setState(() => _searchQuery = v),
                 ),
@@ -676,104 +665,21 @@ class TimelineScreenState extends State<TimelineScreen> {
         children: [
           if (activeElder != null) _buildFilterBar(context),
           if (_showMessageInput && Provider.of<ActiveElderProvider>(context, listen: false).canMessage)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.accentColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppTheme.accentColor.withValues(alpha: 0.2),
-                  ),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    UserSelectorWidget(
-                      allUsers: _elderAssociatedUsers,
-                      isLoadingUsers: _isLoadingUsers,
-                      initialSelectedUserIds: _selectedUserIdsForMessage,
-                      initialIsPublic: _isPublicMessage,
-                      onSelectionChanged: (selectedIds, isPublic) {
-                        setState(() {
-                          _selectedUserIdsForMessage = selectedIds;
-                          _isPublicMessage = isPublic;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _isPublicMessage
-                          ? _l10n.timelinePostingToAll
-                          : _l10n.timelinePostingToCount(
-                              _selectedUserIdsForMessage.length
-                                  .toString()),
-                      style: _theme.textTheme.bodyMedium?.copyWith(
-                        fontStyle: FontStyle.italic,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _messageController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        hintText: _l10n.timelineWriteMessageHint(
-                          (activeElder?.preferredName?.isNotEmpty == true
-                                  ? activeElder!.preferredName
-                                  : activeElder?.profileName) ??
-                              _l10n.timelineUnknownUser,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: _isPosting
-                              ? null
-                              : () => setState(() {
-                                    _showMessageInput = false;
-                                    _messageController.clear();
-                                    _isPublicMessage = true;
-                                    _selectedUserIdsForMessage.clear();
-                                    _editingMessageId = null;
-                                  }),
-                          child: Text(_l10n.timelineCancelButton),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _isPosting ? null : _submitMessage,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentColor,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                          ),
-                          child: _isPosting
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppTheme.textOnPrimary,
-                                  ),
-                                )
-                              : Text(
-                                  _editingMessageId != null
-                                      ? _l10n.timelineUpdateButton
-                                      : _l10n.timelinePostButton,
-                                ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            TimelineMessageComposer(
+              elderName: (activeElder?.preferredName?.isNotEmpty == true
+                      ? activeElder!.preferredName
+                      : activeElder?.profileName) ??
+                  _l10n.timelineUnknownUser,
+              associatedUsers: _elderAssociatedUsers,
+              isLoadingUsers: _isLoadingUsers,
+              editingMessageId: _editingMessageId,
+              initialText: _editingMessageId != null
+                  ? _messageController.text
+                  : null,
+              initialIsPublic: _isPublicMessage,
+              initialSelectedUserIds: _selectedUserIdsForMessage,
+              onSend: _handleComposerSend,
+              onClose: _closeComposer,
             ),
           Expanded(
             child: StreamBuilder<List<JournalEntry>>(
@@ -977,7 +883,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                                 horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
                               color: AppTheme.dangerColor,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusM),
                             ),
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.only(right: 24),
@@ -1147,7 +1053,7 @@ class TimelineScreenState extends State<TimelineScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -1157,7 +1063,7 @@ class TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1169,17 +1075,11 @@ class TimelineScreenState extends State<TimelineScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
+                      CachedAvatar(
+                        imageUrl: avatarUrl,
                         radius: 22,
-                        backgroundImage:
-                            (avatarUrl != null && avatarUrl.isNotEmpty)
-                                ? NetworkImage(avatarUrl)
-                                : null,
                         backgroundColor: avatarBg,
-                        child:
-                            (avatarUrl != null && avatarUrl.isNotEmpty)
-                                ? null
-                                : avatarChild,
+                        fallbackChild: avatarChild,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -1248,7 +1148,7 @@ class TimelineScreenState extends State<TimelineScreen> {
                                       color: AppTheme.tileBlueGrey
                                           .withValues(alpha: 0.12),
                                       borderRadius:
-                                          BorderRadius.circular(20),
+                                          BorderRadius.circular(AppTheme.radiusXL),
                                       border: Border.all(
                                         color: AppTheme.tileBlueGrey
                                             .withValues(alpha: 0.35),
@@ -1507,7 +1407,7 @@ class TimelineScreenState extends State<TimelineScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.dangerColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border:
             Border.all(color: AppTheme.dangerColor.withValues(alpha: 0.3)),
       ),
@@ -1555,36 +1455,20 @@ class _ImageThumbnail extends StatelessWidget {
             appBar: AppBar(title: Text(imageTitle)),
             body: Center(
               child: InteractiveViewer(
-                child: Image.network(imageUrl, fit: BoxFit.contain),
+                child: CachedImage(imageUrl: imageUrl, fit: BoxFit.contain),
               ),
             ),
           ),
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 160),
-          child: Image.network(
-            imageUrl,
+          child: CachedImage(
+            imageUrl: imageUrl,
             fit: BoxFit.cover,
             width: double.infinity,
-            loadingBuilder: (_, child, progress) {
-              if (progress == null) return child;
-              return Container(
-                height: 100,
-                color: AppTheme.backgroundGray,
-                child: const Center(child: CircularProgressIndicator()),
-              );
-            },
-            errorBuilder: (_, __, ___) => Container(
-              height: 80,
-              color: AppTheme.backgroundGray,
-              child: const Center(
-                child: Icon(Icons.broken_image,
-                    color: AppTheme.textLight, size: 32),
-              ),
-            ),
           ),
         ),
       ),
@@ -1605,7 +1489,7 @@ class _FilterChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: AppTheme.accentColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1657,7 +1541,7 @@ class _DatePickerButton extends StatelessWidget {
         padding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           side: BorderSide(
               color: AppTheme.textLight.withValues(alpha: 0.5)),
         ),

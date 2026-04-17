@@ -15,6 +15,7 @@ import 'package:cecelia_care_flutter/providers/active_elder_provider.dart';
 import 'package:cecelia_care_flutter/services/firestore_service.dart';
 import 'package:cecelia_care_flutter/utils/app_theme.dart';
 import 'package:cecelia_care_flutter/utils/haptic_utils.dart';
+import 'package:cecelia_care_flutter/widgets/cached_avatar.dart';
 
 class ShiftScheduleScreen extends StatefulWidget {
   const ShiftScheduleScreen({super.key});
@@ -25,7 +26,6 @@ class ShiftScheduleScreen extends StatefulWidget {
 
 class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
   List<UserProfile> _associatedUsers = [];
-  bool _isLoadingUsers = false;
 
   @override
   void initState() {
@@ -37,7 +37,6 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
     final elder =
         context.read<ActiveElderProvider>().activeElder;
     if (elder == null) return;
-    setState(() => _isLoadingUsers = true);
     try {
       final users = await context
           .read<FirestoreService>()
@@ -45,8 +44,6 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
       if (mounted) setState(() => _associatedUsers = users);
     } catch (e) {
       debugPrint('ShiftScheduleScreen._fetchUsers error: $e');
-    } finally {
-      if (mounted) setState(() => _isLoadingUsers = false);
     }
   }
 
@@ -318,7 +315,7 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
                     labelText: 'Shift name',
                     hintText: 'e.g., Morning, Evening',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -458,7 +455,7 @@ class _ShiftScheduleScreenState extends State<ShiftScheduleScreen> {
                       backgroundColor: activeColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                     ),
                     child: Text(
                       existing == null
@@ -536,7 +533,7 @@ class _OnDutyBanner extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
         child: Row(
           children: [
@@ -561,7 +558,7 @@ class _OnDutyBanner extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: active.color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: active.color.withValues(alpha: 0.25)),
       ),
       child: Row(
@@ -634,7 +631,7 @@ class _ShiftRow extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: shift.color.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusM),
         border: Border.all(color: shift.color.withValues(alpha: 0.15)),
       ),
       child: Column(
@@ -716,7 +713,7 @@ class _ShiftRow extends StatelessWidget {
                             : hasAssignee
                                 ? shift.color.withValues(alpha: 0.06)
                                 : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusS),
                         border: isToday
                             ? Border.all(
                                 color: shift.color.withValues(alpha: 0.4))
@@ -852,24 +849,19 @@ class _ShiftRow extends StatelessWidget {
               ...users.map((u) {
                 final isSelected = u.uid == currentUid;
                 return ListTile(
-                  leading: CircleAvatar(
+                  leading: CachedAvatar(
+                    imageUrl: u.avatarUrl,
                     radius: 18,
                     backgroundColor:
                         shift.color.withValues(alpha: 0.12),
-                    backgroundImage:
-                        u.avatarUrl?.isNotEmpty == true
-                            ? NetworkImage(u.avatarUrl!)
-                            : null,
-                    child: u.avatarUrl?.isNotEmpty != true
-                        ? Text(
+                    fallbackChild: Text(
                             u.displayName.isNotEmpty
                                 ? u.displayName[0].toUpperCase()
                                 : '?',
                             style: TextStyle(
                                 color: shift.color,
                                 fontWeight: FontWeight.w700),
-                          )
-                        : null,
+                          ),
                   ),
                   title: Text(u.displayName.isNotEmpty
                       ? u.displayName
@@ -952,7 +944,7 @@ class _EmptyState extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -1014,7 +1006,7 @@ class _TimePickerField extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border:
               Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
@@ -1070,7 +1062,7 @@ class _PresetChip extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: AppTheme.primaryColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
               color: AppTheme.primaryColor.withValues(alpha: 0.2)),
         ),

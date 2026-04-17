@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -10,6 +13,8 @@ import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'package:cecelia_care_flutter/l10n/app_localizations.dart';
+import 'package:cecelia_care_flutter/services/biometric_lock_service.dart';
+import 'package:cecelia_care_flutter/widgets/biometric_lock_gate.dart';
 import 'package:cecelia_care_flutter/providers/badge_provider.dart';
 import 'package:cecelia_care_flutter/providers/locale_provider.dart';
 import 'package:cecelia_care_flutter/providers/message_provider.dart'; // NEW
@@ -25,6 +30,7 @@ import 'providers/medication_definitions_provider.dart';
 import 'providers/self_care_provider.dart';
 import 'providers/user_profile_provider.dart';
 import 'providers/wellness_provider.dart';
+import 'providers/zarit_provider.dart';
 import 'providers/custom_entry_types_provider.dart';
 import 'providers/symptom_analytics_provider.dart';
 import 'providers/gamification_provider.dart';
@@ -55,9 +61,28 @@ const String _recaptchaSiteKey = String.fromEnvironment(
 
 final AppRouter _appRouter = AppRouter();
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator();
+
+  // Initialize Firebase early so Crashlytics is available for error handlers.
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Crashlytics — disable collection in debug to avoid polluting production.
+  if (!kIsWeb) {
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(!kDebugMode);
+
+    // Catch Flutter framework errors.
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+    // Catch async errors not handled by Flutter.
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
+
   runApp(const AppRoot());
 }
 
@@ -78,13 +103,15 @@ class _AppRootState extends State<AppRoot> {
   }
 
   Future<SharedPreferences> _initAppResources() async {
-    // A. Initialize Firebase
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // A. Firebase already initialized in main()
 
     // B. Initialize Timezones
     tz.initializeTimeZones();
+
+    // B2. Biometric lock — loads enabled state + checks device support.
+    // Must run before the first frame so BiometricLockGate knows
+    // whether to show the lock overlay on cold start.
+    await BiometricLockService.instance.init();
 
     // C. Initialize App Check
     //
@@ -227,6 +254,7 @@ class _AppRootState extends State<AppRoot> {
             ChangeNotifierProvider(create: (_) => BadgeProvider()),
             ChangeNotifierProvider(create: (_) => SelfCareProvider()),
             ChangeNotifierProvider(create: (_) => WellnessProvider()),
+            ChangeNotifierProvider(create: (_) => ZaritProvider()),
             ChangeNotifierProvider(create: (_) => GamificationProvider()),
             ChangeNotifierProvider(create: (_) => ThemeProvider()),
             ChangeNotifierProvider(create: (_) => AccessibilityProvider()),
@@ -332,22 +360,24 @@ class _CeceliaCareAppState extends State<CeceliaCareApp> {
   Widget build(BuildContext context) {
     return Consumer2<LocaleProvider, ThemeProvider>(
       builder: (context, localeProvider, themeProvider, child) {
-        return MaterialApp.router(
-          routerConfig: _appRouter.router,
-          locale: localeProvider.selectedLocale,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          onGenerateTitle: (ctx) =>
-              AppLocalizations.of(ctx)?.appTitle ?? 'Cecelia Care',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeProvider.themeMode,
+        return BiometricLockGate(
+          child: MaterialApp.router(
+            routerConfig: _appRouter.router,
+            locale: localeProvider.selectedLocale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            onGenerateTitle: (ctx) =>
+                AppLocalizations.of(ctx)?.appTitle ?? 'Cecelia Care',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+          ),
         );
       },
     );

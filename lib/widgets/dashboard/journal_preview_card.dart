@@ -57,7 +57,7 @@ class JournalPreviewCard extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: _kColor.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border: Border.all(color: _kColor.withValues(alpha: 0.2)),
               boxShadow: [
                 BoxShadow(

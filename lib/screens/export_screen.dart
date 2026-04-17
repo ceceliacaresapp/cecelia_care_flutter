@@ -330,7 +330,7 @@ class _ExportScreenState extends State<ExportScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: _kExportColor.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
               border:
                   Border.all(color: _kExportColor.withValues(alpha: 0.2)),
             ),
@@ -508,7 +508,7 @@ class _ExportScreenState extends State<ExportScreen> {
                 color: _includeWellness
                     ? AppTheme.tilePurple.withValues(alpha: 0.06)
                     : AppTheme.backgroundGray,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
                 border: Border.all(
                   color: _includeWellness
                       ? AppTheme.tilePurple
@@ -629,7 +629,7 @@ class _ExportScreenState extends State<ExportScreen> {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                 backgroundColor: _kExportColor,
                 foregroundColor: AppTheme.textOnPrimary,
               ),
@@ -648,7 +648,7 @@ class _ExportScreenState extends State<ExportScreen> {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM)),
                   foregroundColor: _kExportColor,
                   side: BorderSide(color: _kExportColor, width: 1.5),
                 ),
@@ -663,7 +663,7 @@ class _ExportScreenState extends State<ExportScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppTheme.backgroundGray,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppTheme.radiusS),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -854,7 +854,7 @@ class _TypeChip extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
           border: Border.all(
             color: selected
                 ? color.withValues(alpha: 0.6)
@@ -912,7 +912,7 @@ class _DateButton extends StatelessWidget {
             horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
               color: AppTheme.textLight.withValues(alpha: 0.4)),
         ),
@@ -959,7 +959,7 @@ class _RangeChip extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
               color: _kExportColor.withValues(alpha: 0.4)),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
         ),
         child: Text(label,
             style: const TextStyle(
@@ -997,7 +997,7 @@ class _FormatCard extends StatelessWidget {
           color: selected
               ? _kExportColor.withValues(alpha: 0.06)
               : AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(
             color: selected
                 ? _kExportColor

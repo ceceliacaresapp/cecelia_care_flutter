@@ -24,7 +24,7 @@ class SymptomInsightsCard extends StatelessWidget {
         height: 100,
         decoration: BoxDecoration(
           color: _kAccent.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: _kAccent.withValues(alpha: 0.15)),
         ),
         child: const Center(
@@ -42,7 +42,7 @@ class SymptomInsightsCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.backgroundGray,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
         ),
         child: Row(
           children: [
@@ -75,7 +75,7 @@ class SymptomInsightsCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: _kAccent.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppTheme.radiusM),
           border: Border.all(color: _kAccent.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
@@ -95,7 +95,7 @@ class SymptomInsightsCard extends StatelessWidget {
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: _kAccent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusS),
                   ),
                   child: const Icon(Icons.insights_outlined,
                       color: _kAccent, size: 18),
@@ -160,35 +160,30 @@ class SymptomInsightsCard extends StatelessWidget {
             // Top insight
             if (analytics.insights.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                      color: AppTheme.tileGold.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.lightbulb_outline,
-                        size: 14, color: AppTheme.tileOrange),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        analytics.insights.first,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF5D4037),
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+              _InsightBox(
+                icon: Icons.lightbulb_outline,
+                iconColor: AppTheme.tileOrange,
+                bgColor: const Color(0xFFFFF8E1),
+                borderColor: AppTheme.tileGold.withValues(alpha: 0.3),
+                text: analytics.insights.first,
               ),
+            ],
+
+            // Behavioral insights
+            if (analytics.behavioralInsights.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              for (final insight in analytics.behavioralInsights.take(2))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: _InsightBox(
+                    icon: Icons.psychology_outlined,
+                    iconColor: AppTheme.tilePurple,
+                    bgColor: const Color(0xFFF3E5F5),
+                    borderColor: AppTheme.tilePurple.withValues(alpha: 0.2),
+                    text: insight,
+                    textColor: const Color(0xFF4A148C),
+                  ),
+                ),
             ],
           ],
         ),
@@ -225,7 +220,7 @@ class _TrendChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusS),
           border: Border.all(
               color: AppTheme.entryVitalAccent.withValues(alpha: 0.12)),
         ),
@@ -302,5 +297,49 @@ class _TrendChip extends StatelessWidget {
       default:
         return AppTheme.textSecondary;
     }
+  }
+}
+
+class _InsightBox extends StatelessWidget {
+  const _InsightBox({
+    required this.icon,
+    required this.iconColor,
+    required this.bgColor,
+    required this.borderColor,
+    required this.text,
+    this.textColor = const Color(0xFF5D4037),
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final Color bgColor;
+  final Color borderColor;
+  final String text;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: iconColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 12, color: textColor, height: 1.3),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

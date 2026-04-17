@@ -613,7 +613,7 @@ class _PainBodyMapState extends State<PainBodyMap> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
                       border: Border.all(
                           color: Colors.grey.shade300, width: 1.5),
                     ),

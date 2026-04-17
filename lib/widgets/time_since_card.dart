@@ -79,7 +79,7 @@ class _TimeSinceCardState extends State<TimeSinceCard> {
         return Card(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
             side: BorderSide(
                 color: AppTheme.textLight.withValues(alpha: 0.3)),
           ),
